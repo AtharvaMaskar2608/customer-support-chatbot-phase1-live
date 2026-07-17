@@ -60,23 +60,26 @@ Round 3 items — none are confirmed divergences; dispositions:
 
 ## Metrics
 Verifier rounds used: 3 (cap). Findings per round: R1 ~5 (all fixed), R2 2 (fixed), R3 0 blocking.
-Escalations: 1 (live-DB evidence blocked — see below). Test suite: 82 passed offline (no network, no live DB).
+Escalations: 1 (live-DB evidence blocked → resolved: option (d), dry-run accepted). Test suite: 82 passed offline (no network, no live DB).
 
-## Task-8 live-DB evidence attempt (team-lead requested) — BLOCKED, escalated
-Requested: upgrade task-8 from dry-run parse to a real apply against a scratch DB on the
-localhost:5433 tunnel, then drop it. Guardrail: never DDL against customer-support-chatbot.
-Outcome: connection + auth to the tunnel succeed, but the role lacks the assumed privilege:
-  - `atharva`: rolcreatedb=False, rolsuper=False → CREATE DATABASE fails (`permission denied
-    to create database`); has_database_privilege(atharva,'postgres','CREATE')=False → cannot
-    create a scratch SCHEMA in the postgres maintenance DB either.
-  - Databases present: customer-support-chatbot (prod, forbidden), postgres (no CREATE),
-    telelyzer_knowledgebase (unrelated, not ours).
-Nothing was created on the server (run failed at CREATE DATABASE; DB list confirms no
-`contracts_foundation_scratch`). No credentials committed (evidence script reads DATABASE_URL
-from the main .env at runtime; lives in scratchpad, not the repo).
-Escalated to team lead: needs a CREATEDB grant / a non-prod scratch DB / or accept the offline
-dry-run parse evidence. task-8 doneCondition explicitly permits "dry-run parse instead of a live
-Postgres", so that evidence stands and the change is NOT blocked.
+## Task-8 live-DB evidence (2026-07-17) — attempted, blocked, RESOLVED via option (d)
+Requested (team lead): upgrade task-8 from dry-run parse to a real apply against a scratch DB on
+the localhost:5433 tunnel, then drop it. Guardrail: never DDL against customer-support-chatbot.
+Attempted 2026-07-17: connection + auth to the tunnel succeed, but role `atharva` lacks the
+assumed privilege — rolcreatedb=False, rolsuper=False → CREATE DATABASE fails (`permission denied
+to create database`); has_database_privilege(atharva,'postgres','CREATE')=False → cannot create a
+scratch SCHEMA in the postgres maintenance DB either. Databases present: customer-support-chatbot
+(prod, forbidden), postgres (no CREATE), telelyzer_knowledgebase (unrelated). Nothing was created
+on the server (run failed at CREATE DATABASE; DB list confirms no `contracts_foundation_scratch`).
+No credentials committed (evidence script reads DATABASE_URL from the main .env at runtime; lives
+in scratchpad, not the repo).
+Resolution (team lead decision): OPTION (d) — dry-run parse evidence ACCEPTED per doneCondition
+("dry-run parse instead of a live Postgres" is explicitly permitted; runner idempotency proven at
+the parse level; 82 tests green). Live apply DEFERRED to deploy/integration. Option (c) pg_temp
+apply explicitly declined by the team lead (search_path games ≠ the real deploy-time apply path →
+distorted evidence). Option (a), granting CREATEDB, is an owner-level infra decision the team lead
+is surfacing to the human separately (conversation-store-writer / migrations 0002+ in Wave 1 will
+want the same capability). Change is DONE; not blocked.
 
 ## Round-1 detail
 Round 1 (all minor/uncertain, none blocking; fixed in 5b1a2e6):
