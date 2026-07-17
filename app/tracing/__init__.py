@@ -12,7 +12,31 @@ identically everywhere, rather than each re-deriving decorator usage.
 from __future__ import annotations
 
 from app.tracing.mask import mask_pii
+from app.tracing.spans import (
+    agent_span,
+    llm_span,
+    log_llm_span,
+    observe,
+    retriever_span,
+    stitch_thread,
+    tool_span,
+    update_current_span,
+    update_current_trace,
+)
 
 __all__ = [
+    # PII mask
     "mask_pii",
+    # typed span helpers
+    "agent_span",
+    "retriever_span",
+    "llm_span",
+    "tool_span",
+    # thread stitching + manual llm-span (Path B)
+    "stitch_thread",
+    "log_llm_span",
+    # re-exported DeepEval primitives
+    "observe",
+    "update_current_span",
+    "update_current_trace",
 ]
