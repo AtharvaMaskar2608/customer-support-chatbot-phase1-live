@@ -37,13 +37,22 @@ frozen surface). Reconciliations, all confirmed against the landed code:
    table (log+drop).
 
 ## Tasks completed
-- (none yet)
+- Task 1 (46bb14f): tasks.md + loop.md scaffolding.
+- Task 2 (419fbaa): migration 0002 — UNIQUE (thread_id, turn_number) idempotency
+  guard. Dry-run parse: runner discovers 0002 after 0001; pending after 0001.
+- Task 3 (e1ff880): app/store/writer.py — ConversationStoreWriter (bounded queue,
+  single worker w/ own connection, non-blocking enqueue, start/stop drain,
+  _insert_turn = threads upsert + turns insert, log-and-drop policy).
+- Task 4 (15bf3d7): tests/store/ — 14 tests, all done-condition promises. Written
+  from the spec. testCommand `pytest tests/store/` = 14 passed. Full `pytest` = 96
+  passed (baseline was 82).
 
 ## Current task
-- Task 1: scaffolding (tasks.md + loop.md) — IN PROGRESS (this commit).
+- All implementation tasks done. Running verifier panel (round 1).
 
 ## Verifier rounds
-- (none yet)
+- Round 1: PENDING — 3 fresh spec-verifiers (spec-compliance / edge-cases /
+  contract-surface), inputs = proposal dir + `git diff main...HEAD` only.
 
 ## Open questions / escalations
 - [CONFIRM] threads upsert in _insert_turn (reconciliation #4). Proceeding: it is
