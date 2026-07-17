@@ -36,13 +36,16 @@ testCommand: `pytest tests/finx_adapters/`.
       204 no-data, Session-prefixed download returning validated bytes, hybrid
       brokerage via .NET parser w/ desc verbatim, file_id never logged).
       Refactor: single auth-mapping site raise_for_auth() in base.py; dotnet re-uses it.
-- [ ] Task 5 — MIS adapter (CML)
+- [x] Task 5 — MIS adapter (CML) (4 tests green: three MIS headers
+      authType/authorization-SSO-JWT/source, camelCase body, cmlLink at
+      body.cmlLink, never handed SessionId, HTTP-401->FinXAuthError, cmlLink
+      never logged)
 - [ ] Task 6 — MF profile adapter (first-name-only PII discipline)
 - [ ] Task 7 — COTI holdings adapter
 - [ ] Task 8 — facade + package exports
 - [ ] Task 9 — consolidated redaction/no-leak tests + doneCondition sweep
 
-Current task: Task 5.
+Current task: Task 6.
 
 ## Verifier rounds
 
