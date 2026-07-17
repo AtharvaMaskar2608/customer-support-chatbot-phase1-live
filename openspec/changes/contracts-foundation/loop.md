@@ -6,7 +6,7 @@ testCommand: `pytest tests/contracts tests/finx`
 doneCondition: package imports cleanly; full contract+parser suite passes offline
 (no network, no live DB); `openspec validate --strict` passes.
 
-## Status: IMPLEMENTATION COMPLETE — awaiting verifier panel
+## Status: VERIFIER-CONVERGED — pre-ship integration check next
 
 Implementation/commit order is dependency-first (leaf contract modules before
 consumers), so every commit is importable and green. All tasks.md sections are
@@ -32,12 +32,32 @@ completed; only the commit sequence differs from the numeric order.
 - Migration runner idempotent on re-run (dry-run parse). Both generated JSON
   Schemas (chat_wire, tools) have passing drift tests.
 
-## Verifier rounds
-Round 1: DONE — 3 fresh spec-verifiers (spec-compliance, edge-cases, contract-surface).
-  Zero blocking divergences; several minor/uncertain completeness gaps → all fixed (commit 5b1a2e6).
-Round 2: pending — NEW fresh panel on the fixed diff.
+## Verifier rounds (3 panels, all fresh-context, one per lens each)
+Round 1 (on 4325e79/efcebb3): zero blocking; ~5 minor/uncertain completeness gaps → all fixed (5b1a2e6).
+Round 2 (on 5b1a2e6): zero blocking; 2 minor (max-range-years, embedded-email mask) + coverage/notation → fixed (4e3399a).
+Round 3 (on 4e3399a): ZERO blocking across all 3 lenses. Remaining items all uncertain/minor and
+  either correct-as-designed or non-required coverage → 2 test-only hardening additions (error/Go-401
+  branches); no contract change. CONVERGED (two consecutive clean fresh panels).
 
-## Findings per round
+## Findings resolution
+Round 3 items — none are confirmed divergences; dispositions:
+  - Greeting/placeholder "rotate": widget-side rotation; config carries the templates. Not a divergence.
+  - error / Go-401 parser branches untested: spec fixture requirement (success/no_data/auth_error) already
+    met; added test-only coverage (82 passed) as hardening.
+  - FileDeliveryResponse.Response str|None: correct — this model is scoped to the 3 string-returning file
+    endpoints; array/object shapes modeled by BrokerageGroup/HoldingsResponseBody/GlobalPnlNewObject; the
+    parser payload is Any.
+  - mask-before-display / compliance-footer text: server-sourced (D10 lists config_slice contents; footer
+    read from RemoteConfig.compliance_footer server-side). Downstream-owned. Not a divergence.
+  - FY short↔long two functions vs "a single mapping function": idiomatic inverse pair, equivalent.
+  - wire Calendar max_range_days vs flow max_range_years: layer split; disabled_ranges are the exact
+    enforcement, engine converts. Not a break.
+
+## Metrics
+Verifier rounds used: 3 (cap). Findings per round: R1 ~5 (all fixed), R2 2 (fixed), R3 0 blocking.
+Escalations: 0. Test suite: 82 passed offline (no network, no live DB).
+
+## Round-1 detail
 Round 1 (all minor/uncertain, none blocking; fixed in 5b1a2e6):
   - schema_migrations DDL not in 0001 file (task 8.1 literal wording) → added to 0001.
   - tracing thread-stitching + production-judge rule + configure caveat unrepresented → added

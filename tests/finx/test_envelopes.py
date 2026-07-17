@@ -106,3 +106,21 @@ def test_business_failure_returns_http_200_branch_on_body():
     # A 200-with-Fail body branches on the envelope, not HTTP status.
     env = parse_dotnet_envelope(load("pnl_no_data.json"), http_status=200)
     assert env.outcome is Outcome.no_data
+
+
+def test_generic_error_branch():
+    # .NET Status:"Fail" with a non-no-data Reason → generic error (E-UNKNOWN path).
+    dotnet = parse_dotnet_envelope({"Status": "Fail", "Response": None, "Reason": "Internal error"})
+    assert dotnet.outcome is Outcome.error
+    # Go non-200/204 → error.
+    go = parse_go_envelope({"StatusCode": 500, "Message": "boom", "Body": {}})
+    assert go.outcome is Outcome.error
+    # MIS non-200/401 → error.
+    mis = parse_mis_envelope({"statusCode": 500, "message": "boom", "body": {}})
+    assert mis.outcome is Outcome.error
+
+
+def test_go_host_http_401_is_auth_error():
+    # The Go host's HTTP-401 path is auth_error (detected by status, not body).
+    env = parse_go_envelope({"StatusCode": 200, "Message": "ok", "Body": {}}, http_status=401)
+    assert env.outcome is Outcome.auth_error
