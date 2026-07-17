@@ -1,20 +1,53 @@
 # loop.md — rag-service worktree
 
 Branch: `rag-service` (worktree `/home/choice/projects/customer-support/rag-service`).
-Base: `main @ cfb22a1` (frozen contracts landed). Owner directive: fast single
-verifier round, PR target ~35 min.
+Base: rebased onto `main @ 0aef1f7` (was `cfb22a1`; finx-http-adapters, flow-brokerage,
+flow-contract-notes, flow-ledger-mtf merged in between — zero overlap with rag-service
+files; consumed contracts/llm/config unchanged). Owner directive (2026-07-17):
+**lean ship** — skip the fresh-verifier panel AND the self-check spec read-through;
+trust the implementation; just finish real tasks, run testCommand, rebase, run the
+full repo suite, then PR.
 
-## Status
+## Status — SHIPPED
 
-- Current task: **Task 6 — tests** (next).
+- Current task: **DONE** — all tasks complete, branch pushed, PR open (link below).
 - Tasks completed: scaffold; T1 config+models; T2 embeddings; T3 retriever;
-  T4 generator+prompts; T5 service. Package imports clean; structured-output
-  json_schema generated from `_GroundedOutput` via the frozen `strict_input_schema`
-  (enum inlined, nullable via anyOf, additionalProperties:false, all required).
-- Verifier rounds run: 0.
-- Escalations: none yet (two proposal-vs-frozen discrepancies recorded below; both
-  resolved in favour of the frozen contract without deviating from spec intent —
-  flagged for the team lead in the final report, not blocking).
+  T4 generator+prompts; T5 service; **T6 tests** (from the proposal); T7 ship.
+  Structured-output json_schema generated from `_GroundedOutput` via the frozen
+  `strict_input_schema` (enum inlined, nullable via anyOf, additionalProperties:false,
+  all required).
+- **Verifier rounds run: 0 (waived by the operator's lean-ship directive).**
+- Escalations: none. Two proposal-vs-frozen discrepancies (below) were resolved
+  toward the frozen contract per the proposal's own re-export instruction — settled,
+  not open. The one lossy behavioural mapping (B3 numeric-gap → `low_confidence`)
+  is flagged for the team lead, non-blocking.
+
+## Metrics (final)
+
+- Verifier rounds used: 0 (panel waived by directive). Findings per round: n/a.
+- Escalations: 0.
+- testCommand `pytest tests/rag/`: **35 passed** on the rebased head.
+- Full behavior harness `uv run pytest -q` (repo root, rebased onto 0aef1f7):
+  **297 passed, 1 warning**.
+- Rebase: clean (3 commits replayed, 0 conflicts; 38 commits of main folded under).
+- Note: DeepEval/`/qa` not run — the directive scoped pre-ship to testCommand +
+  the full pytest suite; generation/refusal is covered offline (FakeLLMClient,
+  no live LLM), matching the doneCondition ("without a live LLM in CI").
+
+## T6 — tests authored from the proposal (not the implementation)
+
+- `tests/rag/test_generator.py` + `tests/rag/test_service.py` were the gap: the
+  conftest already shipped `FakeLLMClient`/`FakeRetriever`/`FakeEmbedder`, but no
+  test exercised the generation/refusal half the doneCondition requires. Added 18
+  tests asserting spec-promised behaviour mapped onto the frozen `RagAnswer`:
+  D4 no-match → `no_relevant_context` (short-circuits, no LLM call), B3 numeric-gap
+  → `low_confidence`, C-series → `investment_advice`, prompt-injection →
+  `out_of_scope`; grounded citation happy path; citations filtered to retrieved
+  ids; refusals clear citations; LLM/schema-invalid failures → `RagError(stage="llm")`;
+  sticky-language threaded into generation; `respond` attaches the real
+  `retrieval_context` (list[str]); `search_kb` + `tool_result_text`.
+- Retrieval/RRF/config/embeddings tests were already present (17): pgvector
+  container seeded from the 31-row fixture (skips cleanly w/o Docker), off-DB RRF math.
 
 ## Environment facts (verified this session)
 
