@@ -31,14 +31,18 @@ testCommand: `pytest tests/finx_adapters/`.
       URL+SessionId header/body, RequestFor 0/2 traps, GROUP1 vs Group1,
       LoginId JIFFY/client-code, UserId neuron, With_Exp truthy, Data-not-found
       vs Data-not-available no-data, 401->FinXAuthError, URL never logged)
-- [ ] Task 4 — Go adapter (contract list, per-note download, brokerage)
+- [x] Task 4 — Go adapter (contract list / download / brokerage) (10 tests
+      green: SessionId-header-only + no body SessionId (FLAG A), file_id keying,
+      204 no-data, Session-prefixed download returning validated bytes, hybrid
+      brokerage via .NET parser w/ desc verbatim, file_id never logged).
+      Refactor: single auth-mapping site raise_for_auth() in base.py; dotnet re-uses it.
 - [ ] Task 5 — MIS adapter (CML)
 - [ ] Task 6 — MF profile adapter (first-name-only PII discipline)
 - [ ] Task 7 — COTI holdings adapter
 - [ ] Task 8 — facade + package exports
 - [ ] Task 9 — consolidated redaction/no-leak tests + doneCondition sweep
 
-Current task: Task 4.
+Current task: Task 5.
 
 ## Verifier rounds
 

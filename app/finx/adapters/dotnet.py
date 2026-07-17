@@ -16,10 +16,9 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from app.finx.adapters.base import HttpTransport, endpoint_url
+from app.finx.adapters.base import HttpTransport, endpoint_url, raise_for_auth
 from app.finx.adapters.credentials import FinXCredentials
-from app.finx.adapters.errors import FinXAuthError
-from app.finx.envelopes import Outcome, ParsedEnvelope, parse_dotnet_envelope
+from app.finx.envelopes import ParsedEnvelope, parse_dotnet_envelope
 from app.finx.models import (
     ENDPOINTS,
     EndpointSpec,
@@ -50,11 +49,9 @@ class DotNetMiddlewareAdapterImpl:
             headers={"authorization": session_id},
             json=req.model_dump(),
         )
-        env = parse_dotnet_envelope(body, http_status=status)
-        if env.outcome is Outcome.auth_error:
-            # HTTP 401 — stale vs garbage SessionId indistinguishable (documented).
-            raise FinXAuthError("finx auth failed", reason=env.reason)
-        return env
+        # HTTP 401 -> FinXAuthError (stale vs garbage SessionId indistinguishable,
+        # documented); success/no_data/error returned as a typed envelope.
+        return raise_for_auth(parse_dotnet_envelope(body, http_status=status))
 
     # --- [FILE] delivery endpoints -----------------------------------------
 

@@ -26,10 +26,22 @@ from dataclasses import dataclass
 
 import httpx
 
-from app.finx.adapters.errors import FinXTimeoutError, FinXTransportError
+from app.finx.adapters.errors import FinXAuthError, FinXTimeoutError, FinXTransportError
+from app.finx.envelopes import Outcome, ParsedEnvelope
 from app.finx.models import EndpointSpec
 
 logger = logging.getLogger("app.finx.adapters")
+
+
+def raise_for_auth(env: ParsedEnvelope) -> ParsedEnvelope:
+    """The single auth-mapping site: an ``auth_error`` outcome (HTTP 401, detected
+    by the frozen parsers on ``http_status``) becomes a raised
+    :class:`FinXAuthError`. Every JSON-envelope adapter routes through this so
+    401 handling is identical across backends. Returns the envelope unchanged for
+    any non-auth outcome (success / no_data / error are returned, never raised)."""
+    if env.outcome is Outcome.auth_error:
+        raise FinXAuthError("finx auth failed", reason=env.reason)
+    return env
 
 
 @dataclass(frozen=True)
