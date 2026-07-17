@@ -71,10 +71,15 @@ def test_registry_register_and_get_roundtrip(tmp_path):
             del sys.modules[mod]
 
 
-def test_app_flows_registry_is_generic_and_empty_until_flows_ship():
-    # No flow modules exist in app/flows yet — discovery yields an empty registry
-    # and the __init__ needs no per-flow edit.
+def test_app_flows_registry_is_generic_discovery_over_the_package():
+    # The app/flows registry is populated PURELY by discovery: dropping an
+    # app/flows/<name>.py with a module-level FLOW registers it with no edit to
+    # __init__.py. So registry() must mirror discover() over the real package,
+    # whatever flow modules have shipped to main — the genericity guarantee, not a
+    # hand-maintained list. (An intent whose module is absent stays unregistered.)
     reg = flows.registry(refresh=True)
     assert isinstance(reg, FlowRegistry)
-    assert reg.intents() == set()
-    assert flows.get_flow(Intent.report_pnl) is None
+    expected = discover(flows)
+    assert reg.intents() == set(expected)
+    for intent in expected:
+        assert flows.get_flow(intent) is not None
