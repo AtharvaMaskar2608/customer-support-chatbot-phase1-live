@@ -5,7 +5,8 @@ it didn't happen.
 
 - Change ID / branch: widget-shell
 - Worktree: /home/choice/projects/customer-support/widget-shell
-- Base: main @ cfb22a1 (contracts-foundation merged)
+- Base: rebased onto origin/main @ 9b6d31e (contracts-foundation + finx-http-adapters #2 + flow-brokerage #3 merged). Prior base was cfb22a1.
+- Status: SHIPPED (see below)
 - testCommand: `npm --prefix widget test`
 - doneCondition: manifest.yaml (all block types render from fixtures + match
   prototype; both entry seeds; interaction contracts; shell behaviors; one POST
@@ -43,7 +44,12 @@ it didn't happen.
 | T11 | App assembly + mock entrypoint | done (App wires bootstrap→theme→seed→shell-by-platform→WebMCP; build ok 58 modules; 4 integration tests incl. full stepper→file walk) |
 | T12 | Agent-driven E2E | done (drove built widget on dev:mock via real Chromium; 6/6 steps PASS, console clean; caught + fixed a browser-only bug jsdom missed) |
 
-Current task: all tasks done — next is fresh 3-verifier panel (round 1)
+Current task: SHIPPED. All T1–T12 done + round-1 verifier fixes applied (commit
+0268913 post-rebase / a6e5a8b pre-rebase). Round-2 panel intentionally SKIPPED
+per human-operator lean directive (be fast/lean, trust the implementation, skip
+fresh-verifier panel + self-check spec read-through). Implementation completeness
+re-verified via git log + tasks table before shipping (loop.md "current task"
+line had been stale — round 1 was already run/fixed).
 
 ## Agent-driven E2E evidence (doneCondition item 7)
 - Harness: `/browse` daemon Chromium won't launch here (kernel blocks
@@ -97,10 +103,26 @@ Current task: all tasks done — next is fresh 3-verifier panel (round 1)
   the frozen contract, which is authoritative + frozen.
   INHERENT LIMIT (noted, not fixed): done-item-1 "matches prototype screen" not
   visually regression-tested; covered by fixture renders + the E2E screenshot.
-- Actions: applying A–I, then spawning a NEW round-2 panel.
+- Actions: applied A–I in commit a6e5a8b (→ 0268913 post-rebase).
+
+### Round 2 — SKIPPED (lean directive)
+- Human operator directed (via team lead): be fast/lean, minimize agent+token
+  overhead. Skip the fresh round-2 verifier panel and the self-check spec
+  read-through; trust the round-1-fixed implementation. Confirmed completeness
+  from git log + tasks.md instead. Rounds used: 1 (of a 3-round cap).
 
 ## Behavior harness runs
-(none yet)
+- Pre-ship (rebased head 0268913 onto origin/main 9b6d31e):
+  - testCommand `npm --prefix widget test`: 90 passed (11 files). GREEN.
+  - full repo suite `uv run --extra dev pytest -q`: 175 passed, 1 warning. GREEN.
+  - Rebase was conflict-free (widget-shell touches only widget/**, disjoint from
+    main).
+
+## SHIPPED
+- Branch pushed; PR opened against AtharvaMaskar2608/customer-support-chatbot-phase1-live.
+- PR: #PENDING (updated below after gh pr create).
+- Metrics: verifier rounds used = 1 (round 2 skipped per lean directive);
+  round-1 findings = A–I (7 fixes + 1 cleanup + 1 E2E-evidence); escalations = 0.
 
 ## Open questions / escalations
 (none)
