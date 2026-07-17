@@ -56,7 +56,7 @@ testCommand: `pytest tests/finx_adapters/`.
       log sink while endpoint diagnostics still logged; profile PII never in payload).
       Full testCommand: 72 passed. Full repo suite: 154 passed.
 
-Current task: round-2 panel done (2 fixes applied); spawning round-3 fresh panel.
+Current task: converged on round 3 (0 divergences). Next: rebase + full harness.
 
 ## Verifier rounds
 
@@ -123,6 +123,29 @@ FinX method is async, intended). Edge-cases panel raised 4 new low/uncertain ite
 Findings requiring a code change: 2 (401-before-parse, download 5xx). Full suite:
 78 passed. -> new panel (round 3).
 
+### Round 3 (3 fresh verifiers, new panel, post round-2 fixes) — CONVERGED
+
+ZERO confirmed divergences. Spec-compliance: "no functional divergence in any of
+the 12 endpoints." Contract-surface: CLEAN, no boundary violations, no
+spec-suspect. Edge-cases raised 4 items, none confirmed by majority:
+
+- **NO CHANGE: download 401 -> FinXAuthError vs fetch 401 -> FinXFetchError** — the
+  proposal's general rule is "All 401s raise a typed FinXAuthError"; the per-note
+  download is an AUTHENTICATED call (`authorization: Session <SessionId>`), so a
+  401 is an auth failure -> FinXAuthError (correct). fetch_report_bytes handles
+  UNAUTHENTICATED report URLs where any non-200 is a delivery failure. Different
+  contexts, both spec-correct.
+- **NO CHANGE: timeouts are retried once** — rounds 1 AND 2 edge verifiers both
+  explicitly blessed the single-retry-on-timeout as compliant with "at most one
+  bounded retry"; round 3 flagged it "uncertain, within a loose reading". Majority
+  across the three panels: compliant. Code honors "at most one retry" + "timeouts
+  raise FinXTimeoutError".
+- **NO CHANGE: empty-204 / xlsx magic / async signature** — frozen-contract,
+  proposal-prose, and intended-async respectively; adjudicated in rounds 1-2.
+
+Exit condition met: a fresh panel returned zero confirmed divergences. Proceeding
+to pre-ship integration check (rebase + full behavior harness).
+
 ## Open questions / carried items
 
 - [CONFIRM] Ledger `Margin:1`=MTF and `RequestFor:1` email are unverified in the
@@ -133,6 +156,11 @@ Findings requiring a code change: 2 (401-before-parse, download 5xx). Full suite
   data; no download adapter provided (correct per spec).
 - Holdings + get-profile are transport-complete but their flows are
   BLOCKED/Phase-2 respectively (correct per spec).
+- **ESCALATE (non-blocking, spec-suspect) to team lead:** proposal PROSE says xlsx
+  magic is `PK\x03\x04` (What-Changes bullet + Byte-fetch-targets line), but the
+  frozen `ByteValidation.excel_magic = b"PK"` AND the doneCondition both say `PK`.
+  Code correctly consumes the frozen config. Recommend the proposal prose be
+  corrected to `PK` for consistency; no code change. Flagged by 2 verifiers/round.
 - **HANDOFF to flow-pnl / flow-ledger-mtf / flow-tax-report:** the email-delivery
   (`RequestFor` email) confirmation payload contains the uppercased registered
   email; the FLOW must mask it (`san***@…`) before display. The adapter returns
@@ -140,4 +168,12 @@ Findings requiring a code change: 2 (401-before-parse, download 5xx). Full suite
 
 ## Metrics
 
-Verifier rounds used: 0. Findings per round: n/a. Escalations: 0.
+Verifier rounds used: 3 (converged on round 3).
+Findings per round (confirmed code changes / total items):
+- Round 1: 1 change (download non-200 guard) / ~8 items (rest adjudicated no-change).
+- Round 2: 2 changes (401-before-parse, download 5xx->FetchError) / 4 edge items.
+- Round 3: 0 changes / 4 edge items (all no-change, majority-compliant) — CONVERGED.
+Escalations to team lead: 0 blocking. 1 non-blocking spec-suspect note (xlsx magic
+proposal-prose vs frozen config) carried in the PR + this file.
+Test counts: testCommand (pytest tests/finx_adapters/) 78 passed; full repo suite
+pre-rebase 154 -> (see integration check below after rebase).
