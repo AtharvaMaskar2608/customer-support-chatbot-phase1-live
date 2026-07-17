@@ -25,7 +25,7 @@ Worktree lead loop state. If it isn't here, it didn't happen.
 - [x] T5 — response + error handling (`delivery_kind` via frozen FileDeliveryResponse; `is_session_expiry` for 401; `error_code_for_envelope` no_data→E-NODATA / error→E-UNKNOWN; `render_error` emits frozen ERROR_COPY incl. E-FETCH second line; `fetch_retry_notice`).
 - [x] T6 — `tests/flows/test_pnl.py` (22 tests, fake-driver). Fixed one test-only false positive ("Comm" is a substring of the label "Commodity"; assert the real leak tokens "Derv"/"Cash" + payload segment values instead). testCommand `pytest tests/flows/test_pnl.py` = 22 passed. Full `uv run pytest` = 104 passed (82 baseline + 22).
 - [~] Verify: fresh spec-verifier panel — SKIPPED per human-operator lean directive (cut agent/token overhead; trust implementation, no self-check read-through). Not a convergence claim; 0 verifier rounds run.
-- [x] Ship: rebased onto latest origin/main (b727d53, incl. PR #2/#3/#4/#5), full harness green, PR #7 opened.
+- [x] Ship: rebased onto latest origin/main (b727d53, incl. PR #2/#3/#4/#5), full harness green, PR #12 opened.
 
 ## Current task
 SHIPPED — see Ship section below.
@@ -38,7 +38,7 @@ None. Lean no-panel directive from human operator: skip fresh-verifier panel AND
 - [INTEGRATION] Engine `FlowDefinition` interface not frozen — Wave 2 wires this flow's builders into the real engine; masking/error-render/calendar may dedup against engine's generic versions (no file collision).
 
 ## Ship
-- Status: **SHIPPED** — PR #7 (https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/7)
+- Status: **SHIPPED** — PR #12 (https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/12)
 - Rebased flow-pnl (fork @ cfb22a1) onto latest origin/main @ b727d53 (contains PR #2 finx-http-adapters, PR #3 flow-brokerage, PR #4 conversation-orchestrator, PR #5 flow-contract-notes). Clean rebase — only shared file `tests/flows/__init__.py` (identical empty add); `app/flows/pnl.py` / `tests/flows/test_pnl.py` disjoint from sibling flow files.
 - testCommand `uv run pytest tests/flows/test_pnl.py` = 22 passed on rebased head.
 - Full behavior harness `uv run pytest` = **252 passed** on the b727d53-rebased head (230 integrated baseline from PR #2/#3/#4/#5 + 22 from this change).
