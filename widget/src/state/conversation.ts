@@ -85,6 +85,14 @@ export class Conversation {
     return this.turn({});
   }
 
+  /** "Start over" — drop the block log + thread and re-seed a fresh session. */
+  reset(): Promise<void> {
+    this.snap = EMPTY;
+    this.requestTurn = 0;
+    this.listeners.forEach((l) => l());
+    return this.seed();
+  }
+
   send(text: string): Promise<void> {
     return this.turn({ message: text });
   }
