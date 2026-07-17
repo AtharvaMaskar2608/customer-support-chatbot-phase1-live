@@ -21,13 +21,15 @@ export function isOutOfRange(day: string, minDate: string, maxDate: string, disa
   });
 }
 
-/** Days more than `maxRangeDays` after a chosen range-start are disabled. */
+/** Days more than `maxRangeDays` AFTER a chosen range-start are disabled. Days
+ *  before the start stay enabled so tapping one re-picks the start (otherwise
+ *  a mis-tapped start would be a dead end). */
 export function beyondMaxRange(day: string, start: string | null, maxRangeDays: number | null | undefined): boolean {
   if (start == null || maxRangeDays == null) return false;
   const s = new Date(start + 'T00:00:00Z').getTime();
   const d = new Date(day + 'T00:00:00Z').getTime();
   const spanDays = Math.round((d - s) / 86_400_000);
-  return spanDays > maxRangeDays || spanDays < 0;
+  return spanDays > maxRangeDays;
 }
 
 export function CalendarBlock({ block }: { block: CalendarWire }) {

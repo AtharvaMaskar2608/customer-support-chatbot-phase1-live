@@ -142,6 +142,74 @@ describe('note-list pagination', () => {
     expect(monthLabel('Mon, 14 Jul 2026')).toBe('July 2026');
     expect(monthLabel('Fri, 27 Jun 2026')).toBe('June 2026');
   });
+
+  it('uses the server-supplied month_dividers text for section headers', () => {
+    const block: Block = {
+      type: 'note_list_card',
+      page_size: 10,
+      total: 3,
+      month_dividers: ['JULY — server', 'JUNE — server'],
+      rows: [
+        { date_label: 'Mon, 14 Jul 2026', weekday: 'Monday', downloadToken: 't1' },
+        { date_label: 'Wed, 9 Jul 2026', weekday: 'Wednesday', downloadToken: 't2' },
+        { date_label: 'Fri, 27 Jun 2026', weekday: 'Friday', downloadToken: 't3' },
+      ],
+    };
+    renderBlock(block);
+    expect(screen.getByText('JULY — server')).toBeInTheDocument();
+    expect(screen.getByText('JUNE — server')).toBeInTheDocument();
+    expect(screen.queryByText('July 2026')).not.toBeInTheDocument();
+  });
+
+  it('does not emit a divider per row for non-standard date labels', () => {
+    const block: Block = {
+      type: 'note_list_card',
+      page_size: 10,
+      total: 3,
+      rows: [
+        { date_label: '2026-07-14', weekday: 'Monday', downloadToken: 't1' },
+        { date_label: '2026-07-09', weekday: 'Wednesday', downloadToken: 't2' },
+        { date_label: '2026-06-27', weekday: 'Friday', downloadToken: 't3' },
+      ],
+    };
+    const { container } = renderBlock(block);
+    // ISO labels don't parse to a month key -> at most one divider, never one per row
+    expect(container.querySelectorAll('.nl-div').length).toBeLessThanOrEqual(1);
+  });
+
+  it('page_size <= 0 does not deadlock (falls back to a usable page size)', () => {
+    const block: Block = {
+      type: 'note_list_card',
+      page_size: 0,
+      total: 3,
+      rows: [
+        { date_label: 'Mon, 14 Jul 2026', weekday: 'Monday', downloadToken: 't1' },
+        { date_label: 'Wed, 9 Jul 2026', weekday: 'Wednesday', downloadToken: 't2' },
+        { date_label: 'Fri, 27 Jun 2026', weekday: 'Friday', downloadToken: 't3' },
+      ],
+    };
+    renderBlock(block);
+    expect(screen.getAllByRole('button', { name: /^Download / })).toHaveLength(3);
+    expect(screen.queryByText(/Show more/)).not.toBeInTheDocument();
+  });
+});
+
+describe('calendar range mode reset', () => {
+  it('tapping an earlier day re-picks the range start instead of dead-ending', async () => {
+    const dispatch = vi.fn();
+    const cal: CalendarBlock = {
+      type: 'calendar', min_date: '2026-07-01', max_date: '2026-07-31', max_range_days: 30,
+      disabled_ranges: [],
+    };
+    renderBlock(cal, dispatch);
+    await userEvent.click(screen.getByRole('button', { name: '2026-07-15' })); // first start
+    const earlier = screen.getByRole('button', { name: '2026-07-05' });
+    expect(earlier).not.toBeDisabled(); // earlier days stay enabled
+    await userEvent.click(earlier); // re-pick start earlier
+    expect(dispatch).not.toHaveBeenCalled(); // still just a start, no range yet
+    await userEvent.click(screen.getByRole('button', { name: '2026-07-10' })); // end
+    expect(dispatch).toHaveBeenCalledWith({ kind: 'select_param', payload: { step: 'date_range', from: '2026-07-05', to: '2026-07-10' } });
+  });
 });
 
 // ---- 4. Data-card renders arbitrary dynamic groups ------------------------

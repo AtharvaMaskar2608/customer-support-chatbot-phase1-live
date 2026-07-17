@@ -73,7 +73,31 @@ Current task: all tasks done — next is fresh 3-verifier panel (round 1)
   only the real-browser E2E exposed it. Fix committed.
 
 ## Verifier rounds
-(none yet — about to spawn round 1)
+
+### Round 1 (3 fresh verifiers: compliance / edge-cases / contract-surface)
+- contract-surface: NO DIVERGENCES (types mirror frozen schema; 11-block union
+  exact; config_slice turn-0-only; single network surface; frozen contract +
+  app/** untouched).
+- Findings triaged:
+  FIX (real): (A) note-list ignored server `month_dividers`, synthesized via
+  regex → could emit a divider per row for non-DDD-YYYY labels [MEDIUM, both
+  verifiers]; (B) AppSheet swipe-down `onDismiss` not wired in App → dead
+  gesture [MEDIUM]; (C) `page_size <= 0` deadlocks pagination [LOW]; (D) calendar
+  range-mode "reset start earlier" branch unreachable (earlier days disabled)
+  [LOW]; (E) no-web-font grep test only scanned widget/src not index.html [LOW];
+  (F) >5s Generating verified at state level, not render level [LOW]; (G) dead
+  duplicate REPORTS_PLACEHOLDERS in mock/fixtures/config.ts [cleanup]; (I) E2E
+  evidence prose-only → commit a reproducible driver + README [LOW].
+  SPEC-PROSE vs FROZEN-CONTRACT (frozen contract governs; documented, escalated
+  to team lead, NOT code defects): placeholder pool "server-supplied" but
+  ConfigSlice has no placeholder field; error `severity` "server-supplied" but
+  ErrorBubble has no severity field (derived from code); transport-error copy
+  "server-supplied" but ConfigSlice has no such field; calendar range-vs-single
+  inferred from `max_range_days` (schema has no `mode`). Implementation follows
+  the frozen contract, which is authoritative + frozen.
+  INHERENT LIMIT (noted, not fixed): done-item-1 "matches prototype screen" not
+  visually regression-tested; covered by fixture renders + the E2E screenshot.
+- Actions: applying A–I, then spawning a NEW round-2 panel.
 
 ## Behavior harness runs
 (none yet)

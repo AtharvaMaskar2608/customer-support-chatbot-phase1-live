@@ -31,10 +31,14 @@ describe('theme resolution', () => {
   });
 });
 
-// Walk every source file under widget/src + tokens to prove no web font is
-// loaded (spec §8.1: system font stack only).
+// Walk the shipped widget/ surface (src, mock, index.html, config) to prove no
+// web font is loaded anywhere — index.html included (spec §8.1: system font
+// stack only). The test/ dir is skipped: it ships nothing and this very file
+// contains the detection pattern as a string literal.
+const SKIP = new Set(['node_modules', 'dist', '.git', 'test']);
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
+    if (SKIP.has(name)) return [];
     const p = join(dir, name);
     return statSync(p).isDirectory() ? walk(p) : [p];
   });
@@ -42,7 +46,7 @@ function walk(dir: string): string[] {
 
 describe('no web font (spec §8.1)', () => {
   it('never references @font-face, a font CDN, or a font <link>', () => {
-    const root = join(__dirname, '..', 'src');
+    const root = join(__dirname, '..');
     const offenders: string[] = [];
     for (const file of walk(root)) {
       if (!/\.(css|ts|tsx|html)$/.test(file)) continue;

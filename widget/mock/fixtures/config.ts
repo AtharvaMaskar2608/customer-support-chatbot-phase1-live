@@ -49,9 +49,3 @@ export function buildConfigSlice(surface: EntrySurface, clientId: string, hour?:
   }
   return { greeting: supportGreeting(clientId, hour), entry_chips: supportChips(), limits: LIMITS, whats_new: WHATS_NEW };
 }
-
-/** Reports 1b rotating input placeholder pool (long-tail sub-types 5–11). */
-export const REPORTS_PLACEHOLDERS = [
-  'or type: CML, Contract Note, Capital Gain, Global…',
-  'or type: MTF Ledger, Tax P&L, Brokerage…',
-];

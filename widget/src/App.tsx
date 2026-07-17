@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { bootstrap } from './bootstrap';
 import { useTheme } from './theme/useTheme';
 import { useNewConversation, useConversation } from './state/conversation';
@@ -20,12 +20,12 @@ import './styles/widget.css';
  * shell by platform (web floating frame vs. app WebView sheet). WebMCP page
  * tools register through the same Conversation dispatch the UI uses.
  */
-export function App() {
+export function App({ slowMs }: { slowMs?: number } = {}) {
   const boot = useRef(bootstrap()).current;
   const { session, themeParam } = boot;
   useTheme(themeParam);
 
-  const conversation = useNewConversation(session);
+  const conversation = useNewConversation(session, slowMs != null ? { slowMs } : undefined);
   const snap = useConversation(conversation);
 
   useEffect(() => {
@@ -52,8 +52,21 @@ export function App() {
     return registerPageTools(bridge);
   }, [conversation]);
 
+  const [dismissed, setDismissed] = useState(false);
   const onSend = (text: string) => void conversation.send(text);
   const onStartOver = () => void conversation.reset();
+  // App WebView dismiss: notify the native host (if embedded) and hide the
+  // sheet. The host owns re-opening the widget in a real WebView.
+  const onDismiss = () => {
+    try {
+      window.parent?.postMessage({ type: 'jini:dismiss' }, '*');
+    } catch {
+      /* no host / cross-origin — hiding locally is enough */
+    }
+    setDismissed(true);
+  };
+
+  if (dismissed) return null;
 
   const body = (
     <div className="jini-widget">
@@ -77,7 +90,7 @@ export function App() {
 
   const shell: ReactNode =
     session.platform === 'webview' ? (
-      <AppSheet>{body}</AppSheet>
+      <AppSheet onDismiss={onDismiss}>{body}</AppSheet>
     ) : (
       <WidgetFrame messageCount={snap.blocks.length}>{body}</WidgetFrame>
     );
