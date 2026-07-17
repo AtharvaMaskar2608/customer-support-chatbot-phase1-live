@@ -15,6 +15,7 @@ from app.engine.cache import SelectionCache
 from app.engine.delivery import deliver, mask_email
 from app.engine.errors import map_error
 from app.engine.events import (
+    Confirm,
     DateSelected,
     FlowEvent,
     FollowUp,
@@ -65,6 +66,7 @@ __all__ = [
     "Resend",
     "ReopenStep",
     "FollowUp",
+    "Confirm",
     # faults
     "FinXAuthError",
     "FinXFetchError",

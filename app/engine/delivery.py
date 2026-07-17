@@ -23,12 +23,18 @@ from app.contracts.wire import Bubble, ChipRow, ErrorBubble, FileCard, RenderBlo
 
 from app.engine.chips import chip_for_label
 from app.engine.errors import map_error
-from app.engine.faults import FinXFetchError, FinXTimeoutError
+from app.engine.faults import (
+    FinXAuthError,
+    FinXFetchError,
+    FinXTimeoutError,
+    FinXTransportError,
+)
 from app.engine.ports import (
     EmailResult,
     EngineContext,
     FlowDefinition,
     GenerationError,
+    GenerationResult,
     NoData,
     ReportBytes,
     ReportUrl,
@@ -103,27 +109,50 @@ def _email_blocks(
     return [Bubble(text=EMAIL_CONFIRMATION.replace("{masked_email}", masked))]
 
 
+#: Typed transport faults the adapter binding may raise (from generation OR the
+#: byte-fetch GET). The engine maps them to the taxonomy; FinXFetchError alone is
+#: retryable (fresh generation → fresh URL → refetch).
+_NONRETRYABLE_FAULTS = (FinXTimeoutError, FinXAuthError, FinXTransportError)
+
+
+async def _safe_generate(
+    flow: FlowDefinition, params: ExtractedParams, ctx: EngineContext
+) -> GenerationResult | ErrorBubble:
+    """Invoke the flow's adapter binding, mapping any RAISED typed fault to an error
+    bubble (FinXTimeoutError → E-TIMEOUT, auth/transport → E-UNKNOWN, FinXFetchError
+    → E-FETCH). In-band results pass through untouched."""
+    try:
+        return await flow.generate(params, ctx)
+    except FinXFetchError as exc:
+        return map_error(exc, flow, ctx=ctx, params=params)
+    except _NONRETRYABLE_FAULTS as exc:
+        return map_error(exc, flow, ctx=ctx, params=params)
+
+
 async def _fetch_with_retry(
     flow: FlowDefinition, params: ExtractedParams, ctx: EngineContext, result: ReportUrl
 ) -> bytes | ErrorBubble:
     """Fetch the report bytes, retrying on ``FinXFetchError`` up to the frozen
     ``ByteValidation.silent_retries`` count (default 1 → exactly one silent retry:
     fresh generation → fresh URL → refetch) before surfacing E-FETCH. A
-    ``FinXTimeoutError`` is never retried (→ E-TIMEOUT). The byte/magic validation
-    that raises these lives in the injected fetch primitive, not here."""
+    ``FinXTimeoutError`` → E-TIMEOUT and an auth/transport fault → E-UNKNOWN are
+    never retried. The byte/magic validation that raises these lives in the injected
+    fetch primitive, not here."""
     max_retries = ctx.byte_validation.silent_retries
     current = result
     attempt = 0
     while True:
         try:
             return await ctx.byte_fetcher(current.url, expected_format=current.report_format)
-        except FinXTimeoutError as exc:
+        except _NONRETRYABLE_FAULTS as exc:
             return map_error(exc, flow, ctx=ctx, params=params)
         except FinXFetchError as exc:
             if attempt >= max_retries:
                 return map_error(exc, flow, ctx=ctx, params=params)  # E-FETCH
             attempt += 1
-            regen = await flow.generate(params, ctx)  # fresh generation → fresh URL
+            regen = await _safe_generate(flow, params, ctx)  # fresh generation → fresh URL
+            if isinstance(regen, ErrorBubble):
+                return regen
             if isinstance(regen, ReportBytes):
                 return regen.data
             if not isinstance(regen, ReportUrl):
@@ -149,8 +178,10 @@ async def deliver(
             fmt = _resolve_format(params, flow)
             return [_file_card(flow, params, fmt, cached)]
 
-    result = await flow.generate(params, ctx)
+    result = await _safe_generate(flow, params, ctx)
 
+    if isinstance(result, ErrorBubble):
+        return [result]  # a typed fault was raised during generation
     if isinstance(result, (NoData, GenerationError)):
         return [map_error(result, flow, ctx=ctx, params=params)]
     if isinstance(result, EmailResult):

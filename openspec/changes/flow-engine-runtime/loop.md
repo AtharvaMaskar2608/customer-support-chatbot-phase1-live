@@ -104,6 +104,24 @@ explicit parallel-build allowance. Triage:
   surfaced under D1 non-streaming; proposal says the surfaced bubble is the verbatim
   second line. Following the proposal. [see carried items]
 
+### Round 2 (3 fresh panels, post round-1 fixes)
+Result: round-1 fixes confirmed good (silent_retries config-driven; retry counters
+correct at 0/1/2). No blocking divergences. Two NEW actionable findings fixed:
+- FIX: typed FinX faults RAISED by the adapter binding (during generation, or a
+  401/5xx on the report-URL GET) escaped `deliver` uncaught — the proposal's
+  "FinXTimeoutError ⇒ E-TIMEOUT / any other non-success ⇒ E-UNKNOWN" was
+  unreachable from the delivery path. ADDED `_safe_generate` + broadened the fetch
+  catch to FinXAuthError/FinXTransportError → all typed faults now map to the
+  taxonomy (delivery.py). Tests: generation-raised timeout/auth/transport + fetch
+  auth/transport → E-TIMEOUT/E-UNKNOWN.
+- FIX: a `StepKind.confirm` step could never be completed (no event marked it done)
+  → any flow with the AY→FY confirm step would stall. ADDED a `Confirm` event +
+  `_handle_confirm` in the executor. Test: [fy, confirm, generate] progresses on
+  Confirm.
+- KEEP/CARRY: remaining items are the same indicative-signature / no-frozen-copy /
+  spec-tension items from round 1 (unchanged stance). EC-12 fires on any partial
+  (frozen copy is direction-specific — emitted verbatim as required).
+
 ## Open questions / carried items
 - [SEAM] finx-http-adapters must re-export `FinXFetchError`/`FinXTimeoutError`/
   `FinXAuthError`/`FinXTransportError` at `app.finx.adapters` top level (engine

@@ -9,7 +9,7 @@ from app.contracts.flow import DateWindow, StepKind, StepState
 from app.contracts.router import Delivery, ExtractedParams, Intent, Segment
 from app.contracts.wire import Calendar, ChipActionKind, ConversationState, ErrorBubble, FileCard, StepperCard
 
-from app.engine.events import DateSelected, FollowUp, ParamSelected, ReopenStep, Resend
+from app.engine.events import Confirm, DateSelected, FollowUp, ParamSelected, ReopenStep, Resend
 from app.engine.executor import advance
 from app.engine.ports import ReportUrl
 from tests.engine.conftest import FakeByteFetcher, FakeFlow, make_ctx, start_state
@@ -147,3 +147,29 @@ async def test_fy_in_window_delivers():
     assert r.conversation_state is ConversationState.delivered
     assert any(isinstance(b, FileCard) for b in r.blocks)
     assert flow.generate_calls == 1 and ctx.byte_fetcher.calls == 1
+
+
+async def test_confirm_step_can_be_completed_and_flow_progresses():
+    # A flow with an AY→FY confirm step: it stalls on the confirm step until a
+    # Confirm event, then proceeds to generation.
+    flow = FakeFlow(
+        intent=Intent.report_tax,
+        title="Tax Report",
+        window=DateWindow(fy_based=True),
+        step_specs=[("fy", StepKind.fy), ("confirm", StepKind.confirm), ("gen", StepKind.generate)],
+        generate_results=[ReportUrl("u")],
+    )
+    ctx = make_ctx(fetcher=FakeByteFetcher([PDF]))
+    state = start_state(flow)
+
+    # Select the FY → the confirm step becomes active; still collecting, no delivery.
+    r1 = await advance(state, ParamSelected(ExtractedParams(fy="2024-2025")), flow, ctx=ctx)
+    assert r1.conversation_state is ConversationState.collecting
+    assert r1.state.current_step is StepKind.confirm
+    assert flow.generate_calls == 0
+
+    # Confirm → progresses to generation and delivers.
+    r2 = await advance(r1.state, Confirm(), flow, ctx=ctx)
+    assert r2.conversation_state is ConversationState.delivered
+    assert any(isinstance(b, FileCard) for b in r2.blocks)
+    assert flow.generate_calls == 1

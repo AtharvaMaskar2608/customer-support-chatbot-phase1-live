@@ -51,5 +51,11 @@ class FollowUp:
     resolved: bool = False
 
 
+@dataclass(frozen=True)
+class Confirm:
+    """Complete the active ``confirm`` step (e.g. the AY→FY confirmation) so the flow
+    can progress. Marks the active confirm step done and advances."""
+
+
 #: The events ``advance`` accepts.
-FlowEvent = ParamSelected | DateSelected | Resend | ReopenStep | FollowUp
+FlowEvent = ParamSelected | DateSelected | Resend | ReopenStep | FollowUp | Confirm

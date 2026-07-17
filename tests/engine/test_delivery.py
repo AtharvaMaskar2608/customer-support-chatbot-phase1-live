@@ -11,7 +11,7 @@ from app.contracts.wire import Bubble, ChipRow, ErrorBubble, FileCard
 
 from app.engine.cache import SelectionCache
 from app.engine.delivery import deliver, mask_email
-from app.engine.faults import FinXFetchError, FinXTimeoutError
+from app.engine.faults import FinXAuthError, FinXFetchError, FinXTimeoutError, FinXTransportError
 from app.engine.ports import EmailResult, NoData, ReportBytes, ReportUrl
 from tests.engine.conftest import FakeByteFetcher, FakeFlow, make_ctx
 
@@ -82,6 +82,29 @@ async def test_timeout_maps_to_e_timeout_without_retry():
     blocks = await deliver(flow, PARAMS, make_ctx(fetcher=fetcher))
     assert isinstance(blocks[0], ErrorBubble) and blocks[0].code is ErrorCode.E_TIMEOUT
     assert fetcher.calls == 1 and flow.generate_calls == 1  # no retry on timeout
+
+
+async def test_fault_raised_during_generation_is_mapped_not_uncaught():
+    # A timeout/auth/transport fault raised by the adapter binding at generation
+    # must route through the taxonomy, not crash the turn.
+    for fault, code in (
+        (FinXTimeoutError("gen slow"), ErrorCode.E_TIMEOUT),
+        (FinXAuthError("401 on generate"), ErrorCode.E_UNKNOWN),
+        (FinXTransportError("502 on generate"), ErrorCode.E_UNKNOWN),
+    ):
+        flow = _pnl(generate_results=[fault])
+        blocks = await deliver(flow, PARAMS, make_ctx(fetcher=FakeByteFetcher([])))
+        assert isinstance(blocks[0], ErrorBubble) and blocks[0].code is code
+
+
+async def test_auth_and_transport_faults_on_fetch_map_to_e_unknown():
+    # E.g. a 401 on an expired signed report URL, or a 5xx — no retry, → E-UNKNOWN.
+    for fault in (FinXAuthError("401 signed-url"), FinXTransportError("503")):
+        flow = _pnl(generate_results=[ReportUrl("u1")])
+        fetcher = FakeByteFetcher([fault])
+        blocks = await deliver(flow, PARAMS, make_ctx(fetcher=fetcher))
+        assert isinstance(blocks[0], ErrorBubble) and blocks[0].code is ErrorCode.E_UNKNOWN
+        assert fetcher.calls == 1 and flow.generate_calls == 1  # not retried
 
 
 async def test_no_data_maps_to_e_nodata():

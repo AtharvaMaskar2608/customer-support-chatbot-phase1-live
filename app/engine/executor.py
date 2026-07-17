@@ -17,6 +17,7 @@ from app.engine.calendar import build_calendar, out_of_range_nudge, validate_ran
 from app.engine.delivery import deliver
 from app.engine.errors import map_error
 from app.engine.events import (
+    Confirm,
     DateSelected,
     FollowUp,
     FlowEvent,
@@ -51,6 +52,8 @@ async def advance(
         return await _generate(state, flow, ctx, resend=True)
     if isinstance(event, ReopenStep):
         return _collecting_result(reopen_step(state, event.step_id), flow, ctx)
+    if isinstance(event, Confirm):
+        return await _handle_confirm(state, flow, ctx)
     if isinstance(event, DateSelected):
         return await _handle_date(state, event, flow, ctx)
     if isinstance(event, ParamSelected):
@@ -75,6 +78,20 @@ def _handle_followup(state, event: FollowUp, flow, ctx) -> FlowStepResult:
                 escalated=True,
             )
     return _collecting_result(state, flow, ctx)
+
+
+async def _handle_confirm(state, flow, ctx) -> FlowStepResult:
+    # Mark the active confirm step done (a confirm step has no backing param), then
+    # progress. If the active step is not a confirm step, this is a no-op re-emit.
+    active = _active_step(state)
+    if active is None or active.kind is not StepKind.confirm:
+        return _collecting_result(state, flow, ctx)
+    steps = [
+        s.model_copy(update={"state": StepState.done}) if s.id == active.id else s
+        for s in state.steps
+    ]
+    state = state.model_copy(update={"steps": steps})
+    return await _progress(state, flow, ctx)
 
 
 async def _handle_param(state, event: ParamSelected, flow, ctx) -> FlowStepResult:
