@@ -57,11 +57,12 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [x] T8 delivery assembly (delivery.py deliver: generate+cache+fetch+retry-once,
       E-FETCH/E-TIMEOUT/E-NODATA/E-UNKNOWN, file-card rename+CML exception+password,
       mask_email, EC-12, resend bypass; test_delivery.py 14 passed)
-- [ ] T9 discovery registry
+- [x] T9 discovery registry (registry.py discover+FlowRegistry; app/flows/__init__.py
+      generic lazy discovery + register/get_flow; test_registry.py 3 passed)
 - [ ] T10 executor + public API
 - [ ] T11 suite green + doneCondition
 
-Current task: T9.
+Current task: T10.
 
 ## Verifier rounds
 (none yet)
