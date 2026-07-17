@@ -41,7 +41,9 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
       test_faults.py 3 passed; `import app.engine` OK with adapters absent)
 - [x] T2 step progression + stepper-edit (steps.py: next_step/reopen_step/
       materialize_steps/build_stepper_card + conftest fakes; test_steps.py 6 passed)
-- [ ] T3 calendar + date-window
+- [x] T3 calendar + date-window (calendar.py: build_calendar hard-disable via
+      bounds, validate_range exact leap-safe clamp, out_of_range_nudge;
+      test_calendar.py 9 passed)
 - [ ] T4 FY resolution
 - [ ] T5 follow-up cap
 - [ ] T6 selection/byte cache
@@ -51,7 +53,7 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [ ] T10 executor + public API
 - [ ] T11 suite green + doneCondition
 
-Current task: T3.
+Current task: T4.
 
 ## Verifier rounds
 (none yet)
