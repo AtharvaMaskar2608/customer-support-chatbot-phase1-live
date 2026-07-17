@@ -23,15 +23,15 @@ Worktree lead loop state. If it isn't here, it didn't happen.
 - [x] T3 — date-window guardrail (`build_calendar` floor/cap; `clamp_end` = start+2y exact incl. leap; `validate_range` → flow nudge copy for the free-text path).
 - [x] T4 — render blocks + copy + masking (segment/date/delivery chip rows w/ customer labels; ack/generating; file card renamed `PnL_<Seg>_<range>.pdf` password PAN; `email_confirmation` masked; `mask_registered_email` → `san***.harsha@gmail.com`; post-delivery chips; scrip-wise DEFERRED).
 - [x] T5 — response + error handling (`delivery_kind` via frozen FileDeliveryResponse; `is_session_expiry` for 401; `error_code_for_envelope` no_data→E-NODATA / error→E-UNKNOWN; `render_error` emits frozen ERROR_COPY incl. E-FETCH second line; `fetch_retry_notice`).
-- [ ] T6 — tests from proposal
+- [x] T6 — `tests/flows/test_pnl.py` (22 tests, fake-driver). Fixed one test-only false positive ("Comm" is a substring of the label "Commodity"; assert the real leak tokens "Derv"/"Cash" + payload segment values instead). testCommand `pytest tests/flows/test_pnl.py` = 22 passed. Full `uv run pytest` = 104 passed (82 baseline + 22).
 - [ ] Verify: fresh spec-verifier panel
 - [ ] Ship: rebase, full harness, PR
 
 ## Current task
-T6 — write tests/flows/test_pnl.py from the proposal.
+Verify — spawn fresh spec-verifier (all three lenses) with proposal dir + `git diff main...flow-pnl`.
 
 ## Verifier rounds
-(none yet)
+(pending round 1)
 
 ## Open questions / integration notes
 - [GAP] Scrip-wise detail post-delivery hand-off deferred (no GetDetailedPNL file endpoint).
