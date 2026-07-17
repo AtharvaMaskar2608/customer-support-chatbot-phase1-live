@@ -135,6 +135,18 @@ async def test_download_401_raises_auth_error(adapter):
 
 
 @respx.mock
+async def test_download_404_raises_fetch_error_not_incidental_magic_pass(adapter):
+    # A 404 error body that happens to start with %PDF above the floor must NOT be
+    # accepted as a valid note — the non-200 guard rejects it before validation.
+    respx.post(DL_URL).mock(
+        return_value=httpx.Response(404, content=b"%PDF-fake-error-page" + b"0" * 2048)
+    )
+    req = ContractNoteDownloadRequest(client_code="C123", file_id="F")
+    with pytest.raises(FinXFetchError):
+        await adapter.download_contract_note(req)
+
+
+@respx.mock
 async def test_brokerage_hybrid_parses_via_dotnet_and_keeps_desc_verbatim(adapter, finx_fixture):
     route = respx.post(BROK_URL).mock(
         return_value=httpx.Response(200, json=finx_fixture("brokerage_hybrid_success"))

@@ -56,11 +56,42 @@ testCommand: `pytest tests/finx_adapters/`.
       log sink while endpoint diagnostics still logged; profile PII never in payload).
       Full testCommand: 72 passed. Full repo suite: 154 passed.
 
-Current task: all 9 tasks done + testCommand green. Next: fresh verifier panel (round 1).
+Current task: round-1 panel done (1 fix applied); spawning round-2 fresh panel.
 
 ## Verifier rounds
 
-(none yet)
+### Round 1 (3 fresh verifiers: spec-compliance / edge-cases / contract-surface)
+
+Zero HARD divergences. All three panels found the endpoint/auth/envelope/field-trap
+mapping, the frozen-interface binding, the filesTouched boundary (only
+app/finx/adapters/** + tests/finx_adapters/** + this change's tasks.md/loop.md),
+and the contract surface CLEAN. Items raised were all low/uncertain/spec-suspect:
+
+- **FIXED (edge #2): `download_contract_note` had no non-200/non-401 guard** — an
+  error body starting with `%PDF` above the floor could pass. Added
+  `status != 200 -> FinXFetchError`, mirroring `fetch_report_bytes`. +1 test.
+- **NO CHANGE (spec-suspect, raised x2): xlsx magic** — proposal prose says
+  `PK\x03\x04`, but the FROZEN `ByteValidation.excel_magic = b"PK"` and the
+  doneCondition also says "PK". Code correctly consumes the frozen config
+  (frozen wins over prose). Non-blocking proposal-prose nit; surfaced to lead.
+- **NO CHANGE (uncertain, raised x2): PNL/Ledger/Tax email-confirmation returned
+  unmasked** — masking is a "before any display" render concern; this change is
+  explicitly "no rendering". Adapter never logs the payload (verified). CARRIED
+  FORWARD as a mandatory handoff: the P&L/Ledger/Tax FLOW changes MUST mask the
+  registered email (`san***@…`) before display (frozen FileDeliveryResponse
+  docstring + EC-12 `{masked_email}`).
+- **NO CHANGE: MIS body-shape auth branch** (frozen parser, read-only; only
+  reachable on HTTP!=401 with body statusCode:401 — a defensible auth signal).
+- **NO CHANGE: Go true-empty-204** — captured fixture always carries a JSON body
+  (StatusCode:204 in body); matches the frozen contract. Speculative empty-204
+  handling would be over-engineering.
+- **NO CHANGE: `sso_jwt=None` sends empty auth header** — degrades to
+  401->FinXAuthError; proposal requires no early guard; orchestrator owns
+  supplying JWT-auth credentials.
+- **NO CHANGE: `fetch_report_bytes` is `async`** — every frozen FinX method is
+  `async def`; the engine awaits it. Intended.
+
+Findings requiring a code change: 1 (download guard). Full suite: 73 passed.
 
 ## Open questions / carried items
 
@@ -72,6 +103,10 @@ Current task: all 9 tasks done + testCommand green. Next: fresh verifier panel (
   data; no download adapter provided (correct per spec).
 - Holdings + get-profile are transport-complete but their flows are
   BLOCKED/Phase-2 respectively (correct per spec).
+- **HANDOFF to flow-pnl / flow-ledger-mtf / flow-tax-report:** the email-delivery
+  (`RequestFor` email) confirmation payload contains the uppercased registered
+  email; the FLOW must mask it (`san***@…`) before display. The adapter returns
+  it raw (server-side, never logged) by design — masking is a render concern.
 
 ## Metrics
 

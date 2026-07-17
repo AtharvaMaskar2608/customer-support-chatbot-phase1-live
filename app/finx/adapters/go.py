@@ -22,7 +22,7 @@ from __future__ import annotations
 from app.contracts.router import ReportFormat
 from app.finx.adapters.base import HttpTransport, endpoint_url, raise_for_auth
 from app.finx.adapters.credentials import FinXCredentials
-from app.finx.adapters.errors import FinXAuthError
+from app.finx.adapters.errors import FinXAuthError, FinXFetchError
 from app.finx.adapters.fetch import validate_report_bytes
 from app.finx.envelopes import ParsedEnvelope, parse_dotnet_envelope, parse_go_envelope
 from app.finx.models import (
@@ -63,6 +63,11 @@ class GoMiddlewareAdapterImpl:
         )
         if status == 401:
             raise FinXAuthError("finx auth failed")
+        if status != 200:
+            # Any other non-success (e.g. 404 for an unknown file_id) is a fetch
+            # failure — mirror fetch_report_bytes' non-200 guard so an error body
+            # cannot slip past on an incidental %PDF magic match.
+            raise FinXFetchError(f"contract-note download returned HTTP {status}")
         # Same size-floor + magic-byte validation as the URL-fetch delivery path.
         return validate_report_bytes(data, ReportFormat.pdf)
 
