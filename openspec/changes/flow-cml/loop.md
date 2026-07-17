@@ -49,19 +49,22 @@ didn't happen.
   this flow stays fully functional + self-tested. Flagged for the team lead.
 
 ## Progress
-- [x] T1 — scaffold: tasks.md + loop.md authored; empty `tests/flows/__init__.py`
-  to be added with the test commit.
-- [ ] T2 — implement `app/flows/cml.py`
-- [ ] T3 — write `tests/flows/test_cml.py`
+- [x] T1 — scaffold: tasks.md + loop.md (commit fd39e6f); empty
+  `tests/flows/__init__.py` added with T3.
+- [x] T2 — implement `app/flows/cml.py` (commit 6763950). Imports clean;
+  `isinstance(FLOW, FlowSpec)` True; `FLOW.intent == Intent.report_cml`.
+- [x] T3 — `tests/flows/test_cml.py` (commit 34c6d9a): 16 tests, all green.
+  `pytest tests/flows/test_cml.py` → 16 passed.
 - [ ] T4 — verify + ship
 
 ## Current task
-T2 — implement `app/flows/cml.py`.
+T4 — fast verify (one fresh spec-verifier, all three lenses) → fix blocking →
+rebase onto origin/main → full `uv run pytest` → push + PR.
 
 ## Verifier rounds
-(none yet)
+(pending — round 1 next)
 
 ## Metrics
 - Verifier rounds used: 0
 - Findings per round: —
-- Escalations: 0 (GAP above noted to team lead, non-blocking)
+- Escalations: 0 (engine↔flow binding GAP above noted for team lead, non-blocking)
