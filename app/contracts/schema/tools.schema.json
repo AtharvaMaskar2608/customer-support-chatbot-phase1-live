@@ -1,0 +1,476 @@
+[
+  {
+    "description": "Fetch the customer's brokerage slab card (rates per segment).",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "name": "get_brokerage_slabs",
+    "strict": true
+  },
+  {
+    "description": "Generate the customer's Client Master List (CML) document.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "name": "get_cml",
+    "strict": true
+  },
+  {
+    "description": "List the customer's contract notes for a date range for per-note download.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "date_range": {
+          "additionalProperties": false,
+          "description": "A ``from``/``to`` date range lifted from an utterance.",
+          "properties": {
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "date_range"
+      ],
+      "type": "object"
+    },
+    "name": "get_contract_notes",
+    "strict": true
+  },
+  {
+    "description": "Fetch the customer's Ledger (or MTF Ledger when mtf=true) for a date range and deliver it in chat or by email.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "date_range": {
+          "additionalProperties": false,
+          "description": "A ``from``/``to`` date range lifted from an utterance.",
+          "properties": {
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "type": "object"
+        },
+        "delivery": {
+          "description": "In-chat delivery vs email.",
+          "enum": [
+            "in_chat",
+            "email"
+          ],
+          "type": "string"
+        },
+        "mtf": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "date_range",
+        "delivery",
+        "mtf"
+      ],
+      "type": "object"
+    },
+    "name": "get_ledger_report",
+    "strict": true
+  },
+  {
+    "description": "Fetch the customer's P&L Statement for a segment and date range and deliver it in chat or by email.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "date_range": {
+          "additionalProperties": false,
+          "description": "A ``from``/``to`` date range lifted from an utterance.",
+          "properties": {
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "to": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "type": "object"
+        },
+        "delivery": {
+          "description": "In-chat delivery vs email.",
+          "enum": [
+            "in_chat",
+            "email"
+          ],
+          "type": "string"
+        },
+        "segment": {
+          "description": "Customer-facing segment. The Segment→API group mapping (Cash/Derv/Comm,\nGrp1/MCX) lives in the FinX layer, NOT in the router contract.",
+          "enum": [
+            "equity",
+            "fno",
+            "commodity"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "segment",
+        "date_range",
+        "delivery"
+      ],
+      "type": "object"
+    },
+    "name": "get_pnl_report",
+    "strict": true
+  },
+  {
+    "description": "Fetch the customer's Tax Report for a financial year as PDF or Excel and deliver it in chat or by email. Capital Gain and Tax-P&L route here.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "delivery": {
+          "description": "In-chat delivery vs email.",
+          "enum": [
+            "in_chat",
+            "email"
+          ],
+          "type": "string"
+        },
+        "fy": {
+          "type": "string"
+        },
+        "report_format": {
+          "enum": [
+            "pdf",
+            "excel"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "fy",
+        "report_format",
+        "delivery"
+      ],
+      "type": "object"
+    },
+    "name": "get_tax_report",
+    "strict": true
+  },
+  {
+    "description": "Look up the status of a previously raised support ticket.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "ticket_ref": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ticket_ref"
+      ],
+      "type": "object"
+    },
+    "name": "get_ticket_status",
+    "strict": true
+  },
+  {
+    "description": "Raise a Freshdesk support ticket for the customer's query.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "client_id": {
+          "type": "string"
+        },
+        "query_type": {
+          "type": "string"
+        },
+        "transcript_ref": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "client_id",
+        "query_type",
+        "transcript_ref"
+      ],
+      "type": "object"
+    },
+    "name": "raise_ticket",
+    "strict": true
+  },
+  {
+    "description": "Classify the user's utterance into an Intent with extracted parameters. The router forces this tool; RouterResult materializes from its input.",
+    "input_schema": {
+      "additionalProperties": false,
+      "description": "The router's complete, frozen output.\n\nMaterialized directly from the API-validated ``route`` tool ``tool_use.input``;\nthe deterministic post-layers (precedence, FY computation, sticky-language)\nrun on this result.",
+      "properties": {
+        "detected_language": {
+          "anyOf": [
+            {
+              "description": "Detected conversation language for the sticky-language rule.",
+              "enum": [
+                "english",
+                "hindi",
+                "hinglish"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "education_line": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "escalate": {
+          "type": "boolean"
+        },
+        "extracted_params": {
+          "additionalProperties": false,
+          "description": "Parameters the router lifts from free text. Every field is optional — the\nflow engine collects the rest via stepper chips.",
+          "properties": {
+            "date_range": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "description": "A ``from``/``to`` date range lifted from an utterance.",
+                  "properties": {
+                    "from": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "to": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "from",
+                    "to"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "delivery": {
+              "anyOf": [
+                {
+                  "description": "In-chat delivery vs email.",
+                  "enum": [
+                    "in_chat",
+                    "email"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "fy": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "report_format": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "pdf",
+                    "excel"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "segment": {
+              "anyOf": [
+                {
+                  "description": "Customer-facing segment. The Segment→API group mapping (Cash/Derv/Comm,\nGrp1/MCX) lives in the FinX layer, NOT in the router contract.",
+                  "enum": [
+                    "equity",
+                    "fno",
+                    "commodity"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "fy",
+            "date_range",
+            "segment",
+            "report_format",
+            "delivery"
+          ],
+          "type": "object"
+        },
+        "follow_up_question": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "intent": {
+          "description": "Every intent the router can classify an utterance into (frozen: exactly 16).\n\nEleven report-flow intents + five non-report intents. ``report_holding`` and\n``report_global_detail`` are classifiable but BLOCKED (no captured\nfile-delivery endpoint) — the orchestrator returns a not-yet-available\nmessage rather than attempting fulfilment.",
+          "enum": [
+            "report_pnl",
+            "report_ledger",
+            "report_mtf_ledger",
+            "report_contract_notes",
+            "report_tax",
+            "report_capital_gain",
+            "report_tax_pnl",
+            "report_cml",
+            "report_brokerage",
+            "report_holding",
+            "report_global_detail",
+            "rag_qa",
+            "raise_ticket",
+            "ticket_status",
+            "call_support",
+            "smalltalk_fallback"
+          ],
+          "type": "string"
+        },
+        "needs_confirmation": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "intent",
+        "extracted_params",
+        "needs_confirmation",
+        "follow_up_question",
+        "detected_language",
+        "escalate",
+        "education_line"
+      ],
+      "type": "object"
+    },
+    "name": "route",
+    "strict": true
+  },
+  {
+    "description": "Retrieve knowledge-base context to answer a process / how-to question.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "type": "object"
+    },
+    "name": "search_kb",
+    "strict": true
+  }
+]

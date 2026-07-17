@@ -1,0 +1,51 @@
+{
+  "StatusCode": 200,
+  "Status": "Success",
+  "Response": [
+    {
+      "title": "Equity",
+      "list": [
+        {
+          "title": "Intraday",
+          "desc": "₹0.10 for trade value of 10 thousand"
+        },
+        {
+          "title": "Delivery",
+          "desc": "₹1.00 for trade value of 10 thousand"
+        }
+      ]
+    },
+    {
+      "title": "Derivative",
+      "list": [
+        {
+          "title": "Stock Future",
+          "desc": "₹20.00 for trade value of 10 thousand"
+        },
+        {
+          "title": "Stock Option",
+          "desc": "₹20.00 per order"
+        }
+      ]
+    },
+    {
+      "title": "Commodity",
+      "list": [
+        {
+          "title": "Futures",
+          "desc": "₹20.00 for trade value of 10 thousand"
+        }
+      ]
+    },
+    {
+      "title": "Currency",
+      "list": [
+        {
+          "title": "Options",
+          "desc": "₹20.00 per order"
+        }
+      ]
+    }
+  ],
+  "Reason": ""
+}

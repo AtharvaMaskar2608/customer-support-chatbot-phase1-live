@@ -1,0 +1,6 @@
+{
+  "StatusCode": 204,
+  "Message": "No valid contract notes found for the given clientId and date range",
+  "DevMessage": null,
+  "Body": {}
+}

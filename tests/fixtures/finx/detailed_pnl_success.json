@@ -1,0 +1,22 @@
+{
+  "Status": "Success",
+  "Reason": "",
+  "Response": [
+    {
+      "TRADE_DATE": "2024-07-15",
+      "Scrip_Name": "RELIANCE",
+      "SECURITY": "EQ",
+      "Stock": "RELIANCE",
+      "COMPANY_CODE": "500325",
+      "Open_Qty": 0,
+      "Open_Rate": 0.0,
+      "Buy_Qty": 10,
+      "Buy_Rate": 1290.0,
+      "Sell_Qty": 10,
+      "Sell_Rate": 1303.3,
+      "Net_Qty": 0,
+      "Net_Rate": 13.3,
+      "Net_Amount": 133.0
+    }
+  ]
+}

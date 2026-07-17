@@ -4,6 +4,7 @@ filesTouched:
   - pyproject.toml
   - uv.lock
   - .env.example
+  - app/__init__.py
   - app/main.py
   - app/contracts/**
   - app/contracts/schema/chat_wire.schema.json
@@ -17,8 +18,10 @@ filesTouched:
   - app/config/**
   - app/store/__init__.py
   - app/store/schema.py
+  - app/store/migrations/__init__.py
   - app/store/migrations/0001_conversation_store.sql
   - app/store/migrations/runner.py
+  - tests/__init__.py
   - tests/contracts/**
   - tests/finx/**
   - tests/fixtures/finx/**

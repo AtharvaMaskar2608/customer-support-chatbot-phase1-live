@@ -1,0 +1,5 @@
+{
+  "Status": "Success",
+  "Response": "https://client-report.choiceindia.com/PDFReports/PNLReport_<REPORT_ID>_<CLIENT_ID>.pdf",
+  "Reason": ""
+}
