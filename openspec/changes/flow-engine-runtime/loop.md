@@ -48,14 +48,16 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
       out-of-window -> EYearError with no adapter call; test_fy.py 6 passed)
 - [x] T5 follow-up cap (chips.py shared factories + followups.py enforce_followups
       cap-from-ctx; test_followups.py 3 passed)
-- [ ] T6 selection/byte cache
+- [x] T6 selection/byte cache (cache.py SelectionCache: frozen-key, 900s TTL,
+      evict-on-expiry, no cross-contamination; resend-bypass enforced in delivery;
+      test_cache.py 4 passed)
 - [ ] T7 error mapping
 - [ ] T8 delivery assembly
 - [ ] T9 discovery registry
 - [ ] T10 executor + public API
 - [ ] T11 suite green + doneCondition
 
-Current task: T6.
+Current task: T7.
 
 ## Verifier rounds
 (none yet)
