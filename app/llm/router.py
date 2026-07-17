@@ -18,9 +18,11 @@ import re
 
 from app.contracts.router import (
     PRECEDENCE_TOKENS,
+    ConversationContext,
     Delivery,
     ExtractedParams,
     Intent,
+    Language,
     ReportFormat,
     Segment,
 )
@@ -213,3 +215,71 @@ def _extract_params(
         params.delivery = _first_keyword(_DELIVERY_KEYWORDS, text)
 
     return params, needs_confirmation
+
+
+# ---------------------------------------------------------------------------
+# §8.5 language detection + sticky-language rule
+# ---------------------------------------------------------------------------
+
+#: Devanagari block — any character here marks Hindi script.
+_DEVANAGARI_RE = re.compile(r"[ऀ-ॿ]")
+
+#: Common romanized-Hindi markers. Their presence in an otherwise-Latin utterance
+#: marks Hinglish (code-mixed) rather than plain English.
+_HINGLISH_MARKERS: frozenset[str] = frozenset(
+    {
+        "chahiye",
+        "chaiye",
+        "hai",
+        "kaise",
+        "kya",
+        "mera",
+        "meri",
+        "mujhe",
+        "karo",
+        "kar",
+        "batao",
+        "dikhao",
+        "nahi",
+        "bhej",
+        "do",
+        "de",
+        "ka",
+        "ki",
+    }
+)
+
+
+def _detect_language(utterance: str) -> Language:
+    """Heuristic language detection: Devanagari → Hindi; romanized-Hindi markers in
+    Latin text → Hinglish; otherwise English."""
+    if _DEVANAGARI_RE.search(utterance):
+        return Language.hindi
+    tokens = set(re.findall(r"[a-z]+", utterance.lower()))
+    if tokens & _HINGLISH_MARKERS:
+        return Language.hinglish
+    return Language.english
+
+
+def _resolve_language(
+    utterance: str,
+    ctx: ConversationContext,
+    model_language: Language | None = None,
+) -> Language:
+    """Resolve this turn's language and persist the sticky state on ``ctx`` (§8.5).
+
+    Once English is seen the conversation locks to English thereafter; Hindi and
+    Hinglish do not lock. The sticky state (``detected_language`` +
+    ``language_locked``) is written back onto the ``ConversationContext`` so the
+    next turn honours it; the returned value is this turn's language (also emitted
+    on ``RouterResult.detected_language``)."""
+    detected = model_language or _detect_language(utterance)
+    if ctx.language_locked or detected is Language.english:
+        result = Language.english
+    else:
+        result = detected
+
+    ctx.detected_language = result
+    if result is Language.english:
+        ctx.language_locked = True
+    return result

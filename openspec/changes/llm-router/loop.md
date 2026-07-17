@@ -52,7 +52,9 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
       consecutive-year guard rejects ISO date fragments; AY start S → FY S-1 +
       needs_confirmation; segment/format/delivery augment only unset fields;
       non-report intents no-op; test_fy_normalization.py green, 12 cases)
-- [ ] Task 4 — language detection + sticky rule
+- [x] Task 4 — language detection + sticky rule (`_detect_language` Devanagari/
+      Hinglish-marker/English; `_resolve_language` locks on English, writes sticky
+      state back onto ctx; test_language_sticky.py green, 8 cases)
 - [ ] Task 5 — follow-up + escalation
 - [ ] Task 6 — classifier + route() assembly
 - [ ] Task 7 — fake client, recordings, goldens
