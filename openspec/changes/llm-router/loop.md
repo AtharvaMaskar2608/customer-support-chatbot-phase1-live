@@ -161,17 +161,35 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
   - Post-fix: `pytest tests/llm_router/` 79 passed / 1 skipped; `uv run pytest`
     161 passed / 1 skipped, 0 regressions. Blocking + all real minors resolved.
 
-## Convergence status / ESCALATION
+## Convergence status / RESOLUTION
 
 3 verifier panels used (the protocol cap). Trend converged: findings were real,
 distinct, and decreasing (R1: 1 blocking; R2: 0 blocking, 3 minor; R3: 1 blocking
 [self-introduced in R2] + minors), each fixed and verified with new tests; no
-finding recurred across panels; contract-surface was clean in R2 and R3. But the
-3rd panel still surfaced a blocking item, so I have NOT obtained a clean fresh
-panel within the 3-panel budget → escalating to the team lead per protocol
-("not converged after 3 → stop and escalate") for a decision: authorize one
-confirmation panel on the R3-fixed head, or accept. Not shipping without a clean
-panel or team-lead direction.
+finding recurred across panels; contract-surface was clean in R2 and R3. The
+3rd panel still surfaced a blocking item, so a clean fresh panel was NOT obtained
+within the 3-panel budget → escalated to the team lead per protocol.
+
+**RESOLVED (2026-07-17):** team lead relayed the human operator's lean-verify
+directive (cutting agent/token overhead): skip any further fresh-verifier panel
+AND skip the self-check spec read-through; trust the R3-fixed implementation and
+ship. No 4th panel spawned. The R3 blocking + all real minors were already fixed
+and re-verified with new tests before this directive; the directive only waives
+the confirmation panel, not the fixes. Shipping on that authorization.
+
+## Ship
+
+- Status: **SHIPPED** — PR #9
+  (https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/9),
+  Gate 2 human review pending on GitHub.
+- Rebased onto latest origin/main (8d95198, past PR #2 finx-http-adapters,
+  PR #3 flow-brokerage, PR #4 conversation-orchestrator) — clean, zero conflicts.
+- Pre-ship behavior harness on the rebased head:
+  - testCommand `pytest tests/llm_router/` → 79 passed, 1 skipped (live).
+  - full suite `uv run pytest` → 279 passed, 1 skipped, 0 regressions.
+- doneCondition: golden set (EN/HI/Hinglish/typos) + §2.5 precedence + AY→FY
+  confirmation + one-shot follow-ups + sticky-language, no live LLM in CI — all
+  covered and green via the golden replay suite.
 
 ## Open questions / escalations
 
@@ -181,6 +199,13 @@ panel or team-lead direction.
 
 ## Metrics
 
-- verifier rounds used: 0
-- findings per round: n/a
-- escalations: 0
+- verifier rounds used: 3 (protocol cap; 4th confirmation panel waived by the
+  lean-verify directive)
+- findings per round: R1 = 1 blocking + 3 minor + 1 uncertain (dismissed);
+  R2 = 0 blocking + 3 real minor (edge-cases) + spec-compliance non-blocking;
+  R3 = 1 blocking (regression self-introduced in R2) + 4 minor + non-blocking
+  spec-compliance. Every blocking and real minor fixed and re-verified.
+- escalations: 1 (verifier-convergence within the 3-panel budget → resolved by
+  the team lead's lean-verify directive; ship authorized).
+- behavior harness runs: 1 pre-ship on the rebased head (279 passed, 1 skipped,
+  0 regressions).
