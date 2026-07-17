@@ -70,7 +70,7 @@ Worktree lead loop state. If it isn't here, it didn't happen.
   fresh-verifier panel AND self-check spec read-through **skipped by design**;
   implementation trusted. Only completion check + testCommand + rebase + full
   behavior harness were run before shipping.
-- PR: (link filled after `gh pr create`).
+- PR: https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/7
 
 ## Metrics (filled at completion)
 
