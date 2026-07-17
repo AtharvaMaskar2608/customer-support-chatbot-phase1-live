@@ -50,11 +50,20 @@ Proposal `[CONFIRM]` items resolved against the actually-frozen code:
   status DataCards, TICKETING_TOOLS registry (this commit). Smoke-tested: registry keys match
   frozen TOOL_NAMES; payload matches 04 §5; escaping verified; client auth/Retry-After/400 parsing verified.
 
+- Task 6: tests/ticketing/** — conftest + 5 test files + 13 recorded fixtures (this commit).
+
+## Test / done status
+- testCommand `pytest tests/ticketing/`: **38 passed**.
+- Full suite `pytest`: **120 passed** (82 pre-existing + 38 new), 1 pre-existing fastapi warning.
+- doneCondition clauses each covered: exact 04 §5 payload (test_payload), real-time dedupe →
+  private note (test_dedupe), status by id + by ClientID (test_status_lookup), every non-2xx →
+  ErrorBubble no-leak (test_errors), call-support chip kept (test_errors/test_dedupe), fixture-only.
+
 ## Current task
-- Task 6: fixture-driven test suite (tests/ticketing/**), then run testCommand.
+- Fast-verify: one fresh 3-lens spec-verifier panel.
 
 ## Verifier rounds
-- (none yet)
+- Round 1: pending (about to spawn).
 
 ## Open questions / escalations
 - (none)

@@ -1,0 +1,1 @@
+{"description": "Validation failed", "errors": [{"field": "unique_external_id", "message": "It should be a unique value", "code": "duplicate_value"}]}
