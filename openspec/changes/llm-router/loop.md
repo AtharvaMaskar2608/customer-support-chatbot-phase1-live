@@ -63,7 +63,11 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
       module-level `route(utterance, ctx, *, client=None)`; transport/empty-block
       → transport_failure_result(); education_line deterministic; needs_confirmation
       is deterministic AY-only; test_router_assembly.py green, 5 cases)
-- [ ] Task 7 — fake client, recordings, goldens
+- [x] Task 7 — fake client, recordings, goldens (`FakeLLMClient` replays recorded
+      route tool_use by utterance; 13 recordings + 15 goldens spanning EN/HI/
+      Hinglish/typos + precedence/AY/follow-up/sticky; conftest registers+skips
+      `live` marker so bare testCommand stays offline; test_router_goldens.py +
+      test_transport_failure.py + test_live_rerecord.py (@live, skipped in CI))
 - [ ] Task 8 — doneCondition + full-suite gate
 
 ## Verifier rounds
