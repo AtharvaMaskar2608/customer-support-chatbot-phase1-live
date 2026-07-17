@@ -120,7 +120,7 @@ line had been stale — round 1 was already run/fixed).
 
 ## SHIPPED
 - Branch pushed; PR opened against AtharvaMaskar2608/customer-support-chatbot-phase1-live.
-- PR: #PENDING (updated below after gh pr create).
+- PR: #11 — https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/11 (Gate 2 pending).
 - Metrics: verifier rounds used = 1 (round 2 skipped per lean directive);
   round-1 findings = A–I (7 fixes + 1 cleanup + 1 E2E-evidence); escalations = 0.
 
