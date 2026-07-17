@@ -38,12 +38,12 @@ it didn't happen.
 | T6 | chatClient + conversation state | done (single network surface POST /api/chat; append-only log; single-flight one-POST-per-action; E-TIMEOUT synth on transport fail; >5s slow; accessToken echoed not logged) |
 | T7 | Render-block component set | done (11 components + RenderBlock switch; shared prototype CSS; each renders from fixture; unknown type = no-op; chip dispatch verbatim) |
 | T8 | Interaction contracts | done (stepper reopen clears downstream [widget+server]; calendar hard-disable min/max/disabled_ranges/maxRangeDays; note-list 10/page + dividers + conditional badge; data-card arbitrary groups) |
-| T9 | Shell + entry surfaces | pending |
+| T9 | Shell + entry surfaces | done (WidgetFrame collapse/unread/position-persist; AppSheet full-screen slide-up + swipe-down; Header/Composer/ComplianceFooter; SupportEntry fixed + ReportsEntry rotating placeholder). Added PointerEvent polyfill to test setup for drag/swipe. |
 | T10 | WebMCP registration | pending |
 | T11 | App assembly + mock entrypoint | pending |
 | T12 | Agent-driven E2E | pending |
 
-Current task: T9 (about to start) — shell + entry surfaces
+Current task: T10 (about to start) — WebMCP page-tool registration
 
 ## Verifier rounds
 (none yet)

@@ -652,3 +652,122 @@
   text-align: center;
   margin-top: 2px;
 }
+
+/* ---- web floating frame ---- */
+.jini-frame {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 400px;
+  height: 640px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  z-index: 2147483000;
+}
+.jini-grip {
+  height: 14px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 8px;
+  cursor: move;
+  background: var(--surface);
+  touch-action: none;
+}
+.jini-collapse {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.jini-frame-inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.jini-launcher {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--brand), var(--brand-ink));
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  z-index: 2147483000;
+}
+.jini-unread {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+/* ---- app WebView full-screen sheet ---- */
+.jini-sheet {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  z-index: 2147483000;
+  animation: jini-slide-up 280ms ease-out;
+  transition: transform 120ms ease-out;
+}
+@keyframes jini-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.jini-sheet-grip {
+  height: 24px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  touch-action: none;
+  background: var(--bg);
+}
+.jini-sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+}
+.jini-sheet-inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
