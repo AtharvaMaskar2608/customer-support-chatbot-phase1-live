@@ -107,13 +107,15 @@ def _resolve_precedence(utterance: str, model_intent: Intent) -> Intent:
 #: mistaken for an FY.
 _FY_RANGE_RE = re.compile(r"(\d{4})\s*[-/–—]\s*(\d{2,4})")
 
-#: A single year explicitly qualified as an FY or AY (``FY 2025``, ``AY 2025``).
-_FY_SINGLE_RE = re.compile(
-    r"(?:fy|f\.y\.|financial year|ay|a\.y\.|assessment year)\s*(\d{4})(?![0-9])"
-)
+#: A single year explicitly qualified as an FY (``FY 2025``, ``financial year 2025``).
+_FY_SINGLE_RE = re.compile(r"(?:fy|f\.y\.|financial year)\s*(\d{4})(?![0-9])")
 
-#: An Assessment-Year qualifier standing on its own (not inside another word).
-_AY_RE = re.compile(r"(?<![a-z])(?:a\.?y\.?|assessment year)(?![a-z])")
+#: An Assessment Year whose qualifier DIRECTLY precedes the year — proximity-scoped
+#: so a stray interjection ("ay yes …") never flips a plain FY into an AY. Matches
+#: both ``AY 2025-26`` (range) and ``AY 2025`` (single); the start year is group 1.
+_AY_QUALIFIER = r"(?:a\.?y\.?|assessment year)\s*"
+_AY_RANGE_RE = re.compile(_AY_QUALIFIER + r"(\d{4})\s*[-/–—]\s*\d{2,4}")
+_AY_SINGLE_RE = re.compile(_AY_QUALIFIER + r"(\d{4})(?![0-9])")
 
 #: Relative financial-year references, resolved against the frozen supported-FY
 #: window (``supported_fys() == [currentFY, -1, -2]``). Each maps to an index into
@@ -170,22 +172,24 @@ def parse_fy_or_ay(utterance: str, today: date | None = None) -> tuple[str | Non
     if relative is not None:
         return relative, False
 
-    start: int | None = None
-    m = _FY_RANGE_RE.search(text)
-    if m and _is_consecutive(int(m.group(1)), m.group(2)):
-        start = int(m.group(1))
-    else:
-        m2 = _FY_SINGLE_RE.search(text)
-        if m2:
-            start = int(m2.group(1))
+    # Assessment Year first (qualifier must directly precede the year).
+    ay = _AY_RANGE_RE.search(text) or _AY_SINGLE_RE.search(text)
+    if ay:
+        # AY start year S-(S+1) corresponds to Financial Year (S-1)-S.
+        return _start_to_long(int(ay.group(1)) - 1), True
 
-    if start is None:
-        return None, False
+    # Financial year: the first range whose two years are consecutive (so an ISO
+    # date fragment like 2024-04 is skipped, even when a real FY follows it), else
+    # an FY-qualified single year.
+    for m in _FY_RANGE_RE.finditer(text):
+        if _is_consecutive(int(m.group(1)), m.group(2)):
+            return _start_to_long(int(m.group(1))), False
 
-    is_ay = _AY_RE.search(text) is not None
-    if is_ay:
-        start -= 1  # Assessment Year S-(S+1) corresponds to Financial Year (S-1)-S.
-    return _start_to_long(start), is_ay
+    m2 = _FY_SINGLE_RE.search(text)
+    if m2:
+        return _start_to_long(int(m2.group(1))), False
+
+    return None, False
 
 
 def _normalize_fy(value: str, today: date | None = None) -> str:
@@ -280,8 +284,10 @@ def _extract_params(
 #: Devanagari block — any character here marks Hindi script.
 _DEVANAGARI_RE = re.compile(r"[ऀ-ॿ]")
 
-#: Common romanized-Hindi markers. Their presence in an otherwise-Latin utterance
-#: marks Hinglish (code-mixed) rather than plain English.
+#: Distinctive romanized-Hindi markers whose presence in an otherwise-Latin
+#: utterance marks Hinglish (code-mixed). Deliberately excludes short tokens that
+#: collide with common English words ("do", "de", "ka", "ki") so a plain English
+#: sentence ("how do i download my report") is never misread as Hinglish.
 _HINGLISH_MARKERS: frozenset[str] = frozenset(
     {
         "chahiye",
@@ -293,15 +299,12 @@ _HINGLISH_MARKERS: frozenset[str] = frozenset(
         "meri",
         "mujhe",
         "karo",
-        "kar",
         "batao",
         "dikhao",
         "nahi",
         "bhej",
-        "do",
-        "de",
-        "ka",
-        "ki",
+        "bhai",
+        "chaahiye",
     }
 )
 

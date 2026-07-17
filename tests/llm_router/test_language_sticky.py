@@ -35,6 +35,14 @@ def test_detect_language_plain_latin_is_english():
     assert _detect_language("get my ledger please") is Language.english
 
 
+def test_common_english_words_do_not_trigger_hinglish():
+    # Short tokens that collide with English ("do", "de", "ka", "ki") must NOT be
+    # read as Hindi markers.
+    assert _detect_language("how do i download my tax report") is Language.english
+    assert _detect_language("what do the charges mean") is Language.english
+    assert _detect_language("please do send my pnl") is Language.english
+
+
 def test_english_locks_the_conversation():
     ctx = _ctx()
     assert _resolve_language("get my p&l", ctx, Language.english) is Language.english

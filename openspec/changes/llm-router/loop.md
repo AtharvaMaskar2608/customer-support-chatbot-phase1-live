@@ -99,7 +99,39 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
   - edge-cases lens found no functional defects.
   - Post-fix: `pytest tests/llm_router/` 67 passed / 1 skipped; `uv run pytest`
     149 passed / 1 skipped, 0 regressions.
-- Round 2: fresh panel pending (new verifiers, none has seen the code).
+- Round 2 (3 fresh verifiers, none had seen the code):
+  - **contract-surface: NO divergences** (frozen FY helpers now consumed; all
+    manifest-declared contracts consumed; no frozen file edited).
+  - **edge-cases** (genuine deterministic-layer bugs → FIXED):
+    - **[minor] `_detect_language` false-Hinglish**: markers "do"/"de"/"ka"/"ki"
+      collide with English ("how do i…" → hinglish). → FIXED: pruned colliding
+      short tokens; added English-stays-English tests. (Was masked in goldens
+      because the model supplies detected_language; only the fallback path was hit.)
+    - **[minor] stray "ay" flips FY→AY**: "ay yes … 2024-25" read as Assessment
+      Year. → FIXED: AY detection now proximity-scoped (qualifier must directly
+      precede the year) via `_AY_RANGE_RE`/`_AY_SINGLE_RE`.
+    - **[minor] valid FY after a non-consecutive ISO fragment dropped**: only the
+      first range match was tested. → FIXED: `finditer` scans for the first
+      consecutive range.
+    - [uncertain] `except Exception` also catches model_validate failures →
+      unreachable under strict tool use; graceful fallback is safer product
+      behaviour than crashing. No change (documented).
+  - **spec-compliance** (all non-blocking, no change needed):
+    - [uncertain] date_range not deterministically parsed → tasks.md Task 3
+      explicitly sanctions model pass-through; date parsing is out of the FY/AY
+      deterministic scope. No change.
+    - [minor] live opt-in also honors JINI_RUN_LIVE beyond `-m live` → additive
+      superset; `-m live` works and bare testCommand stays offline. Kept as a
+      convenience.
+    - [minor] filesTouched omits tasks.md/loop.md → CLAUDE.md + assignment
+      explicitly authorize authoring those proposal-dir files. Not a code-surface
+      violation.
+    - [spec-suspect] escalate-at-cap fires even for an unambiguous turn → this is
+      faithful to the proposal ("at the cap … signals escalation instead; the
+      router respects it"). Verifier could not renegotiate the spec; no divergence.
+  - Post-fix: `pytest tests/llm_router/` 70 passed / 1 skipped; `uv run pytest`
+    152 passed / 1 skipped, 0 regressions.
+- Round 3: fresh panel pending (new verifiers, none has seen the code).
 
 ## Open questions / escalations
 

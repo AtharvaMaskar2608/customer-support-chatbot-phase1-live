@@ -29,6 +29,10 @@ from app.llm.router import _extract_params, parse_fy_or_ay
         ("get my p&l", None, False),
         # An ISO date fragment must NOT be read as an FY (non-consecutive years).
         ("from 2024-04 to 2025-03", None, False),
+        # A stray "ay" interjection must NOT flip a plain FY into an AY.
+        ("ay yes give me tax report 2024-25", "2024-2025", False),
+        # A valid FY after a non-consecutive ISO fragment is still found.
+        ("from 2024-04 to report 2024-2025", "2024-2025", False),
     ],
 )
 def test_parse_fy_or_ay(utterance, expected_fy, expected_is_ay):
