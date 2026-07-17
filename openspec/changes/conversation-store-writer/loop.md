@@ -109,4 +109,7 @@ owed by this change (the orchestrator owns main.py / lifespan wiring).
   scope creep — required by the frozen schema.
 
 ## Status
-- SHIPPED — PR pending link (filled after `gh pr create`).
+- SHIPPED — PR #14
+  (https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/14).
+  Rebased onto origin/main @ b727d53; testCommand green (18) + full behavior
+  harness green (248) on the rebased head. Gate 2 (human PR review) pending.
