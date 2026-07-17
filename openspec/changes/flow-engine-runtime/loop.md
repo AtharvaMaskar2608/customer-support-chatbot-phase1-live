@@ -62,9 +62,23 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [x] T10 executor + public API (executor.py advance: full dispatch/progression/
       generation gating; __init__ re-exports 40-name public surface;
       test_executor.py 7 passed; full engine suite 61 passed)
-- [ ] T11 suite green + doneCondition
+- [x] T11 suite green + doneCondition (testCommand `pytest tests/engine/` = 61 passed;
+      full `uv run pytest` = 143 passed; no frozen surface touched)
 
-Current task: T11.
+Current task: verifier panel (round 1).
+
+## doneCondition audit (each clause → covering test)
+1. advance drives first-step→generation→delivery → test_executor::test_drives_full_flow_first_step_to_delivery
+2. stepper-edit clears downstream, no refetch until generation → test_executor::test_stepper_edit_clears_downstream_and_refetches_nothing
+3. ≤2 follow-up cap escalates on the 3rd → test_executor::test_third_followup_escalates + test_followups
+4. calendars hard-disable out-of-range → test_calendar (bounds) + test_executor::test_out_of_range_date_is_nudged_not_progressed
+5. out-of-window FY → E-YEAR, no adapter call → test_executor::test_fy_out_of_window_yields_e_year_with_no_adapter_call + test_fy
+6. FinXFetchError → exactly one silent retry then E-FETCH → test_delivery::test_fetch_error_triggers_exactly_one_silent_retry_then_succeeds + ::test_second_fetch_error_surfaces_e_fetch
+7. 15-min cache hit within TTL; resend bypasses → test_cache + test_delivery::test_cache_hit_skips_generate_and_fetch + ::test_resend_bypasses_cache
+8. rename display filename (CML excepted) + mask email → test_delivery::test_url_delivery_builds_renamed_file_card + ::test_cml_keeps_server_filename + ::test_email_confirmation_masks_registered_email
+9. error mapping verbatim §8.4 copy → test_errors (all codes)
+10. registry discovers a test FLOW with no __init__ edit → test_registry::test_discovers_module_level_flow_without_editing_init
+11. fake adapters + frozen fixtures, zero network/LLM → whole suite uses FakeByteFetcher; no httpx/anthropic/openai calls
 
 ## Verifier rounds
 (none yet)
