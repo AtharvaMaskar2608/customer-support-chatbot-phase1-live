@@ -46,10 +46,23 @@ verifier, bound 2 rounds).
 ## Tasks completed
 
 - [x] 1. Scaffold (this file + tasks.md).
+- [x] 2. Implemented `app/flows/ledger.py` — `LedgerFlow` (FlowSpec, module-level
+      `FLOW`), window (floor 2019-01-01 / cap today+7 / no clamp), steps, request
+      builder (LoginId=client code, Group GROUP1, Margin 0/1, RequestFor 0/1),
+      date presets + out-of-window nudge + future clamp + calendar, download driver
+      (server-side fetch + byte validation + one silent retry) and email driver
+      (masked address), E-* mapping (ledger E-NODATA/E-FETCH copy, MTF plain
+      no-data, session-expiry bubble, E-TIMEOUT/E-UNKNOWN), friendly filename,
+      no password line.
+- [x] 3. Wrote `tests/flows/test_ledger.py` (32 tests) from the proposal + flow
+      spec; `tests/flows/__init__.py` empty. Fixture-based envelopes via the real
+      `parse_dotnet_envelope`.
+- [x] 4. `pytest tests/flows/test_ledger.py` → 32 passed. Full `uv run pytest` →
+      114 passed (82 baseline + 32). doneCondition items each covered by a test.
 
 ## Current task
 
-- Task 2: implement `app/flows/ledger.py`.
+- Task 5: fresh spec-verifier (FAST VERIFY: 1 combined verifier, all 3 lenses).
 
 ## Verifier rounds
 
