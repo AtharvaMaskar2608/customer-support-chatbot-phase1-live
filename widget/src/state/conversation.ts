@@ -27,8 +27,8 @@ export interface ConversationSnapshot {
 export interface ConversationDeps {
   post?: PostChat;
   slowMs?: number;
-  setTimer?: typeof setTimeout;
-  clearTimer?: typeof clearTimeout;
+  setTimer?: (fn: () => void, ms: number) => ReturnType<typeof setTimeout>;
+  clearTimer?: (id: ReturnType<typeof setTimeout>) => void;
 }
 
 const EMPTY: ConversationSnapshot = {
@@ -54,8 +54,8 @@ export class Conversation {
   private requestTurn = 0;
   private readonly post: PostChat;
   private readonly slowMs: number;
-  private readonly setTimer: typeof setTimeout;
-  private readonly clearTimer: typeof clearTimeout;
+  private readonly setTimer: (fn: () => void, ms: number) => ReturnType<typeof setTimeout>;
+  private readonly clearTimer: (id: ReturnType<typeof setTimeout>) => void;
 
   constructor(
     private readonly session: SessionContext,
@@ -63,8 +63,13 @@ export class Conversation {
   ) {
     this.post = deps.post ?? postChat;
     this.slowMs = deps.slowMs ?? 5000;
-    this.setTimer = deps.setTimer ?? setTimeout;
-    this.clearTimer = deps.clearTimer ?? clearTimeout;
+    // Wrap the globals so they are invoked as plain functions, never as methods
+    // on `this` — a browser throws "Illegal invocation" if setTimeout/
+    // clearTimeout are called with a receiver other than the global object.
+    const rawSet = deps.setTimer ?? setTimeout;
+    const rawClear = deps.clearTimer ?? clearTimeout;
+    this.setTimer = (fn, ms) => rawSet(fn, ms) as ReturnType<typeof setTimeout>;
+    this.clearTimer = (id) => rawClear(id);
   }
 
   getSnapshot = (): ConversationSnapshot => this.snap;

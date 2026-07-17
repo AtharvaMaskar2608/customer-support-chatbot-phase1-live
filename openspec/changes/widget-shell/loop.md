@@ -41,12 +41,39 @@ it didn't happen.
 | T9 | Shell + entry surfaces | done (WidgetFrame collapse/unread/position-persist; AppSheet full-screen slide-up + swipe-down; Header/Composer/ComplianceFooter; SupportEntry fixed + ReportsEntry rotating placeholder). Added PointerEvent polyfill to test setup for drag/swipe. |
 | T10 | WebMCP registration | done (send_message/tap_chip/get_conversation_state via document.modelContext; webmcp-types@0.1.2 devDep TYPE-ONLY reference [no runtime import/polyfill]; feature-detected no-op; routes to same dispatch) |
 | T11 | App assembly + mock entrypoint | done (App wires bootstrap→theme→seed→shell-by-platform→WebMCP; build ok 58 modules; 4 integration tests incl. full stepper→file walk) |
-| T12 | Agent-driven E2E | pending |
+| T12 | Agent-driven E2E | done (drove built widget on dev:mock via real Chromium; 6/6 steps PASS, console clean; caught + fixed a browser-only bug jsdom missed) |
 
-Current task: T12 (about to start) — agent-driven E2E
+Current task: all tasks done — next is fresh 3-verifier panel (round 1)
+
+## Agent-driven E2E evidence (doneCondition item 7)
+- Harness: `/browse` daemon Chromium won't launch here (kernel blocks
+  unprivileged user namespaces → "No usable sandbox"; the daemon exposes no
+  --no-sandbox). Project Playwright MCP would hit the same wall. Drove the
+  built widget with a direct Playwright script (playwright-core, launch
+  args ['--no-sandbox'], reusing the ms-playwright chrome-headless-shell) —
+  same engine, agent-driven.
+- Repro: `npm --prefix widget run dev:mock` (serves http://localhost:5178),
+  then drive `http://localhost:5178/?userId=X008593&page=support&platform=web`.
+  Driver script (throwaway, in session scratchpad): loads entry, sends free
+  text "Get my P&L", taps Equity → This FY → PDF, asserts the file card.
+- Result: 6/6 steps PASS, console clean. Screenshot captured.
+  1 entry surface (greeting X008593 + chips + "Ask anything about FinX…" +
+    compliance footer) PASS
+  2 free-text → user_bubble "Get my P&L" + stepper segment PASS
+  3 tap Equity → segment done, period active (This FY) PASS
+  4 tap This FY → format active (PDF + Excel) PASS
+  5 tap PDF → file_card PnL_Equity_FY2025-26.pdf + "196 KB · PDF · password: PAN"
+    + Download + "Trouble opening it?" PASS
+  6 no uncaught console errors PASS
+- BUG CAUGHT (browser-only, jsdom masked it): Conversation stored
+  setTimeout/clearTimeout as instance fields and called them as methods
+  (this !== window) → Chromium "Illegal invocation" crashed block rendering
+  (wg-body empty). Fixed by invoking the globals through plain-function
+  wrappers. jsdom tolerated the method receiver, so unit tests were green;
+  only the real-browser E2E exposed it. Fix committed.
 
 ## Verifier rounds
-(none yet)
+(none yet — about to spawn round 1)
 
 ## Behavior harness runs
 (none yet)
