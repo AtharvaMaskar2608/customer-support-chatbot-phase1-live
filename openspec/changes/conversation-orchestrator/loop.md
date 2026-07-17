@@ -35,16 +35,22 @@ The proposal inferred wire names before contracts-foundation landed and tagged t
 See tasks.md. Status:
 
 - [x] T0 — Read all frozen contracts; baseline `uv run pytest` green (82 passed).
-- [ ] T1 — ports.py (seams + StepResult/TurnResult).
-- [ ] T2 — state.py (ThreadState + SessionStateStore).
-- [ ] T3 — policy.py (caps, sticky-language, escalation blocks).
-- [ ] T4 — bootstrap.py (session seed; select_greeting moved here).
-- [ ] T5 — agentic.py (native tool-use loop).
-- [ ] T6 — dispatch.py (deterministic structured events).
-- [ ] T7 — orchestrator.py (handle_turn + fan-out + root span).
-- [ ] T8 — lifecycle.py (startup/shutdown registry).
-- [ ] T9 — main.py (real FastAPI app + lifespan).
+- [x] T1 — ports.py (seams + StepResult/TurnResult + Services bundle).
+- [x] T2 — state.py (ThreadState + SessionStateStore).
+- [x] T3 — policy.py (caps, sticky-language, escalation blocks).
+- [x] T4 — bootstrap.py (session seed; select_greeting moved here, re-exported by main).
+- [x] T5 — agentic.py (native tool-use loop; forced route → while stop_reason → ≤3 tool iters).
+- [x] T6 — dispatch.py (deterministic structured events, no LLM).
+- [x] T7 — orchestrator.py (handle_turn + fan-out enqueue + agent root span).
+- [x] T8 — lifecycle.py (startup/shutdown registry) + defaults.py (Phase-1 in-memory adapters).
+- [x] T9 — main.py (real FastAPI app + lifespan; frozen test_main_stub still green, 5 passed).
 - [ ] T10 — tests/orchestrator/** from the proposal.
+
+Impl notes: `route` binding = `RouterPort.classify(tool_input, context)` (route tool
+input_schema IS RouterResult). Fulfilment blocks come from engine.step/rag.answer/
+ticketing, never Claude prose. `client_id` on raise_ticket bound from
+`context.user_id`, overriding any model-supplied value. Soft close on
+`messages_used > message_cap` (10 real turns answered, 11th escalates).
 
 ## Verifier rounds
 
