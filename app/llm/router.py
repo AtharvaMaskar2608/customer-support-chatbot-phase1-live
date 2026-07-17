@@ -19,14 +19,21 @@ import re
 from app.config.schema import Limits
 from app.contracts.router import (
     PRECEDENCE_TOKENS,
+    ROUTE_TOOL_CHOICE,
+    ROUTE_TOOL_NAME,
     ConversationContext,
     Delivery,
     ExtractedParams,
     Intent,
     Language,
     ReportFormat,
+    RouterResult,
     Segment,
+    transport_failure_result,
 )
+from app.contracts.tools import TOOLS_BY_NAME
+from app.llm.client import LLMClient
+from app.llm.prompts import education_line, load_system_prompt
 
 #: The remote-config follow-up cap (frozen default = 2). At this many prior
 #: follow-ups the router stops proposing and signals escalation; the cross-turn
@@ -312,3 +319,82 @@ def _resolve_follow_up(
     if ctx.follow_up_count >= follow_up_cap:
         return None, True
     return model_follow_up, bool(model_escalate)
+
+
+# ---------------------------------------------------------------------------
+# Classifier (forced native tool call) + route() assembly
+# ---------------------------------------------------------------------------
+
+
+class Router:
+    """The thin LLM router. Holds an injectable ``LLMClient`` (tests pass a fake
+    that replays recorded ``tool_use`` blocks) and the follow-up cap. The Anthropic
+    client is built lazily inside ``LLMClient``; constructing a ``Router`` performs
+    no network I/O."""
+
+    def __init__(
+        self,
+        client: LLMClient | None = None,
+        follow_up_cap: int = DEFAULT_FOLLOW_UP_CAP,
+    ) -> None:
+        self.client = client or LLMClient()
+        self.follow_up_cap = follow_up_cap
+
+    def _classify(self, utterance: str, ctx: ConversationContext) -> RouterResult:
+        """One forced ``route`` tool call. ``RouterResult`` materializes from the
+        API-validated ``tool_use.input`` — never parsed from free-text JSON. Raises
+        when the response carries no ``route`` block (treated as a transport
+        failure by ``route``)."""
+        route_tool = TOOLS_BY_NAME[ROUTE_TOOL_NAME].model_dump()
+        response = self.client.complete(
+            messages=[{"role": "user", "content": utterance}],
+            system=load_system_prompt(),
+            tools=[route_tool],
+            tool_choice=ROUTE_TOOL_CHOICE,
+        )
+        blocks = [
+            b for b in response.tool_use if getattr(b, "name", None) == ROUTE_TOOL_NAME
+        ]
+        if not blocks:
+            raise ValueError("router: no route tool_use block in response")
+        return RouterResult.model_validate(blocks[0].input)
+
+    def route(self, utterance: str, ctx: ConversationContext) -> RouterResult:
+        """Classify ``utterance`` and run the deterministic post-layers.
+
+        On any API/transport failure (or a missing/invalid ``route`` block) returns
+        the frozen ``transport_failure_result()`` — there is no JSON-repair step,
+        because strict tool use makes a successful response API-validated."""
+        try:
+            raw = self._classify(utterance, ctx)
+        except Exception:
+            return transport_failure_result()
+
+        intent = _resolve_precedence(utterance, raw.intent)
+        params, needs_confirmation = _extract_params(utterance, intent, raw.extracted_params)
+        language = _resolve_language(utterance, ctx, raw.detected_language)
+        follow_up, escalate = _resolve_follow_up(
+            ctx, raw.follow_up_question, raw.escalate, self.follow_up_cap
+        )
+        return RouterResult(
+            intent=intent,
+            extracted_params=params,
+            needs_confirmation=needs_confirmation,
+            follow_up_question=follow_up,
+            detected_language=language,
+            escalate=escalate,
+            education_line=education_line(intent),
+        )
+
+
+def route(
+    utterance: str,
+    ctx: ConversationContext,
+    *,
+    client: LLMClient | None = None,
+) -> RouterResult:
+    """Module-level router entry point (the frozen ``route`` contract surface):
+    ``route(utterance, ctx) -> RouterResult``. ``client`` is a keyword-only
+    injection hook for the offline test fake; production leaves it ``None`` so a
+    default pinned-model ``LLMClient`` is used."""
+    return Router(client=client).route(utterance, ctx)

@@ -58,7 +58,11 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
 - [x] Task 5 — follow-up + escalation (`_resolve_follow_up` reads
       ctx.follow_up_count, escalates at frozen cap=2, passes model follow-up
       through below cap, never increments; test_follow_up.py green, 5 cases)
-- [ ] Task 6 — classifier + route() assembly
+- [x] Task 6 — classifier + route() assembly (`_classify` forced route tool call
+      via frozen LLMClient, RouterResult from tool_use.input; `Router` +
+      module-level `route(utterance, ctx, *, client=None)`; transport/empty-block
+      → transport_failure_result(); education_line deterministic; needs_confirmation
+      is deterministic AY-only; test_router_assembly.py green, 5 cases)
 - [ ] Task 7 — fake client, recordings, goldens
 - [ ] Task 8 — doneCondition + full-suite gate
 
