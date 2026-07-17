@@ -1,0 +1,8 @@
+{
+  "statusCode": 200,
+  "message": "URL generated successfully",
+  "devMessage": null,
+  "body": {
+    "cmlLink": "https://onmedia.choiceindia.com/JF/<HASH>/<HASH>_CML_<TS>.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=<MASKED>&X-Amz-Date=<TS>&X-Amz-Expires=120&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3DClient_Master_List.pdf&X-Amz-Signature=<MASKED>"
+  }
+}

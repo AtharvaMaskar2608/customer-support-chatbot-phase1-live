@@ -1,0 +1,24 @@
+{
+  "StatusCode": 200,
+  "Message": "Success",
+  "DevMessage": null,
+  "Body": {
+    "client_code": "<CLIENT_ID>",
+    "contractNotes": [
+      {
+        "date": "16092024",
+        "file_id": "<FILE_ID_TOKEN>",
+        "group": "Grp1",
+        "id": "16092024",
+        "invoice_number": "2140106"
+      },
+      {
+        "date": "17092024",
+        "file_id": "<FILE_ID_TOKEN_2>",
+        "group": "GRP1",
+        "id": "17092024",
+        "invoice_number": "2140107"
+      }
+    ]
+  }
+}

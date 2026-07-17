@@ -1,0 +1,28 @@
+{
+  "Status": "Success",
+  "Reason": "",
+  "Response": [
+    {
+      "Client_Id": "<CLIENT_ID>",
+      "Scrip_Symbol": "500325",
+      "Scrip_Name": "RELIANCE",
+      "ISIN": "INE002A01018",
+      "Open_Qty": 0,
+      "Open_Rate": 0.0,
+      "Buy_Qty": 10,
+      "Buy_Rate": 1290.0,
+      "Sell_Qty": 10,
+      "Sell_Rate": 1303.3,
+      "Net_Qty": 0,
+      "Net_Amount": 133.0,
+      "Net_Rate": 13.3,
+      "FIFO_Rate": 1290.0,
+      "FIFO_Value": 12900.0,
+      "Booked_PNL": 133.0,
+      "Curr_Price": 1303.3,
+      "Current_Value": 0.0,
+      "Notional_FIFO_Open": 0.0,
+      "Net_Notional": 0.0
+    }
+  ]
+}
