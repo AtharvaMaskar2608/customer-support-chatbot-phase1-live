@@ -45,10 +45,15 @@ Worktree lead loop state. If it isn't here, it didn't happen.
   the proposal's "other → E-UNKNOWN".
 
 ## Tasks
-- [x] T1 — tasks.md + loop.md (this commit).
-- [ ] T2 — implement app/flows/tax.py
-- [ ] T3 — write tests/flows/test_tax.py (+ empty tests/flows/__init__.py)
-- [ ] T4 — testCommand + full suite + verifier + rebase + PR
+- [x] T1 — tasks.md + loop.md.
+- [x] T2 — implement app/flows/tax.py (FLOW discovery, dynamic FY, S0 education,
+  FY resolution incl. AY→FY + E-YEAR, format/delivery, GetTaxReportPDF calls,
+  server-side byte-validated fetch + 1 silent retry, file/email cards, EC-12,
+  error taxonomy). Smoke-checked: FLOW isinstance FlowSpec True.
+- [x] T3 — tests/flows/test_tax.py (22 tests, all from the doneCondition) + empty
+  tests/flows/__init__.py. testCommand green (22 passed); full suite green
+  (104 passed, 1 pre-existing unrelated warning).
+- [ ] T4 — fresh verifier + rebase + full harness + PR
 
 ## Verifier rounds
 - (none yet)
