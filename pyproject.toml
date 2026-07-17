@@ -1,0 +1,44 @@
+[project]
+name = "choice-jini"
+version = "0.1.0"
+description = "Choice Jini — post-login agentic support chatbot for FinX (Phase 1 backend contracts)."
+readme = "README.md"
+requires-python = ">=3.12"
+
+# All backend runtime dependencies are declared up front (design D8) so no
+# downstream change edits pyproject.toml / the lockfile for a new dependency.
+dependencies = [
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7,<3",
+    "httpx>=0.27",
+    "anthropic>=0.40",
+    "openai>=1.40",
+    "psycopg[binary]>=3.2",
+    "pgvector>=0.3",
+]
+
+[project.optional-dependencies]
+# Dev / eval extras: test runner + the single repo-wide httpx mock (respx,
+# chosen once here for adapters/ticketing/rag) + the DeepEval harness. The
+# DeepEval judge model is claude-opus-4-8 via the existing anthropic SDK — no
+# new dependency.
+dev = [
+    "pytest>=8.2",
+    "pytest-asyncio>=0.23",
+    "respx>=0.21",
+    "deepeval>=1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+# Offline-only suite: contract + parser tests are fixture-based (no network, no
+# live DB). asyncio_mode=auto lets async tests run without a per-test marker.
+asyncio_mode = "auto"
+testpaths = ["tests"]
