@@ -72,15 +72,26 @@ Resume-from-this-file log. If it isn't here, it didn't happen.
 
 ## Task log
 
-- **T1 (scaffold)** — DONE. tasks.md + loop.md written. (this commit)
-- **T2 (flow module)** — pending.
-- **T3 (tests)** — pending.
-- **T4 (spec harness + verifier panel)** — pending.
+- **T1 (scaffold)** — DONE (commit 9ad32ed). tasks.md + loop.md.
+- **T2 (flow module)** — DONE (commit ce0779b). app/flows/contract_notes.py.
+  Async smoke-checked all branches (204/1/2+/dual-badge/token/retry/timeout/
+  cross-session) before commit.
+- **T3 (tests)** — DONE. tests/flows/test_contract_notes.py (30 tests) +
+  tests/flows/__init__.py (empty package marker). All 30 green; full suite
+  112 passed (82 baseline + 30). testCommand `pytest tests/flows/
+  test_contract_notes.py` green. doneCondition (prose in manifest) walked by
+  the tests: list call w/ session-bound client_id + snake_case; StatusCode
+  branch 204/1/2+/>50; note-list keyed by file_id; download + %PDF validation;
+  one silent retry → E-FETCH; file_id never on wire (serialized-JSON assertion)
+  nor logged (caplog assertion); session-scoped token.
+- **T4 (spec harness + verifier panel)** — in progress (spawning fresh panel).
 - **T5 (ship)** — pending.
 
 ## Verifier rounds
 
-- none yet.
+- Round 1: spawning 3 fresh spec-verifiers (spec-compliance / edge-cases /
+  contract-surface), each given ONLY the proposal dir + `git diff main...
+  flow-contract-notes`.
 
 ## Open questions / carried-forward [CONFIRM]
 
