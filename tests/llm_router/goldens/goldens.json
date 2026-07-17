@@ -1,0 +1,212 @@
+[
+  {
+    "name": "english-simple-pnl",
+    "utterance": "Get my P&L",
+    "ctx": {},
+    "expected": {
+      "intent": "report_pnl",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "english-tax-with-params",
+    "utterance": "tax report FY 2025-26 as excel, email it",
+    "ctx": {},
+    "expected": {
+      "intent": "report_tax",
+      "extracted_params": {"fy": "2025-2026", "date_range": null, "segment": null, "report_format": "excel", "delivery": "email"},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "precedence-tax-beats-pnl",
+    "utterance": "I want my tax report, not the p&l",
+    "ctx": {},
+    "expected": {
+      "intent": "report_tax",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "precedence-capital-gain",
+    "utterance": "capital gain statement please",
+    "ctx": {},
+    "expected": {
+      "intent": "report_capital_gain",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": "Capital Gain figures come from your Tax Report — I'll pull that for you."
+    }
+  },
+  {
+    "name": "precedence-holding-not-ledger",
+    "utterance": "holding statement",
+    "ctx": {},
+    "expected": {
+      "intent": "report_holding",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "ay-to-fy-confirmation",
+    "utterance": "tax report for AY 2025-26",
+    "ctx": {},
+    "expected": {
+      "intent": "report_tax",
+      "extracted_params": {"fy": "2024-2025", "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": true,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "follow-up-below-cap",
+    "utterance": "report",
+    "ctx": {"follow_up_count": 0},
+    "expected": {
+      "intent": "smalltalk_fallback",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": "Sure — which report do you need? For example P&L, Ledger, Tax, or Contract Notes.",
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "follow-up-cap-escalates",
+    "utterance": "report",
+    "ctx": {"follow_up_count": 2},
+    "expected": {
+      "intent": "smalltalk_fallback",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": true,
+      "education_line": null
+    }
+  },
+  {
+    "name": "sticky-language-locked-forces-english",
+    "utterance": "मुझे मेरा लेजर चाहिए",
+    "ctx": {"language_locked": true, "detected_language": "english"},
+    "expected": {
+      "intent": "report_ledger",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "hindi-unlocked",
+    "utterance": "मुझे मेरा लेजर चाहिए",
+    "ctx": {},
+    "expected": {
+      "intent": "report_ledger",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "hindi",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "hinglish-capital-gain",
+    "utterance": "capital gain report chahiye",
+    "ctx": {},
+    "expected": {
+      "intent": "report_capital_gain",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "hinglish",
+      "escalate": false,
+      "education_line": "Capital Gain figures come from your Tax Report — I'll pull that for you."
+    }
+  },
+  {
+    "name": "typo-pnl",
+    "utterance": "get my p&l statmnt",
+    "ctx": {},
+    "expected": {
+      "intent": "report_pnl",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "rag-not-forced-to-report",
+    "utterance": "how do i download my tax report",
+    "ctx": {},
+    "expected": {
+      "intent": "rag_qa",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "mtf-ledger-survives-base-token",
+    "utterance": "mtf ledger please",
+    "ctx": {},
+    "expected": {
+      "intent": "report_mtf_ledger",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "name": "call-support-escalates",
+    "utterance": "i want to talk to a person",
+    "ctx": {"follow_up_count": 0},
+    "expected": {
+      "intent": "call_support",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": true,
+      "education_line": null
+    }
+  }
+]

@@ -1,0 +1,110 @@
+[
+  {
+    "utterance": "Get my P&L",
+    "route_input": {
+      "intent": "report_pnl",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "utterance": "Show me my equity P&L for last financial year as excel",
+    "route_input": {
+      "intent": "report_pnl",
+      "extracted_params": {"fy": null, "date_range": null, "segment": "equity", "report_format": "excel", "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "utterance": "capital gain report chahiye",
+    "route_input": {
+      "intent": "report_capital_gain",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "hinglish",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "utterance": "मुझे मेरा लेजर चाहिए",
+    "route_input": {
+      "intent": "report_ledger",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "hindi",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "utterance": "how do i check my trade details",
+    "route_input": {
+      "intent": "rag_qa",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "utterance": "i want to talk to a person",
+    "route_input": {
+      "intent": "call_support",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": true,
+      "education_line": null
+    }
+  },
+  {
+    "utterance": "get my p&l statmnt",
+    "route_input": {
+      "intent": "report_pnl",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "utterance": "ledgr chahiye bhai",
+    "route_input": {
+      "intent": "report_ledger",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "hinglish",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "utterance": "report",
+    "route_input": {
+      "intent": "smalltalk_fallback",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": "Sure — which report do you need? For example P&L, Ledger, Tax, or Contract Notes.",
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  }
+]

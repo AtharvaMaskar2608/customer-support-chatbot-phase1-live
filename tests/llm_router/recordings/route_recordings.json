@@ -1,0 +1,119 @@
+{
+  "Get my P&L": {
+    "intent": "report_pnl",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "english",
+    "escalate": false,
+    "education_line": null
+  },
+  "tax report FY 2025-26 as excel, email it": {
+    "intent": "report_tax",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "english",
+    "escalate": false,
+    "education_line": null
+  },
+  "I want my tax report, not the p&l": {
+    "intent": "report_pnl",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "english",
+    "escalate": false,
+    "education_line": null
+  },
+  "capital gain statement please": {
+    "intent": "report_tax",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "english",
+    "escalate": false,
+    "education_line": null
+  },
+  "holding statement": {
+    "intent": "report_ledger",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "english",
+    "escalate": false,
+    "education_line": null
+  },
+  "tax report for AY 2025-26": {
+    "intent": "report_tax",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "english",
+    "escalate": false,
+    "education_line": null
+  },
+  "report": {
+    "intent": "smalltalk_fallback",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": "Sure — which report do you need? For example P&L, Ledger, Tax, or Contract Notes.",
+    "detected_language": "english",
+    "escalate": false,
+    "education_line": null
+  },
+  "मुझे मेरा लेजर चाहिए": {
+    "intent": "report_ledger",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "hindi",
+    "escalate": false,
+    "education_line": null
+  },
+  "capital gain report chahiye": {
+    "intent": "report_capital_gain",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "hinglish",
+    "escalate": false,
+    "education_line": null
+  },
+  "get my p&l statmnt": {
+    "intent": "report_pnl",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "english",
+    "escalate": false,
+    "education_line": null
+  },
+  "how do i download my tax report": {
+    "intent": "rag_qa",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "english",
+    "escalate": false,
+    "education_line": null
+  },
+  "mtf ledger please": {
+    "intent": "report_mtf_ledger",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "english",
+    "escalate": false,
+    "education_line": null
+  },
+  "i want to talk to a person": {
+    "intent": "call_support",
+    "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+    "needs_confirmation": false,
+    "follow_up_question": null,
+    "detected_language": "english",
+    "escalate": true,
+    "education_line": null
+  }
+}
