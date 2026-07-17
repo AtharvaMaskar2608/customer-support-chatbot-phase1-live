@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import re
 
+from app.config.schema import Limits
 from app.contracts.router import (
     PRECEDENCE_TOKENS,
     ConversationContext,
@@ -26,6 +27,11 @@ from app.contracts.router import (
     ReportFormat,
     Segment,
 )
+
+#: The remote-config follow-up cap (frozen default = 2). At this many prior
+#: follow-ups the router stops proposing and signals escalation; the cross-turn
+#: count itself is incremented by the orchestrator, never here.
+DEFAULT_FOLLOW_UP_CAP: int = Limits().follow_up_cap
 
 # ---------------------------------------------------------------------------
 # §2.5 deterministic intent precedence
@@ -283,3 +289,26 @@ def _resolve_language(
     if result is Language.english:
         ctx.language_locked = True
     return result
+
+
+# ---------------------------------------------------------------------------
+# One-shot follow-up + cap escalation
+# ---------------------------------------------------------------------------
+
+
+def _resolve_follow_up(
+    ctx: ConversationContext,
+    model_follow_up: str | None,
+    model_escalate: bool,
+    follow_up_cap: int = DEFAULT_FOLLOW_UP_CAP,
+) -> tuple[str | None, bool]:
+    """Resolve this turn's follow-up question and escalation flag.
+
+    The router READS the running ``ctx.follow_up_count`` and, once it has reached
+    the remote-config cap, emits no follow-up and signals ``escalate`` (route to
+    ticket / call-support). Below the cap it passes the model's single follow-up
+    through (at most one per turn) and respects the model's own ``escalate``. The
+    router never increments the cross-turn count — that is orchestrator-owned."""
+    if ctx.follow_up_count >= follow_up_cap:
+        return None, True
+    return model_follow_up, bool(model_escalate)

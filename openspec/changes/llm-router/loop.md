@@ -55,7 +55,9 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
 - [x] Task 4 — language detection + sticky rule (`_detect_language` Devanagari/
       Hinglish-marker/English; `_resolve_language` locks on English, writes sticky
       state back onto ctx; test_language_sticky.py green, 8 cases)
-- [ ] Task 5 — follow-up + escalation
+- [x] Task 5 — follow-up + escalation (`_resolve_follow_up` reads
+      ctx.follow_up_count, escalates at frozen cap=2, passes model follow-up
+      through below cap, never increments; test_follow_up.py green, 5 cases)
 - [ ] Task 6 — classifier + route() assembly
 - [ ] Task 7 — fake client, recordings, goldens
 - [ ] Task 8 — doneCondition + full-suite gate
