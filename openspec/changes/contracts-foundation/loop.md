@@ -60,7 +60,23 @@ Round 3 items — none are confirmed divergences; dispositions:
 
 ## Metrics
 Verifier rounds used: 3 (cap). Findings per round: R1 ~5 (all fixed), R2 2 (fixed), R3 0 blocking.
-Escalations: 0. Test suite: 82 passed offline (no network, no live DB).
+Escalations: 1 (live-DB evidence blocked — see below). Test suite: 82 passed offline (no network, no live DB).
+
+## Task-8 live-DB evidence attempt (team-lead requested) — BLOCKED, escalated
+Requested: upgrade task-8 from dry-run parse to a real apply against a scratch DB on the
+localhost:5433 tunnel, then drop it. Guardrail: never DDL against customer-support-chatbot.
+Outcome: connection + auth to the tunnel succeed, but the role lacks the assumed privilege:
+  - `atharva`: rolcreatedb=False, rolsuper=False → CREATE DATABASE fails (`permission denied
+    to create database`); has_database_privilege(atharva,'postgres','CREATE')=False → cannot
+    create a scratch SCHEMA in the postgres maintenance DB either.
+  - Databases present: customer-support-chatbot (prod, forbidden), postgres (no CREATE),
+    telelyzer_knowledgebase (unrelated, not ours).
+Nothing was created on the server (run failed at CREATE DATABASE; DB list confirms no
+`contracts_foundation_scratch`). No credentials committed (evidence script reads DATABASE_URL
+from the main .env at runtime; lives in scratchpad, not the repo).
+Escalated to team lead: needs a CREATEDB grant / a non-prod scratch DB / or accept the offline
+dry-run parse evidence. task-8 doneCondition explicitly permits "dry-run parse instead of a live
+Postgres", so that evidence stands and the change is NOT blocked.
 
 ## Round-1 detail
 Round 1 (all minor/uncertain, none blocking; fixed in 5b1a2e6):
