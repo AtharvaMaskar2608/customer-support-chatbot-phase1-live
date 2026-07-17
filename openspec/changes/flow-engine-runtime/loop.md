@@ -59,10 +59,12 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
       mask_email, EC-12, resend bypass; test_delivery.py 14 passed)
 - [x] T9 discovery registry (registry.py discover+FlowRegistry; app/flows/__init__.py
       generic lazy discovery + register/get_flow; test_registry.py 3 passed)
-- [ ] T10 executor + public API
+- [x] T10 executor + public API (executor.py advance: full dispatch/progression/
+      generation gating; __init__ re-exports 40-name public surface;
+      test_executor.py 7 passed; full engine suite 61 passed)
 - [ ] T11 suite green + doneCondition
 
-Current task: T10.
+Current task: T11.
 
 ## Verifier rounds
 (none yet)

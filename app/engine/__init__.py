@@ -10,6 +10,10 @@ Public surface (re-exported here) is grown task-by-task; see ``tasks.md``.
 
 from __future__ import annotations
 
+from app.engine.calendar import build_calendar, out_of_range_nudge, validate_range
+from app.engine.cache import SelectionCache
+from app.engine.delivery import deliver, mask_email
+from app.engine.errors import map_error
 from app.engine.events import (
     DateSelected,
     FlowEvent,
@@ -17,6 +21,16 @@ from app.engine.events import (
     ParamSelected,
     ReopenStep,
     Resend,
+)
+from app.engine.executor import advance
+from app.engine.followups import enforce_followups
+from app.engine.fy import resolve_fy
+from app.engine.registry import FlowRegistry, discover
+from app.engine.steps import (
+    build_stepper_card,
+    materialize_steps,
+    next_step,
+    reopen_step,
 )
 from app.engine.faults import (
     FinXAuthError,
@@ -72,4 +86,21 @@ __all__ = [
     "Escalation",
     "FYResolved",
     "EYearError",
+    # engine functions
+    "advance",
+    "next_step",
+    "reopen_step",
+    "materialize_steps",
+    "build_stepper_card",
+    "build_calendar",
+    "validate_range",
+    "out_of_range_nudge",
+    "resolve_fy",
+    "enforce_followups",
+    "deliver",
+    "mask_email",
+    "map_error",
+    "SelectionCache",
+    "FlowRegistry",
+    "discover",
 ]
