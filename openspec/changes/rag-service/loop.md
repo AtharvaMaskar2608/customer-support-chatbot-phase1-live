@@ -10,7 +10,9 @@ full repo suite, then PR.
 
 ## Status — SHIPPED
 
-- Current task: **DONE** — all tasks complete, branch pushed, PR open (link below).
+- **PR: #15** — https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/15
+  (Gate 2 human review pending on GitHub).
+- Current task: **DONE** — all tasks complete, branch pushed, PR open.
 - Tasks completed: scaffold; T1 config+models; T2 embeddings; T3 retriever;
   T4 generator+prompts; T5 service; **T6 tests** (from the proposal); T7 ship.
   Structured-output json_schema generated from `_GroundedOutput` via the frozen
