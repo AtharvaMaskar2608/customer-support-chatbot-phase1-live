@@ -62,7 +62,24 @@ authorized by the team-lead task message).
   file/email block on any path + static FileCard guard, EC-4/5-6/7 builders.
 - T4 DONE: `pytest tests/flows/test_brokerage.py` = 15 passed; full
   `uv run pytest` = 97 passed.
-- Current task: T5 (fresh spec-verifier).
+- T5 DONE: Panel 1 (see Verifier rounds) — 0 blocking, 4 minor; F3 fixed, others
+  recorded as non-divergences. Tests green after fix.
+- T6 DONE: `git fetch` — origin/main still at cfb22a1 (no other change merged);
+  rebase is a no-op (branch already based there). Full `uv run pytest` = 97
+  passed on the rebased head. Pushed `flow-brokerage`. PR opened.
+
+## Final state / metrics
+- **PR:** https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/3
+- doneCondition: met (module discovered; single call keyed by ClientID; dynamic
+  verbatim data card; variant fixture proves no hardcoding; no rupee computed; no
+  PDF/email path; one silent retry then error bubble). testCommand green.
+- Verifier rounds used: 1 (fast-verify). Findings: round 1 = 0 blocking, 4 minor
+  (1 fixed, 3 non-divergences). Escalations: 0.
+- Behavior harness: 97 passed on head rebased onto origin/main (cfb22a1).
+- Note for future rebase: several sibling flow changes also add an empty
+  `tests/flows/__init__.py` and their own `app/flows/<name>.py`; flow-engine-runtime
+  adds `app/flows/__init__.py`. Expect a trivial add/add on `tests/flows/__init__.py`
+  (empty on both sides — take either) when those land; no other overlap.
 
 ## Verifier rounds
 
