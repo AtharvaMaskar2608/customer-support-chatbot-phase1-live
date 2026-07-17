@@ -1,7 +1,10 @@
 # loop.md — conversation-orchestrator
 
+Status: SHIPPED — PR #4 (Gate 2 pending)
+
 Worktree: `/home/choice/projects/customer-support/conversation-orchestrator`
-Branch: `conversation-orchestrator` (from main @ cfb22a1)
+Branch: `conversation-orchestrator` (rebased onto origin/main @ 9b6d31e — PRs #2
+finx-http-adapters + #3 flow-brokerage merged; clean rebase, no conflicts)
 testCommand: `pytest tests/orchestrator/`
 doneCondition: manifest.yaml (§ Done condition & test command in proposal.md)
 
@@ -44,7 +47,10 @@ See tasks.md. Status:
 - [x] T7 — orchestrator.py (handle_turn + fan-out enqueue + agent root span).
 - [x] T8 — lifecycle.py (startup/shutdown registry) + defaults.py (Phase-1 in-memory adapters).
 - [x] T9 — main.py (real FastAPI app + lifespan; frozen test_main_stub still green, 5 passed).
-- [ ] T10 — tests/orchestrator/** from the proposal.
+- [x] T10 — tests/orchestrator/** from the proposal (25 tests, all doneCondition items). Also
+  landed a disambiguation short-circuit in agentic.py (a disambiguation/follow-up-cap turn ends
+  by asking, does not fall through to fulfilment) and fixed the soft-close test setup
+  (seed turn_number alongside messages_used — counters advance together).
 
 Impl notes: `route` binding = `RouterPort.classify(tool_input, context)` (route tool
 input_schema IS RouterResult). Fulfilment blocks come from engine.step/rag.answer/
@@ -54,9 +60,28 @@ ticketing, never Claude prose. `client_id` on raise_ticket bound from
 
 ## Verifier rounds
 
-- Round 1: pending (3 fresh spec-verifiers — spec-compliance / edge-cases / contract-surface).
+- Round 1 (LEAN PASS — per team-lead directive overriding the CLAUDE.md 3-panel default;
+  human operator asked to cut verifier-agent overhead and trust implementations more).
+  Single self-check by the worktree lead against proposal.md/design.md/tasks.md and
+  `git diff main...HEAD`, blocking-issues-only. Findings:
+  - One failing test in the working tree (soft-close expected turn_number 11, got 1). Root
+    cause: test-setup bug (seeded messages_used but not turn_number), not an implementation
+    divergence — the runtime advances both counters together. Fixed the setup.
+  - No edits to frozen contract files (`app/contracts/**`, `tests/contracts/**`); diff stays
+    within the manifest surface (`app/orchestrator/**`, `app/main.py`, proposal artifacts).
+  - Frozen `tests/contracts/test_main_stub.py` still green (5 passed) after main.py rewrite.
+  - doneCondition items all covered by tests. No blocking issues remain.
+
+## Metrics
+
+- Verifier rounds used: 1 (lean self-check, no 3-lens panel per directive).
+- Findings: round 1 — 1 (test-setup bug, fixed).
+- Escalations: 0.
+- Rebase: onto origin/main @ 9b6d31e, clean (no conflicts).
+- Behavior harness on rebased head: full `uv run pytest` = 200 passed;
+  testCommand `pytest tests/orchestrator/` = 25 passed.
 
 ## Open questions / escalations
 
-- None yet. Soft-close→`escalated` mapping (item 3) is a [CONFIRM] resolution, not a
-  spec change; flagged here for the verifier panel.
+- None. Soft-close→`escalated` mapping (reconciliation item 3) is a [CONFIRM] resolution of a
+  pre-contract inference, not a spec change — recorded for the Gate 2 reviewer.
