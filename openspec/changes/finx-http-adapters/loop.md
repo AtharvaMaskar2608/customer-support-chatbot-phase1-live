@@ -4,6 +4,8 @@ Branch: `finx-http-adapters` — worktree
 `/home/choice/projects/customer-support/finx-http-adapters`.
 Base: main @ cfb22a1 (contracts-foundation merged; frozen surface on main).
 testCommand: `pytest tests/finx_adapters/`.
+Status: **SHIPPED** — PR #2 open (Gate 2 pending human review):
+https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/2
 
 ## Contract / scope anchors
 
@@ -56,7 +58,7 @@ testCommand: `pytest tests/finx_adapters/`.
       log sink while endpoint diagnostics still logged; profile PII never in payload).
       Full testCommand: 72 passed. Full repo suite: 154 passed.
 
-Current task: harness green on latest main. Next: push + open PR (Gate 2).
+Current task: SHIPPED — PR #2 open, Gate 2 pending. Standing by for merge-landed rebase requests from the team lead.
 
 ## Verifier rounds
 
