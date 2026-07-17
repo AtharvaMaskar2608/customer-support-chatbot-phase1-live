@@ -169,7 +169,7 @@ touches none of my owned files (`app/engine/**`, `app/flows/__init__.py`,
   passed; full `uv run pytest` = 240 passed (0 failed, 1 deprecation warning). Green.
 
 ## Status & metrics
-- **Status: SHIPPED** — PR: <PR_URL_PLACEHOLDER>
+- **Status: SHIPPED** — PR #13: https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/13
 - Tasks: T1–T11 complete (11/11).
 - Verifier rounds used: 2 panels (3 fresh verifiers each; no round 3 — lean directive
   skipped further panels). Findings: round 1 → 2 actionable (silent_retries config,
