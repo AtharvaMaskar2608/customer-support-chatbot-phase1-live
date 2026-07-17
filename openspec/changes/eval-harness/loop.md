@@ -92,5 +92,16 @@ T9 — ship (rebase onto latest origin/main, full harness, PR).
   the team-lead's ship directive assumed ready-to-ship. Reconciled by completing
   T5-T9 (this session) before shipping.
 
-## Ship
-- (filled in after rebase + harness + PR)
+## Ship — SHIPPED
+- Status: **SHIPPED** — PR #17
+  (https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/17).
+- Rebased onto latest `origin/main` `3a80fd7` (PR #13 flow-engine-runtime head) —
+  clean, 9 commits replayed, no conflicts (diff disjoint: evals/** only).
+- Spec harness (this change): structural gate `pytest evals/ -k "goldens or
+  callback"` = 14 passed; testCommand `deepeval test run
+  evals/test_multiturn.py evals/test_rag_singleturn.py` = exit 0 (live cases skip).
+- Behavior harness on rebased head: full app suite `uv run pytest -q` = 522
+  passed, 1 skipped (guarded live-LLM test in tests/llm_router, unrelated).
+  Note: repo `testpaths=["tests"]`, so evals/ is a separate eval layer run via
+  its own gate/testCommand (per the proposal), not the app unit suite.
+- Gate 2 (human PR review) pending on GitHub.
