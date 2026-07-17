@@ -238,6 +238,7 @@ def run_agentic_loop(
             tool_iterations += 1
             messages.append({"role": "assistant", "content": resp.content})
             tool_results: list[dict[str, Any]] = []
+            short_circuit = False
             for tu in resp.tool_use:
                 content, blocks, meta, is_error = _execute_tool(
                     tu, services, state, context, limits
@@ -253,6 +254,10 @@ def run_agentic_loop(
                     result.blocks.extend(meta["disambiguation_blocks"])
                 if meta.get("router_escalate"):
                     result.escalated = True
+                if meta.get("disambiguation_blocks") or meta.get("router_escalate"):
+                    # A disambiguation prompt (or follow-up-cap escalation) resolves
+                    # the turn here — we do not proceed to fulfilment.
+                    short_circuit = True
                 result.tool_calls.append(
                     {"name": tu.name, "input": dict(getattr(tu, "input", None) or {}), "is_error": is_error}
                 )
@@ -265,6 +270,9 @@ def run_agentic_loop(
                     }
                 )
             messages.append({"role": "user", "content": tool_results})
+            if short_circuit:
+                ended = True
+                break
             continue
 
         # end_turn (or any other terminal, non-tool stop reason)
