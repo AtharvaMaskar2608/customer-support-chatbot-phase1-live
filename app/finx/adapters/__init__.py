@@ -19,6 +19,7 @@ from app.finx.adapters.errors import (
     FinXTimeoutError,
     FinXTransportError,
 )
+from app.finx.adapters.fetch import fetch_report_bytes, validate_report_bytes
 
 __all__ = [
     "FinXCredentials",
@@ -27,4 +28,6 @@ __all__ = [
     "FinXTimeoutError",
     "FinXFetchError",
     "FinXTransportError",
+    "fetch_report_bytes",
+    "validate_report_bytes",
 ]
