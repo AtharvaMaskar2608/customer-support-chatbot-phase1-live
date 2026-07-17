@@ -37,6 +37,24 @@ async def test_401_is_returned_not_retried(transport):
 
 
 @respx.mock
+async def test_401_with_empty_body_still_returns_401(transport):
+    # Auth is detected by HTTP status, not body shape: a malformed/empty 401 body
+    # must still surface as 401 (-> the parser maps it to auth), not a transport error.
+    respx.post(URL).mock(return_value=httpx.Response(401, text=""))
+    status, body = await transport.post_json(URL, endpoint="ep", headers={}, json={})
+    assert status == 401
+    assert body == {}
+
+
+@respx.mock
+async def test_401_with_html_body_still_returns_401(transport):
+    respx.post(URL).mock(return_value=httpx.Response(401, text="<html>nope</html>"))
+    status, body = await transport.post_json(URL, endpoint="ep", headers={}, json={})
+    assert status == 401
+    assert body == {}
+
+
+@respx.mock
 async def test_business_fail_200_is_returned_not_retried(transport):
     route = respx.post(URL).mock(
         return_value=httpx.Response(200, json={"Status": "Fail", "Reason": "Data not found."})

@@ -14,7 +14,7 @@ import httpx
 import pytest
 import respx
 
-from app.finx.adapters.errors import FinXAuthError, FinXFetchError
+from app.finx.adapters.errors import FinXAuthError, FinXFetchError, FinXTimeoutError
 from app.finx.adapters.go import GoMiddlewareAdapterImpl
 from app.finx.envelopes import Outcome
 from app.finx.interfaces import GoMiddlewareAdapter
@@ -143,6 +143,24 @@ async def test_download_404_raises_fetch_error_not_incidental_magic_pass(adapter
     )
     req = ContractNoteDownloadRequest(client_code="C123", file_id="F")
     with pytest.raises(FinXFetchError):
+        await adapter.download_contract_note(req)
+
+
+@respx.mock
+async def test_download_persistent_5xx_raises_fetch_error_like_fetch_helper(adapter):
+    # The download is a byte-DELIVERY path: a persistent 5xx maps to FinXFetchError
+    # (E-FETCH), identical to fetch_report_bytes — not FinXTransportError.
+    respx.post(DL_URL).mock(return_value=httpx.Response(503))
+    req = ContractNoteDownloadRequest(client_code="C123", file_id="F")
+    with pytest.raises(FinXFetchError):
+        await adapter.download_contract_note(req)
+
+
+@respx.mock
+async def test_download_timeout_raises_timeout_error(adapter):
+    respx.post(DL_URL).mock(side_effect=httpx.ReadTimeout("slow"))
+    req = ContractNoteDownloadRequest(client_code="C123", file_id="F")
+    with pytest.raises(FinXTimeoutError):
         await adapter.download_contract_note(req)
 
 

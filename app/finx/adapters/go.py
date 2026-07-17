@@ -22,7 +22,7 @@ from __future__ import annotations
 from app.contracts.router import ReportFormat
 from app.finx.adapters.base import HttpTransport, endpoint_url, raise_for_auth
 from app.finx.adapters.credentials import FinXCredentials
-from app.finx.adapters.errors import FinXAuthError, FinXFetchError
+from app.finx.adapters.errors import FinXAuthError, FinXFetchError, FinXTransportError
 from app.finx.adapters.fetch import validate_report_bytes
 from app.finx.envelopes import ParsedEnvelope, parse_dotnet_envelope, parse_go_envelope
 from app.finx.models import (
@@ -55,12 +55,19 @@ class GoMiddlewareAdapterImpl:
     async def download_contract_note(self, req: ContractNoteDownloadRequest) -> bytes:
         # api. host; "Session "-prefixed SessionId; returns raw PDF bytes.
         spec = ENDPOINTS["contract/download"]
-        status, data = await self._transport.post_bytes(
-            endpoint_url(spec),
-            endpoint=spec.name,
-            headers={"authorization": f"Session {self._credentials.session_id}"},
-            json=req.model_dump(),
-        )
+        try:
+            status, data = await self._transport.post_bytes(
+                endpoint_url(spec),
+                endpoint=spec.name,
+                headers={"authorization": f"Session {self._credentials.session_id}"},
+                json=req.model_dump(),
+            )
+        except FinXTransportError as exc:
+            # This is a byte-DELIVERY path (grouped with fetch_report_bytes): a
+            # persistent 5xx means the note did not arrive -> E-FETCH, not an
+            # engine-level unknown. Mirror fetch_report_bytes' 5xx mapping so both
+            # delivery paths classify the same failure identically.
+            raise FinXFetchError("contract-note download unavailable", reason=exc.reason) from exc
         if status == 401:
             raise FinXAuthError("finx auth failed")
         if status != 200:

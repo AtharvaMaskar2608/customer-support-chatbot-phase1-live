@@ -56,7 +56,7 @@ testCommand: `pytest tests/finx_adapters/`.
       log sink while endpoint diagnostics still logged; profile PII never in payload).
       Full testCommand: 72 passed. Full repo suite: 154 passed.
 
-Current task: round-1 panel done (1 fix applied); spawning round-2 fresh panel.
+Current task: round-2 panel done (2 fixes applied); spawning round-3 fresh panel.
 
 ## Verifier rounds
 
@@ -92,6 +92,36 @@ and the contract surface CLEAN. Items raised were all low/uncertain/spec-suspect
   `async def`; the engine awaits it. Intended.
 
 Findings requiring a code change: 1 (download guard). Full suite: 73 passed.
+
+### Round 2 (3 fresh verifiers, new panel, post round-1 fix)
+
+Spec-compliance and contract-surface panels: CLEAN except the two already-known
+non-issues (xlsx-magic prose nit; `fetch_report_bytes` is async — every frozen
+FinX method is async, intended). Edge-cases panel raised 4 new low/uncertain items:
+
+- **FIXED (edge #1): 401 detection was coupled to a successful JSON-body parse** —
+  `post_json` raised `FinXTransportError` on a non-JSON/empty body BEFORE the
+  frozen parser's HTTP-401 check. The frozen `envelopes.py` states auth is
+  "detected by the transport HTTP status (401), before envelope parsing", so a
+  malformed/empty 401 body must still become auth. Now `post_json` returns
+  `(401, {})` for a non-dict body when status==401 (-> FinXAuthError); non-401
+  malformed bodies still raise FinXTransportError. +3 tests (base x2, dotnet x1).
+- **FIXED (edge #2, also raised round 1): download 5xx classification** — a
+  persistent 5xx on `download_contract_note` raised `FinXTransportError` while the
+  same on `fetch_report_bytes` raises `FinXFetchError`. The proposal groups the
+  download under the byte-fetch helper (raised types FinXFetchError/FinXTimeoutError),
+  so the download now maps a delivery-path 5xx to FinXFetchError. +2 tests
+  (download 5xx -> FinXFetchError, download timeout -> FinXTimeoutError).
+- **NO CHANGE (edge #4): non-401 4xx returned as `Outcome.error` not raised** —
+  this is the FROZEN design: `envelopes.py` — "All other outcomes are branched on
+  the body envelope, never on HTTP status." Only 401 is HTTP-status-detected; a
+  4xx JSON body -> Outcome.error -> engine E-UNKNOWN (same terminus as
+  FinXTransportError). Correct per the frozen contract.
+- **NO CHANGE: MIS body-shape auth / async signature / xlsx magic** — re-raised,
+  same adjudication as round 1.
+
+Findings requiring a code change: 2 (401-before-parse, download 5xx). Full suite:
+78 passed. -> new panel (round 3).
 
 ## Open questions / carried items
 

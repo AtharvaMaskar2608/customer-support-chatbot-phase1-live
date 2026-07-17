@@ -102,6 +102,14 @@ async def test_dotnet_401_raises_auth_error(adapter, finx_fixture):
 
 
 @respx.mock
+async def test_dotnet_401_with_empty_body_still_raises_auth_error(adapter):
+    # Auth detection must not depend on a parseable 401 body.
+    respx.post(f"{BASE}/GetGlobalPNLPDF").mock(return_value=httpx.Response(401, text=""))
+    with pytest.raises(FinXAuthError):
+        await adapter.get_global_pnl_pdf(_pnl_pdf_req())
+
+
+@respx.mock
 async def test_ledger_pdf_uppercase_group_and_client_code_loginid(adapter, finx_fixture):
     route = respx.post(f"{BASE}/GetLedgerDetailsPDF").mock(
         return_value=httpx.Response(200, json=finx_fixture("ledger_pdf_success"))

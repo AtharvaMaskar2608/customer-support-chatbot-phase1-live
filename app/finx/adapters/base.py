@@ -146,10 +146,15 @@ class HttpTransport:
         )
         try:
             body = response.json()
-        except ValueError as exc:  # includes json.JSONDecodeError
-            raise FinXTransportError(f"non-JSON body from {endpoint}") from exc
+        except ValueError:  # includes json.JSONDecodeError
+            body = None
         if not isinstance(body, dict):
-            raise FinXTransportError(f"unexpected body shape from {endpoint}")
+            # Auth failure is detected by HTTP status, NOT body shape (the frozen
+            # envelope parsers key 401 on http_status before parsing) — a malformed
+            # or empty 401 body must still surface as auth, never a transport error.
+            if response.status_code == 401:
+                return response.status_code, {}
+            raise FinXTransportError(f"non-JSON body from {endpoint}")
         return response.status_code, body
 
     async def post_bytes(
