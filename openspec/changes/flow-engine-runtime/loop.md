@@ -44,7 +44,8 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [x] T3 calendar + date-window (calendar.py: build_calendar hard-disable via
       bounds, validate_range exact leap-safe clamp, out_of_range_nudge;
       test_calendar.py 9 passed)
-- [ ] T4 FY resolution
+- [x] T4 FY resolution (fy.py: resolve_fy via frozen helpers, normalize_fy,
+      out-of-window -> EYearError with no adapter call; test_fy.py 6 passed)
 - [ ] T5 follow-up cap
 - [ ] T6 selection/byte cache
 - [ ] T7 error mapping
@@ -53,7 +54,7 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [ ] T10 executor + public API
 - [ ] T11 suite green + doneCondition
 
-Current task: T4.
+Current task: T5.
 
 ## Verifier rounds
 (none yet)
