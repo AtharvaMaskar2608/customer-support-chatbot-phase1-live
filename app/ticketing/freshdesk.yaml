@@ -1,0 +1,89 @@
+# Freshdesk field mapping for Choice Jini ticketing (04 §5 DECISION).
+#
+# EVERY Freshdesk value is here, not in code: swapping to a FinX prod group, or
+# turning on per-report Type/sub-type once provisioned, is a config edit with no
+# redeploy (spec §2.2 externalized-config). Secrets stay in .env — this file
+# names the env vars, it does not hold keys.
+#
+# Ticketing-owned config: lives under app/ticketing/, NOT app/config/** (whose
+# remote-config schema is frozen by contracts-foundation).
+
+freshdesk:
+  # --- connection (secrets resolved from these env vars at load time) ---
+  api_key_env: FRESHDESK_API_KEY
+  api_root_env: FRESHDESK_API_ROOT
+  # Fallback base only used if FRESHDESK_API_ROOT is unset.
+  api_root_default: "https://choicebroking.freshdesk.com/api/v2"
+
+  # --- create-ticket defaults (04 §5) ---
+  defaults:
+    group_id: 22000168676              # chatbot-testing (prod → a FinX group, config swap)
+    source: 7                          # Chat
+    status: 2                          # Open
+    priority: 2                        # Medium
+    tags: [choice-jini, chatbot-testing]
+    language_tag_template: "lang:{language}"
+    subject_template: "[Choice Jini] {query_sub_type} — Client {client_id}"
+    # How many most-recent transcript turns to inline in the description
+    # (full attachment upload is a deferred follow-up; Phase 1 inlines).
+    transcript_last_n: 20
+
+  # --- the cf_product 3-level cascade + other custom fields (04 §0/§5) ---
+  # Field NAMES are config too, so an admin rename never needs a code change.
+  custom_fields:
+    client_id_field: cf_client_id       # the real ClientID field
+    product_field: cf_product
+    product: finx                       # cascade L1
+    query_type_field: cf_query_type149508
+    query_type: finx-bot                # cascade L2 (04 §5 DECISION: pinned)
+    query_sub_type_field: cf_query_sub_type
+    query_sub_type: finx-bot-test       # cascade L3 (only child of finx-bot today)
+    source_field: cf_source
+    source_value: "chat box"            # chatbot-origin source value
+
+  # --- Type (ticket_type) field, mapped from Intent ---
+  # Additive & reversible: send_type:false reverts to the test-ticket behaviour
+  # (type null). Values below all exist in the account (04 §0).
+  type:
+    send_type: true
+    default: "GENERAL QUERY"
+    by_intent:
+      report_pnl: "REPORTS"
+      report_ledger: "REPORTS"
+      report_mtf_ledger: "REPORTS"
+      report_contract_notes: "CONTRACT NOTES"
+      report_tax: "REPORTS"
+      report_capital_gain: "REPORTS"
+      report_tax_pnl: "REPORTS"
+      report_cml: "REPORTS"
+      report_brokerage: "CHARGES"
+      report_holding: "REPORTS"
+      report_global_detail: "REPORTS"
+      rag_qa: "GENERAL QUERY"
+      raise_ticket: "GENERAL QUERY"
+      ticket_status: "GENERAL QUERY"
+      call_support: "GENERAL QUERY"
+      smalltalk_fallback: "GENERAL QUERY"
+
+  # --- human-readable sub-type label for the SUBJECT line only ---
+  # (distinct from the pinned cascade cf_query_sub_type=finx-bot-test). Mirrors the
+  # finx→Reports sub-type labels in 04 §0.
+  subject_sub_type:
+    default: "General Query"
+    by_intent:
+      report_pnl: "P&L"
+      report_ledger: "Ledger"
+      report_mtf_ledger: "MTF Ledger"
+      report_contract_notes: "Contract Note"
+      report_tax: "Tax Report"
+      report_capital_gain: "Tax Report"
+      report_tax_pnl: "Tax Report"
+      report_cml: "CML"
+      report_brokerage: "Brokerage"
+      report_holding: "Holding"
+      report_global_detail: "Global"
+      rag_qa: "General Query"
+      raise_ticket: "General Query"
+      ticket_status: "Ticket Status"
+      call_support: "Call Support"
+      smalltalk_fallback: "General Query"
