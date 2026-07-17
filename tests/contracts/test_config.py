@@ -84,11 +84,11 @@ def test_defaults_validate():
 
 def test_per_flow_calendar_bounds_differ():
     bounds = DEFAULT_CONFIG.calendar_bounds
-    # P&L: floor 2018, cap today+7, max 2-year (730d) range.
+    # P&L: floor 2018, cap today+7, max 2 calendar years.
     pnl = bounds[Intent.report_pnl]
     assert pnl.floor == date(2018, 1, 1)
     assert pnl.cap_relative_days == 7
-    assert pnl.max_range_days == 730
+    assert pnl.max_range_years == 2
     # Contract-note cap is today (0), ledger floor is 2019 — per-flow difference.
     assert bounds[Intent.report_contract_notes].cap_relative_days == 0
     assert bounds[Intent.report_contract_notes].floor == date(2018, 1, 1)

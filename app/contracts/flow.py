@@ -133,14 +133,16 @@ class FlowState(BaseModel):
 class DateWindow(BaseModel):
     """A flow's calendar bounds. The engine hard-disables out-of-range dates in
     the calendar rather than validating after selection. ``cap_relative_days`` is
-    an offset from today (e.g. 7 → today+7, 0 → today). ``fy_based`` flows (Tax)
-    use FY selection, not a date range."""
+    an offset from today (e.g. 7 → today+7, 0 → today). ``max_range_years`` clamps
+    the selectable span as a CALENDAR-year count (P&L is 2 years — the spec states
+    the clamp in years, not days, so it is exact across leap boundaries).
+    ``fy_based`` flows (Tax) use FY selection, not a date range."""
 
     model_config = ConfigDict(extra="forbid")
 
     floor: date | None = None
     cap_relative_days: int | None = None
-    max_range_days: int | None = None
+    max_range_years: int | None = None
     fy_based: bool = False
 
 

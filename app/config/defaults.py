@@ -84,7 +84,7 @@ _PRODUCTS = [
 
 # Per-flow calendar bounds (differ by design; the engine reads these from config).
 _CALENDAR_BOUNDS = {
-    Intent.report_pnl: DateWindow(floor=date(2018, 1, 1), cap_relative_days=7, max_range_days=730),
+    Intent.report_pnl: DateWindow(floor=date(2018, 1, 1), cap_relative_days=7, max_range_years=2),
     Intent.report_ledger: DateWindow(floor=date(2019, 1, 1), cap_relative_days=7),
     Intent.report_contract_notes: DateWindow(floor=date(2018, 1, 1), cap_relative_days=0),
     Intent.report_global_detail: DateWindow(floor=date(2018, 1, 1)),

@@ -65,6 +65,15 @@ def test_mask_redacts_pii():
     assert masked["rows"][0]["label"] == "fee"
 
 
+def test_mask_redacts_email_embedded_in_string_value():
+    # The registered-email leak lives INSIDE a confirmation string (not a PII key).
+    data = {"confirmation": "PnL Report mail sent successfully to SANTOSH.HARSHA@GMAIL.COM"}
+    masked = default_mask(data)
+    assert "@" not in masked["confirmation"]
+    assert "***" in masked["confirmation"]
+    assert masked["confirmation"].startswith("PnL Report mail sent successfully to ")
+
+
 def test_default_mask_is_the_configured_default():
     cfg = trace_manager.configure()
     assert cfg.mask is default_mask

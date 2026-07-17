@@ -8,9 +8,12 @@ in the slice.
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app.config.defaults import DEFAULT_CONFIG
+from app.main import app, select_greeting
 from app.contracts.wire import ChatResponse, EntrySurface, SessionContext
 
 client = TestClient(app)
@@ -78,6 +81,21 @@ def test_secrets_not_echoed_in_response():
     body = client.post("/api/chat", json=_seed_request()).text
     assert "s-secret" not in body
     assert "jwt-secret" not in body
+
+
+def test_time_aware_greeting_selection():
+    pool = DEFAULT_CONFIG.greeting
+    cid = "X008593"
+    # Market hours 09:15–15:30 → market-hours variant.
+    assert select_greeting(pool, cid, datetime(2026, 7, 17, 10, 0)) == pool.market_hours.replace("{client_id}", cid)
+    # Morning 06:00–09:00.
+    assert select_greeting(pool, cid, datetime(2026, 7, 17, 7, 30)) == pool.morning.replace("{client_id}", cid)
+    # Post-market 15:30–23:00.
+    assert select_greeting(pool, cid, datetime(2026, 7, 17, 18, 0)) == pool.post_market.replace("{client_id}", cid)
+    # Outside all windows → default.
+    assert select_greeting(pool, cid, datetime(2026, 7, 17, 2, 0)) == pool.default.replace("{client_id}", cid)
+    # No unsubstituted placeholder remains.
+    assert "{client_id}" not in select_greeting(pool, cid, datetime(2026, 7, 17, 10, 0))
 
 
 def test_reports_entry_surface_uses_reports_chips():

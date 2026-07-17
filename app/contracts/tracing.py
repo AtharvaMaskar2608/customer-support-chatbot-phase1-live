@@ -9,6 +9,7 @@ tracing change; this module defines the contract.
 
 from __future__ import annotations
 
+import re
 import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -64,12 +65,18 @@ PII_KEYS: frozenset[str] = frozenset(
 
 _REDACTED = "***"
 
+#: Redact email addresses embedded inside string values (e.g. the registered
+#: email leaked, uppercased, inside a "PnL Report mail sent successfully to …"
+#: confirmation string) — value-level, not just key-level.
+_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+
 
 def default_mask(data: Any) -> Any:
-    """Recursively redact PII-keyed values in trace data. Redacts names, emails,
-    Client IDs, and ledger amounts (and session credentials / sensitive handles).
-    The get-profile full response must never be traced — only the extracted first
-    name is retained in memory for the greeting."""
+    """Recursively redact PII in trace data before export. Redacts PII-keyed
+    values (names, emails, Client IDs, ledger amounts, session credentials /
+    sensitive handles) AND email addresses embedded inside string values. The
+    get-profile full response must never be traced — only the extracted first name
+    is retained in memory for the greeting."""
     if isinstance(data, Mapping):
         masked: dict[Any, Any] = {}
         for key, value in data.items():
@@ -80,6 +87,8 @@ def default_mask(data: Any) -> Any:
         return masked
     if isinstance(data, list):
         return [default_mask(item) for item in data]
+    if isinstance(data, str):
+        return _EMAIL_RE.sub(_REDACTED, data)
     return data
 
 

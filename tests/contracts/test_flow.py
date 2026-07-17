@@ -97,7 +97,7 @@ def test_cache_and_registry_contract():
 
     class _PnlFlow:
         intent = Intent.report_pnl
-        config = FlowConfig(intent=Intent.report_pnl, window=DateWindow(floor=date(2018, 1, 1), cap_relative_days=7, max_range_days=730))
+        config = FlowConfig(intent=Intent.report_pnl, window=DateWindow(floor=date(2018, 1, 1), cap_relative_days=7, max_range_years=2))
 
         def steps(self):
             return [Step(id="segment", kind=StepKind.segment)]
