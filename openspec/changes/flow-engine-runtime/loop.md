@@ -65,7 +65,7 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [x] T11 suite green + doneCondition (testCommand `pytest tests/engine/` = 61 passed;
       full `uv run pytest` = 143 passed; no frozen surface touched)
 
-Current task: verifier panel (round 1).
+Current task: SHIPPED — see "## Status & metrics" at the end of this file.
 
 ## doneCondition audit (each clause → covering test)
 1. advance drives first-step→generation→delivery → test_executor::test_drives_full_flow_first_step_to_delivery
@@ -137,3 +137,45 @@ correct at 0/1/2). No blocking divergences. Two NEW actionable findings fixed:
 - Raised to team lead: (1) [SEAM] adapters re-export of FinX fault types; (2)
   [SPEC-SUSPECT] E-NODATA FY-worded copy shared with date-range flows. Neither
   blocks shipping this change.
+- [SEAM] RESOLVED at ship time: finx-http-adapters (PR #2) merged to main with all
+  four fault types re-exported at the `app.finx.adapters` top level
+  (`app/finx/adapters/errors.py` → `__init__.py`). After rebase the guarded import
+  in `app/engine/faults.py` resolves to the REAL classes
+  (`_USING_PLACEHOLDER_FAULTS = False`, `FinXFetchError.__module__ ==
+  app.finx.adapters.errors`) with zero engine edit — the blessed drop-in worked.
+- [SPEC-SUSPECT] E-NODATA FY-worded copy: still carried, non-blocking, for the team
+  lead / a future copy change. Not reinterpreted here.
+
+## Ship directive (human operator, via team lead)
+Lean ship: SKIP the fresh-verifier panel AND the self-check spec read-through to cut
+agent/token overhead. Rounds 1–2 (6 fresh verifiers total) already converged with
+zero blocking divergences; implementation (T1–T11) confirmed complete against
+`git log`. Trust the implementation; rebase + full behavior harness are the gate.
+
+## Pre-ship integration check (rebase onto latest main)
+Rebased flow-engine-runtime onto origin/main @ 9b6d31e (contracts-foundation #1 +
+finx-http-adapters #2 + flow-brokerage #3 merged). Clean rebase — origin/main
+touches none of my owned files (`app/engine/**`, `app/flows/__init__.py`,
+`tests/engine/**`).
+- FINDING (1, fixed): `test_app_flows_registry_is_generic_and_empty_until_flows_ship`
+  asserted `reg.intents() == set()`. That Wave-1 "empty" fact is now false:
+  flow-brokerage shipped `app/flows/brokerage.py`, and the generic discovery
+  registry correctly finds its module-level FLOW (`report_brokerage`) with no
+  `__init__.py` edit — the doneCondition satisfied by real integrated code, not a
+  regression. Rewrote the test (commit 2512dd0) to assert the durable genericity
+  guarantee (registry() mirrors discover() over the real package) instead of the
+  transient emptiness. `app/flows/__init__.py` and all engine source unchanged.
+- Behavior harness on the rebased head: testCommand `pytest tests/engine/` = 65
+  passed; full `uv run pytest` = 240 passed (0 failed, 1 deprecation warning). Green.
+
+## Status & metrics
+- **Status: SHIPPED** — PR: <PR_URL_PLACEHOLDER>
+- Tasks: T1–T11 complete (11/11).
+- Verifier rounds used: 2 panels (3 fresh verifiers each; no round 3 — lean directive
+  skipped further panels). Findings: round 1 → 2 actionable (silent_retries config,
+  range_nudge) + carried spec items; round 2 → 2 actionable (typed-fault escape in
+  delivery, un-completable confirm step) + carried items. Round-2 fixes confirmed by
+  round-2 panel. Zero blocking divergences at convergence.
+- Pre-ship integration: 1 finding (stale Wave-1 test), fixed; harness green on rebased head.
+- Escalations: 2 non-blocking (both above); [SEAM] resolved at ship time.
+- doneCondition: all 11 clauses covered by tests (audit above); testCommand exits 0.
