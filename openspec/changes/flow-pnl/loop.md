@@ -18,17 +18,17 @@ Worktree lead loop state. If it isn't here, it didn't happen.
 
 ## Tasks
 - [x] T0 — Read proposal, manifest, frozen contracts, fixtures, spec §8, FinX §4.1, parallelization plan. Baseline `uv run pytest` = 82 passed.
-- [ ] T1 — scaffold + registration (FLOW/FlowSpec, config, steps)
-- [ ] T2 — FinX request building (Group/identity/RequestFor/With_Exp/date presets)
-- [ ] T3 — date-window guardrail (calendar bounds + 2yr clamp + nudge)
-- [ ] T4 — render blocks + copy + masking
-- [ ] T5 — response + error handling (polymorphic Response, E-* mapping, security)
+- [x] T1 — scaffold + registration (module-level `FLOW: PnlFlow` satisfies FlowSpec; config floor 2018-01-01/cap+7/2yr; steps segment→date_range→delivery). Created `tests/flows/__init__.py` empty (dir didn't exist). `app/flows/__init__.py` NOT created (engine-owned; `app.flows` imports as a namespace package until the engine lands it).
+- [x] T2 — FinX request building (`build_request`: Group Cash/Derv/Comm, `UserId==ClientId` session-gated, RequestFor 0/1 via `REQUEST_FOR`, `With_Exp=True`, no FileFormat; `resolve_preset` This FY via frozen `current_fy` / This Month / Last 3 months).
+- [x] T3 — date-window guardrail (`build_calendar` floor/cap; `clamp_end` = start+2y exact incl. leap; `validate_range` → flow nudge copy for the free-text path).
+- [x] T4 — render blocks + copy + masking (segment/date/delivery chip rows w/ customer labels; ack/generating; file card renamed `PnL_<Seg>_<range>.pdf` password PAN; `email_confirmation` masked; `mask_registered_email` → `san***.harsha@gmail.com`; post-delivery chips; scrip-wise DEFERRED).
+- [x] T5 — response + error handling (`delivery_kind` via frozen FileDeliveryResponse; `is_session_expiry` for 401; `error_code_for_envelope` no_data→E-NODATA / error→E-UNKNOWN; `render_error` emits frozen ERROR_COPY incl. E-FETCH second line; `fetch_retry_notice`).
 - [ ] T6 — tests from proposal
 - [ ] Verify: fresh spec-verifier panel
 - [ ] Ship: rebase, full harness, PR
 
 ## Current task
-T1 — scaffold (writing tasks.md + loop.md first commit).
+T6 — write tests/flows/test_pnl.py from the proposal.
 
 ## Verifier rounds
 (none yet)
