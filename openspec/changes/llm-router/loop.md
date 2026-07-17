@@ -42,7 +42,9 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
 ## Tasks
 
 - [x] Task 0 — author tasks.md + scaffold loop.md (this commit)
-- [ ] Task 1 — externalized prompts + loader
+- [x] Task 1 — externalized prompts + loader (system/taxonomy/param/follow-up
+      .md + few_shots.json + education_lines.json + loader; test_prompts.py green,
+      system prompt names all 16 intents, education lines only for CG/Tax-P&L)
 - [ ] Task 2 — precedence resolver
 - [ ] Task 3 — FY/AY normalization
 - [ ] Task 4 — language detection + sticky rule
