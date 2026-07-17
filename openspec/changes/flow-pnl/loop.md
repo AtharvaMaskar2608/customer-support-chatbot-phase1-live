@@ -24,15 +24,30 @@ Worktree lead loop state. If it isn't here, it didn't happen.
 - [x] T4 — render blocks + copy + masking (segment/date/delivery chip rows w/ customer labels; ack/generating; file card renamed `PnL_<Seg>_<range>.pdf` password PAN; `email_confirmation` masked; `mask_registered_email` → `san***.harsha@gmail.com`; post-delivery chips; scrip-wise DEFERRED).
 - [x] T5 — response + error handling (`delivery_kind` via frozen FileDeliveryResponse; `is_session_expiry` for 401; `error_code_for_envelope` no_data→E-NODATA / error→E-UNKNOWN; `render_error` emits frozen ERROR_COPY incl. E-FETCH second line; `fetch_retry_notice`).
 - [x] T6 — `tests/flows/test_pnl.py` (22 tests, fake-driver). Fixed one test-only false positive ("Comm" is a substring of the label "Commodity"; assert the real leak tokens "Derv"/"Cash" + payload segment values instead). testCommand `pytest tests/flows/test_pnl.py` = 22 passed. Full `uv run pytest` = 104 passed (82 baseline + 22).
-- [ ] Verify: fresh spec-verifier panel
-- [ ] Ship: rebase, full harness, PR
+- [~] Verify: fresh spec-verifier panel — SKIPPED per human-operator lean directive (cut agent/token overhead; trust implementation, no self-check read-through). Not a convergence claim; 0 verifier rounds run.
+- [x] Ship: rebased onto latest origin/main (b727d53, incl. PR #2/#3/#4/#5), full harness green, PR #7 opened.
 
 ## Current task
-Verify — spawn fresh spec-verifier (all three lenses) with proposal dir + `git diff main...flow-pnl`.
+SHIPPED — see Ship section below.
 
 ## Verifier rounds
-(pending round 1)
+None. Lean no-panel directive from human operator: skip fresh-verifier panel AND self-check spec read-through, trust implementation. Only a real test failure is a blocker. No divergence hunting performed by this worktree lead.
 
 ## Open questions / integration notes
 - [GAP] Scrip-wise detail post-delivery hand-off deferred (no GetDetailedPNL file endpoint).
 - [INTEGRATION] Engine `FlowDefinition` interface not frozen — Wave 2 wires this flow's builders into the real engine; masking/error-render/calendar may dedup against engine's generic versions (no file collision).
+
+## Ship
+- Status: **SHIPPED** — PR #7 (https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/7)
+- Rebased flow-pnl (fork @ cfb22a1) onto latest origin/main @ b727d53 (contains PR #2 finx-http-adapters, PR #3 flow-brokerage, PR #4 conversation-orchestrator, PR #5 flow-contract-notes). Clean rebase — only shared file `tests/flows/__init__.py` (identical empty add); `app/flows/pnl.py` / `tests/flows/test_pnl.py` disjoint from sibling flow files.
+- testCommand `uv run pytest tests/flows/test_pnl.py` = 22 passed on rebased head.
+- Full behavior harness `uv run pytest` = **252 passed** on the b727d53-rebased head (230 integrated baseline from PR #2/#3/#4/#5 + 22 from this change).
+- doneCondition: fixture-based full step walk (PDF + email), Group Cash/Derv/Comm mapping, RequestFor per branch, With_Exp, E-* mapping, 2018 floor / today+7 cap / 2yr clamp, masked email — all exercised by the 22 fake-driver tests. Real-engine discovery/registration is the Wave-2 integration item (engine `FlowDefinition` not yet frozen).
+
+## Metrics
+- Verifier rounds used: 0 (skipped per lean no-panel directive).
+- Findings per round: n/a.
+- Escalations: 0.
+- Implementation rounds: 1 (T1–T6, no rework beyond one test-only false-positive fix in T6).
+- Rebases: 2 (first onto 9b6d31e = PR #2/#3; main advanced mid-ship, re-rebased onto b727d53 = +PR #4/#5), 0 conflicts either time.
+- Harness runs: testCommand ×3, full suite ×2 (197 on 9b6d31e head, 252 on final b727d53 head — both green).
