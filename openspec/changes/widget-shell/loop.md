@@ -32,7 +32,7 @@ it didn't happen.
 |---|------|--------|
 | T1 | Scaffold Vite+React+TS under widget/ | done (npm install ok; typecheck+smoke green) |
 | T2 | Generate wire types from frozen schema | done (gen:types → wireTypes.generated.ts; Block union; coverage test green) |
-| T3 | Design tokens + theming | pending |
+| T3 | Design tokens + theming | done (FinX tokens light+dark; useTheme; no-web-font grep test green) |
 | T4 | Bootstrap from URL params | pending |
 | T5 | Mock server + fixtures | pending |
 | T6 | chatClient + conversation state | pending |
@@ -43,7 +43,7 @@ it didn't happen.
 | T11 | App assembly + mock entrypoint | pending |
 | T12 | Agent-driven E2E | pending |
 
-Current task: T3 (about to start) — design tokens + theming
+Current task: T4 (about to start) — bootstrap from URL params
 
 ## Verifier rounds
 (none yet)
