@@ -51,13 +51,15 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [x] T6 selection/byte cache (cache.py SelectionCache: frozen-key, 900s TTL,
       evict-on-expiry, no cross-contamination; resend-bypass enforced in delivery;
       test_cache.py 4 passed)
-- [ ] T7 error mapping
+- [x] T7 error mapping (errors.py map_error: verbatim frozen copy + chips, {FY_short}/
+      {defaultFY}/{list} substitution, E-YEAR dynamic FY chips, E-FETCH second_line,
+      no Reason/URL/HTTP leak; test_errors.py 6 passed)
 - [ ] T8 delivery assembly
 - [ ] T9 discovery registry
 - [ ] T10 executor + public API
 - [ ] T11 suite green + doneCondition
 
-Current task: T7.
+Current task: T8.
 
 ## Verifier rounds
 (none yet)
