@@ -47,10 +47,25 @@ authorized by the team-lead task message).
 ### Round 0 — scaffolding
 - T1 DONE: tasks.md + loop.md authored. Contracts read end-to-end; namespace
   import of `app.flows.brokerage` verified without `app/flows/__init__.py`.
-- Current task: T2 (implement app/flows/brokerage.py).
+
+### Round 1 — implementation + tests
+- T2 DONE: `app/flows/brokerage.py` — `FLOW`/`BrokerageFlow` (FlowSpec-conformant,
+  no-step), single-shot `handle()` (one `get_brokerage_slab` call keyed by
+  `ClientID`, one silent retry, dynamic verbatim `DataCard`, `E_TIMEOUT` error
+  bubble), and the card-only edge builders (EC-4/EC-5-6/EC-7). No file/email path.
+- T3 DONE: `tests/flows/test_brokerage.py` (+ empty `tests/flows/__init__.py` to
+  match the sibling test-dir package convention). 15 tests written from the
+  proposal: FlowSpec conformance, single call + `ClientID` key trap, frozen
+  multi-segment fixture verbatim, inline variant (2 segments / 1+3 rows) proving
+  no hardcoding, no URL/email on card, one-silent-retry-then-error, transient
+  recovery, empty-`Response` failure, transport-exception failure, no
+  file/email block on any path + static FileCard guard, EC-4/5-6/7 builders.
+- T4 DONE: `pytest tests/flows/test_brokerage.py` = 15 passed; full
+  `uv run pytest` = 97 passed.
+- Current task: T5 (fresh spec-verifier).
 
 ## Verifier rounds
-- (none yet)
+- (none yet — Round 1 verifier pending)
 
 ## Open questions / escalations
 - (none)
