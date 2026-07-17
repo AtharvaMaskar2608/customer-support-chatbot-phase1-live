@@ -68,11 +68,14 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
       Hinglish/typos + precedence/AY/follow-up/sticky; conftest registers+skips
       `live` marker so bare testCommand stays offline; test_router_goldens.py +
       test_transport_failure.py + test_live_rerecord.py (@live, skipped in CI))
-- [ ] Task 8 — doneCondition + full-suite gate
+- [x] Task 8 — doneCondition + full-suite gate (`pytest tests/llm_router/` →
+      64 passed, 1 skipped [live]; `uv run pytest` → 146 passed, 1 skipped, 0
+      regressions; only filesTouched changed, no frozen surface touched)
 
 ## Verifier rounds
 
-- none yet.
+- Round 1: panel pending (spec-compliance / edge-cases / contract-surface),
+  each given only the proposal dir + `git diff main...llm-router`.
 
 ## Open questions / escalations
 
