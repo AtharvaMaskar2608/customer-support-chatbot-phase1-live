@@ -1,0 +1,985 @@
+{
+  "$defs": {
+    "Bubble": {
+      "additionalProperties": false,
+      "properties": {
+        "compliance_footer": {
+          "default": false,
+          "title": "Compliance Footer",
+          "type": "boolean"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "const": "bubble",
+          "default": "bubble",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "Bubble",
+      "type": "object"
+    },
+    "Calendar": {
+      "additionalProperties": false,
+      "description": "In-chat date picker. Out-of-range dates are hard-disabled (the engine\ndisables them rather than validating after selection).",
+      "properties": {
+        "disabled_ranges": {
+          "items": {
+            "$ref": "#/$defs/DateRange"
+          },
+          "title": "Disabled Ranges",
+          "type": "array"
+        },
+        "max_date": {
+          "format": "date",
+          "title": "Max Date",
+          "type": "string"
+        },
+        "max_range_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Range Days"
+        },
+        "min_date": {
+          "format": "date",
+          "title": "Min Date",
+          "type": "string"
+        },
+        "type": {
+          "const": "calendar",
+          "default": "calendar",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "min_date",
+        "max_date"
+      ],
+      "title": "Calendar",
+      "type": "object"
+    },
+    "Caps": {
+      "additionalProperties": false,
+      "properties": {
+        "follow_ups_used": {
+          "title": "Follow Ups Used",
+          "type": "integer"
+        },
+        "messages_cap": {
+          "title": "Messages Cap",
+          "type": "integer"
+        },
+        "messages_used": {
+          "title": "Messages Used",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "messages_used",
+        "messages_cap",
+        "follow_ups_used"
+      ],
+      "title": "Caps",
+      "type": "object"
+    },
+    "ChatRequest": {
+      "additionalProperties": false,
+      "description": "One user turn. Carries the SessionContext, the user action (free text OR a\nchip action), the thread_id (absent on the first turn), and the turn_number.",
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChipAction"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Message"
+        },
+        "session": {
+          "$ref": "#/$defs/SessionContext"
+        },
+        "thread_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Thread Id"
+        },
+        "turn_number": {
+          "default": 0,
+          "title": "Turn Number",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "session"
+      ],
+      "title": "ChatRequest",
+      "type": "object"
+    },
+    "ChatResponse": {
+      "additionalProperties": false,
+      "description": "One complete turn's response (non-streaming). ``config_slice`` is present\nonly on the first (session-seed) response.",
+      "properties": {
+        "blocks": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "bubble": "#/$defs/Bubble",
+                "calendar": "#/$defs/Calendar",
+                "chip_row": "#/$defs/ChipRow",
+                "data_card": "#/$defs/DataCard",
+                "error_bubble": "#/$defs/ErrorBubble",
+                "file_card": "#/$defs/FileCard",
+                "generating": "#/$defs/Generating",
+                "note_list_card": "#/$defs/NoteListCard",
+                "stepper_card": "#/$defs/StepperCard",
+                "ticket_confirmation": "#/$defs/TicketConfirmation",
+                "user_bubble": "#/$defs/UserBubble"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/Bubble"
+              },
+              {
+                "$ref": "#/$defs/UserBubble"
+              },
+              {
+                "$ref": "#/$defs/ChipRow"
+              },
+              {
+                "$ref": "#/$defs/StepperCard"
+              },
+              {
+                "$ref": "#/$defs/Calendar"
+              },
+              {
+                "$ref": "#/$defs/FileCard"
+              },
+              {
+                "$ref": "#/$defs/NoteListCard"
+              },
+              {
+                "$ref": "#/$defs/DataCard"
+              },
+              {
+                "$ref": "#/$defs/ErrorBubble"
+              },
+              {
+                "$ref": "#/$defs/TicketConfirmation"
+              },
+              {
+                "$ref": "#/$defs/Generating"
+              }
+            ]
+          },
+          "title": "Blocks",
+          "type": "array"
+        },
+        "caps": {
+          "$ref": "#/$defs/Caps"
+        },
+        "config_slice": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigSlice"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "conversation_state": {
+          "$ref": "#/$defs/ConversationState"
+        },
+        "intent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Intent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "thread_id": {
+          "title": "Thread Id",
+          "type": "string"
+        },
+        "turn_number": {
+          "title": "Turn Number",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "thread_id",
+        "turn_number",
+        "blocks",
+        "conversation_state",
+        "caps"
+      ],
+      "title": "ChatResponse",
+      "type": "object"
+    },
+    "Chip": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/ChipAction"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "action"
+      ],
+      "title": "Chip",
+      "type": "object"
+    },
+    "ChipAction": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/ChipActionKind"
+        },
+        "payload": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Payload",
+          "type": "object"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ChipAction",
+      "type": "object"
+    },
+    "ChipActionKind": {
+      "description": "The typed chip-action set. A chip action is sufficient for the backend to\nadvance a flow deterministically, without free-text parsing.",
+      "enum": [
+        "send_text",
+        "select_param",
+        "open_calendar",
+        "raise_ticket",
+        "call_support",
+        "retry",
+        "email",
+        "show_more",
+        "deep_link"
+      ],
+      "title": "ChipActionKind",
+      "type": "string"
+    },
+    "ChipRow": {
+      "additionalProperties": false,
+      "properties": {
+        "chips": {
+          "items": {
+            "$ref": "#/$defs/Chip"
+          },
+          "title": "Chips",
+          "type": "array"
+        },
+        "type": {
+          "const": "chip_row",
+          "default": "chip_row",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "chips"
+      ],
+      "title": "ChipRow",
+      "type": "object"
+    },
+    "ClientLimits": {
+      "additionalProperties": false,
+      "description": "The client-facing subset of the runtime limits (no server-only knobs).",
+      "properties": {
+        "follow_up_cap": {
+          "title": "Follow Up Cap",
+          "type": "integer"
+        },
+        "message_cap": {
+          "title": "Message Cap",
+          "type": "integer"
+        },
+        "note_threshold": {
+          "title": "Note Threshold",
+          "type": "integer"
+        },
+        "page_size": {
+          "title": "Page Size",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "page_size",
+        "note_threshold",
+        "message_cap",
+        "follow_up_cap"
+      ],
+      "title": "ClientLimits",
+      "type": "object"
+    },
+    "ConfigSlice": {
+      "additionalProperties": false,
+      "description": "The client-relevant config delivered in the first ``/api/chat`` response.\n\nCarries ONLY entry chips, the greeting, the client-facing limits, and\n``whats_new``. Server-only config (RAG tunables, per-flow calendar-bound math,\nFreshdesk field mapping) is NEVER included here.",
+      "properties": {
+        "entry_chips": {
+          "items": {
+            "$ref": "#/$defs/Chip"
+          },
+          "title": "Entry Chips",
+          "type": "array"
+        },
+        "greeting": {
+          "title": "Greeting",
+          "type": "string"
+        },
+        "limits": {
+          "$ref": "#/$defs/ClientLimits"
+        },
+        "whats_new": {
+          "items": {
+            "$ref": "#/$defs/WhatsNewItem"
+          },
+          "title": "Whats New",
+          "type": "array"
+        }
+      },
+      "required": [
+        "entry_chips",
+        "greeting",
+        "limits"
+      ],
+      "title": "ConfigSlice",
+      "type": "object"
+    },
+    "ConversationState": {
+      "enum": [
+        "greeting",
+        "collecting",
+        "generating",
+        "delivered",
+        "error",
+        "escalated"
+      ],
+      "title": "ConversationState",
+      "type": "string"
+    },
+    "DataCard": {
+      "additionalProperties": false,
+      "description": "Dynamic card (brokerage / holding). Iterates whatever the API returns; no\nhardcoded segment names or row counts, no computed rupee figures.",
+      "properties": {
+        "groups": {
+          "items": {
+            "$ref": "#/$defs/DataGroup"
+          },
+          "title": "Groups",
+          "type": "array"
+        },
+        "type": {
+          "const": "data_card",
+          "default": "data_card",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "groups"
+      ],
+      "title": "DataCard",
+      "type": "object"
+    },
+    "DataGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "list": {
+          "items": {
+            "$ref": "#/$defs/DataRow"
+          },
+          "title": "List",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "list"
+      ],
+      "title": "DataGroup",
+      "type": "object"
+    },
+    "DataRow": {
+      "additionalProperties": false,
+      "description": "A ``{label, value}`` row. ``value`` is rendered VERBATIM — the wire type\ndoes not reshape or numerically parse it (e.g. brokerage ``desc`` is\npre-formatted rate text).",
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "title": "DataRow",
+      "type": "object"
+    },
+    "DateRange": {
+      "additionalProperties": false,
+      "description": "A ``from``/``to`` date range lifted from an utterance.",
+      "properties": {
+        "from": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "From"
+        },
+        "to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "To"
+        }
+      },
+      "title": "DateRange",
+      "type": "object"
+    },
+    "EntrySurface": {
+      "enum": [
+        "support",
+        "reports"
+      ],
+      "title": "EntrySurface",
+      "type": "string"
+    },
+    "ErrorBubble": {
+      "additionalProperties": false,
+      "description": "Conversational error (never a toast). Copy never exposes Reason strings,\nHTTP codes, or URLs.",
+      "properties": {
+        "chips": {
+          "items": {
+            "$ref": "#/$defs/Chip"
+          },
+          "title": "Chips",
+          "type": "array"
+        },
+        "code": {
+          "$ref": "#/$defs/ErrorCode"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "const": "error_bubble",
+          "default": "error_bubble",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "text"
+      ],
+      "title": "ErrorBubble",
+      "type": "object"
+    },
+    "ErrorCode": {
+      "description": "The five conversational error codes (exactly five).",
+      "enum": [
+        "E-NODATA",
+        "E-YEAR",
+        "E-TIMEOUT",
+        "E-FETCH",
+        "E-UNKNOWN"
+      ],
+      "title": "ErrorCode",
+      "type": "string"
+    },
+    "FileCard": {
+      "additionalProperties": false,
+      "description": "A delivered report file. Carries only display-safe fields — NO report URL,\nfile_id, cmlLink, or server filename. For CML the display filename is the\nserver's own ``Client_Master_List.pdf``; for every other flow it is renamed so\nit does not leak the Client ID.",
+      "properties": {
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/Chip"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "filename": {
+          "title": "Filename",
+          "type": "string"
+        },
+        "format": {
+          "enum": [
+            "pdf",
+            "xlsx"
+          ],
+          "title": "Format",
+          "type": "string"
+        },
+        "helper": {
+          "default": "Trouble opening it? Tell me.",
+          "title": "Helper",
+          "type": "string"
+        },
+        "password_hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Password Hint"
+        },
+        "size_label": {
+          "title": "Size Label",
+          "type": "string"
+        },
+        "type": {
+          "const": "file_card",
+          "default": "file_card",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "filename",
+        "size_label",
+        "format"
+      ],
+      "title": "FileCard",
+      "type": "object"
+    },
+    "Generating": {
+      "additionalProperties": false,
+      "description": "Latency indicator emitted when a turn is expected to exceed five seconds.",
+      "properties": {
+        "message": {
+          "default": "Generating…",
+          "title": "Message",
+          "type": "string"
+        },
+        "type": {
+          "const": "generating",
+          "default": "generating",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "title": "Generating",
+      "type": "object"
+    },
+    "Intent": {
+      "description": "Every intent the router can classify an utterance into (frozen: exactly 16).\n\nEleven report-flow intents + five non-report intents. ``report_holding`` and\n``report_global_detail`` are classifiable but BLOCKED (no captured\nfile-delivery endpoint) — the orchestrator returns a not-yet-available\nmessage rather than attempting fulfilment.",
+      "enum": [
+        "report_pnl",
+        "report_ledger",
+        "report_mtf_ledger",
+        "report_contract_notes",
+        "report_tax",
+        "report_capital_gain",
+        "report_tax_pnl",
+        "report_cml",
+        "report_brokerage",
+        "report_holding",
+        "report_global_detail",
+        "rag_qa",
+        "raise_ticket",
+        "ticket_status",
+        "call_support",
+        "smalltalk_fallback"
+      ],
+      "title": "Intent",
+      "type": "string"
+    },
+    "NoteListCard": {
+      "additionalProperties": false,
+      "properties": {
+        "footer_chips": {
+          "items": {
+            "$ref": "#/$defs/Chip"
+          },
+          "title": "Footer Chips",
+          "type": "array"
+        },
+        "month_dividers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Month Dividers",
+          "type": "array"
+        },
+        "page_size": {
+          "default": 10,
+          "title": "Page Size",
+          "type": "integer"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/NoteRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "total": {
+          "default": 0,
+          "title": "Total",
+          "type": "integer"
+        },
+        "type": {
+          "const": "note_list_card",
+          "default": "note_list_card",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rows"
+      ],
+      "title": "NoteListCard",
+      "type": "object"
+    },
+    "NoteRow": {
+      "additionalProperties": false,
+      "description": "One contract-note row. Carries an opaque, session-scoped ``downloadToken``\nas its download handle — NEVER the FinX ``file_id`` (the contract-note\nendpoints enforce no authentication). The segment badge shows only on\ndual-note days.",
+      "properties": {
+        "date_label": {
+          "title": "Date Label",
+          "type": "string"
+        },
+        "downloadToken": {
+          "title": "Downloadtoken",
+          "type": "string"
+        },
+        "segment_badge": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Segment Badge"
+        },
+        "weekday": {
+          "title": "Weekday",
+          "type": "string"
+        }
+      },
+      "required": [
+        "date_label",
+        "weekday",
+        "downloadToken"
+      ],
+      "title": "NoteRow",
+      "type": "object"
+    },
+    "SessionContext": {
+      "additionalProperties": false,
+      "description": "Typed session context derived from the app-handoff URL query params.\n\n``session_id`` and ``access_token`` are both retained (different FinX\nbackends require different credentials) but are excluded from serialization —\nthey SHALL NOT be echoed to the widget in any response body or render block.",
+      "properties": {
+        "access_token": {
+          "title": "Access Token",
+          "type": "string"
+        },
+        "entry_surface": {
+          "$ref": "#/$defs/EntrySurface"
+        },
+        "is_dark_theme": {
+          "default": false,
+          "title": "Is Dark Theme",
+          "type": "boolean"
+        },
+        "page": {
+          "title": "Page",
+          "type": "string"
+        },
+        "platform": {
+          "title": "Platform",
+          "type": "string"
+        },
+        "session_id": {
+          "title": "Session Id",
+          "type": "string"
+        },
+        "user_id": {
+          "title": "User Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id",
+        "session_id",
+        "access_token",
+        "platform",
+        "page",
+        "entry_surface"
+      ],
+      "title": "SessionContext",
+      "type": "object"
+    },
+    "StepState": {
+      "enum": [
+        "pending",
+        "active",
+        "done"
+      ],
+      "title": "StepState",
+      "type": "string"
+    },
+    "StepperCard": {
+      "additionalProperties": false,
+      "description": "Editable multi-step card. Completed steps stay tappable: reopening a done\nstep clears downstream selections; the prior file card stays in history and\nnothing is re-fetched until generation.",
+      "properties": {
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/StepperStep"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "type": {
+          "const": "stepper_card",
+          "default": "stepper_card",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "steps"
+      ],
+      "title": "StepperCard",
+      "type": "object"
+    },
+    "StepperStep": {
+      "additionalProperties": false,
+      "properties": {
+        "chips": {
+          "items": {
+            "$ref": "#/$defs/Chip"
+          },
+          "title": "Chips",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "selected_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selected Label"
+        },
+        "state": {
+          "$ref": "#/$defs/StepState"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "state"
+      ],
+      "title": "StepperStep",
+      "type": "object"
+    },
+    "TicketConfirmation": {
+      "additionalProperties": false,
+      "properties": {
+        "chips": {
+          "items": {
+            "$ref": "#/$defs/Chip"
+          },
+          "title": "Chips",
+          "type": "array"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "ticket_id": {
+          "title": "Ticket Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "ticket_confirmation",
+          "default": "ticket_confirmation",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ticket_id",
+        "message"
+      ],
+      "title": "TicketConfirmation",
+      "type": "object"
+    },
+    "UserBubble": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "const": "user_bubble",
+          "default": "user_bubble",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "UserBubble",
+      "type": "object"
+    },
+    "WhatsNewItem": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "title": "Body",
+          "type": "string"
+        },
+        "cta": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Chip"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "icon": {
+          "title": "Icon",
+          "type": "string"
+        },
+        "min_app_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min App Version"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "icon",
+        "title",
+        "body"
+      ],
+      "title": "WhatsNewItem",
+      "type": "object"
+    }
+  },
+  "description": "Root that references the whole wire contract so a single JSON Schema dump\ncaptures the request/response envelopes and the render-block union for the\nwidget's TypeScript codegen.",
+  "properties": {
+    "request": {
+      "$ref": "#/$defs/ChatRequest"
+    },
+    "response": {
+      "$ref": "#/$defs/ChatResponse"
+    }
+  },
+  "required": [
+    "request",
+    "response"
+  ],
+  "title": "_WireSchemaRoot",
+  "type": "object"
+}
