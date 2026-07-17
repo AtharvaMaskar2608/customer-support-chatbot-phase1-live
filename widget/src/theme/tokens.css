@@ -1,0 +1,82 @@
+/*
+ * FinX design tokens — ported verbatim from docs/prototype/DESIGN_BRIEF.md and
+ * docs/prototype/screens/*. System font stack ONLY — never load a web font
+ * (spec §8.1). Theme resolves in three ways, in priority order:
+ *   1. :root[data-theme="dark"|"light"]  — set from the isDarkTheme URL param
+ *   2. @media (prefers-color-scheme:dark) when no data-theme is set — fallback
+ *   3. light defaults on :root
+ */
+:root {
+  --brand: #2b6be8;
+  --brand-ink: #1b4fb0;
+  --positive: #17b26a;
+  --danger: #e5484d;
+  --warn: #f5a524;
+  --text: #1a1d21;
+  --text-muted: #5f6b7a;
+  --bg: #ffffff;
+  --surface: #f7f9fc;
+  --border: #d5dce6;
+  --bubble-bot: #f1f5fb;
+  --bubble-user: #2b6be8;
+  --bubble-user-ink: #ffffff;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-chip: 999px;
+  --shadow: 0 6px 24px rgba(20, 29, 45, 0.12);
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Menlo, monospace;
+  --page: #eaeff6;
+  --card: #ffffff;
+  --hair: #e6ebf2;
+  --code: #f3f6fb;
+  color-scheme: light dark;
+}
+
+:root[data-theme='dark'] {
+  --text: #e7ecf3;
+  --text-muted: #9aa7b8;
+  --bg: #0f1620;
+  --surface: #151f2c;
+  --border: #2a3646;
+  --bubble-bot: #1b2736;
+  --bubble-user: #2b6be8;
+  --bubble-user-ink: #ffffff;
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  --page: #0a0e14;
+  --card: #111a26;
+  --hair: #1e2937;
+  --code: #0c141e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --text: #e7ecf3;
+    --text-muted: #9aa7b8;
+    --bg: #0f1620;
+    --surface: #151f2c;
+    --border: #2a3646;
+    --bubble-bot: #1b2736;
+    --bubble-user: #2b6be8;
+    --bubble-user-ink: #ffffff;
+    --shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    --page: #0a0e14;
+    --card: #111a26;
+    --hair: #1e2937;
+    --code: #0c141e;
+  }
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  background: var(--page);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+  font-size: 15px;
+}
