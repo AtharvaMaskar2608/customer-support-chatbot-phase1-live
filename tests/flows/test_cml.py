@@ -321,11 +321,20 @@ async def test_below_size_floor_is_invalid():
     assert blocks[0].code is ErrorCode.E_FETCH
 
 
-async def test_recovery_chips_come_from_frozen_taxonomy():
+async def test_recovery_chips_are_flow_specific_per_render4():
+    # Spec-authoritative resolution (operator-approved 2026-07-17): the proposal
+    # contradicts itself — render-seq #4 lists CML recovery chips as
+    # [↺ Send it again · 🎫 Raise a ticket], while task T2 says render recovery
+    # chips verbatim from frozen ERROR_COPY. We ship render-#4: the frozen
+    # taxonomy's E-FETCH set carries "✉️ Email me both", a dead chip for a
+    # PDF-only flow with no email path. So this asserts render-#4's chip SET, not
+    # the frozen one; the error TEXT is still the frozen verbatim copy.
     mis = FakeMis([AUTH_401_ENV])
     fetcher = FakeFetcher([PDF_BYTES])
 
     blocks = await cml.run(FakeClient(mis), _ctx(), fetcher)
     chip_labels = tuple(c.label for c in blocks[0].chips)
-    # Verbatim from ERROR_COPY — the flow does not invent error chip copy.
-    assert chip_labels == ERROR_COPY[ErrorCode.E_UNKNOWN].chips
+    # render-#4 (proposal), NOT the frozen ERROR_COPY chips.
+    assert chip_labels == ("↺ Send it again", "🎫 Raise a ticket")
+    # TEXT stays frozen verbatim — only the recovery-chip SET is flow-specific.
+    assert blocks[0].text == ERROR_COPY[ErrorCode.E_UNKNOWN].text
