@@ -33,10 +33,22 @@ completed; only the commit sequence differs from the numeric order.
   Schemas (chat_wire, tools) have passing drift tests.
 
 ## Verifier rounds
-Round 1: pending (3 fresh spec-verifiers — spec-compliance, edge-cases, contract-surface).
+Round 1: DONE — 3 fresh spec-verifiers (spec-compliance, edge-cases, contract-surface).
+  Zero blocking divergences; several minor/uncertain completeness gaps → all fixed (commit 5b1a2e6).
+Round 2: pending — NEW fresh panel on the fixed diff.
 
 ## Findings per round
-Round 1: pending
+Round 1 (all minor/uncertain, none blocking; fixed in 5b1a2e6):
+  - schema_migrations DDL not in 0001 file (task 8.1 literal wording) → added to 0001.
+  - tracing thread-stitching + production-judge rule + configure caveat unrepresented → added
+    new_thread_id/inline_judge_allowed + Span/span() + docstring caveat; llm span now recorded.
+  - WhatsNew 24h-cache/red-dot not schema-supported → added whats_new_cache_hours/whats_new_red_dot.
+  - forced-route tool_choice + transport-failure fallback only inline in a test → shipped
+    ROUTE_TOOL_CHOICE + transport_failure_result() constants (manifest defines them).
+  - typed response models missing for several endpoints → added FileDeliveryResponse (+aliases),
+    HoldingsResponseBody, GetProfileResponse, DetailedPnlRow, LedgerDetailsRow, ContractNoteDownloadResponse.
+  - package markers (app/__init__.py, app/store/migrations/__init__.py, tests/__init__.py) flagged
+    as outside manifest → kept (required for importable tree; no overlap with other changes). Not a fix.
 
 ## Open questions / carried-forward [CONFIRM]/[GAP] items (encoded verbatim from proposal)
 - MTF `Margin:1` discriminator unverified (byte-identical on no-MTF account) — LedgerPdfRequest.Margin=1 marked [CONFIRM].
