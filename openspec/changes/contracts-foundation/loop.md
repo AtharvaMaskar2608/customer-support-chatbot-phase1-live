@@ -6,7 +6,12 @@ testCommand: `pytest tests/contracts tests/finx`
 doneCondition: package imports cleanly; full contract+parser suite passes offline
 (no network, no live DB); `openspec validate --strict` passes.
 
-## Status: VERIFIER-CONVERGED — pre-ship integration check next
+## Status: SHIPPED — PR open, awaiting Gate 2
+
+PR: https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/1
+Pre-ship: branch already based on latest origin/main (7d9f02d); no rebase needed.
+Full behavior harness on head = 82 passed offline (no evals/qa — no chat behavior/UI).
+doneCondition on head: imports clean, openspec validate --strict valid, runner idempotent, tree clean.
 
 Implementation/commit order is dependency-first (leaf contract modules before
 consumers), so every commit is importable and green. All tasks.md sections are
