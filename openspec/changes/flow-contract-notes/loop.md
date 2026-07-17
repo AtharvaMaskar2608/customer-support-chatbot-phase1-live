@@ -1,5 +1,7 @@
 # loop.md — flow-contract-notes
 
+**Status: SHIPPED — PR #5** (https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/5). Gate 2 (human merge review) pending.
+
 Resume-from-this-file log. If it isn't here, it didn't happen.
 
 ## Assignment
@@ -84,14 +86,31 @@ Resume-from-this-file log. If it isn't here, it didn't happen.
   branch 204/1/2+/>50; note-list keyed by file_id; download + %PDF validation;
   one silent retry → E-FETCH; file_id never on wire (serialized-JSON assertion)
   nor logged (caplog assertion); session-scoped token.
-- **T4 (spec harness + verifier panel)** — in progress (spawning fresh panel).
-- **T5 (ship)** — pending.
+- **T4 (spec harness)** — DONE. testCommand `pytest tests/flows/
+  test_contract_notes.py` → 30 passed. Fresh verifier panel SKIPPED per operator
+  lean directive (see Verifier rounds).
+- **T5 (ship)** — DONE. Rebased cleanly onto latest origin/main (23 commits;
+  PRs #2 finx-http-adapters + #3 flow-brokerage merged) — no conflicts. Re-ran
+  testCommand (30 passed) + full `uv run pytest` (205 passed) on the rebased head.
+  Pushed `flow-contract-notes`; opened PR #5.
 
 ## Verifier rounds
 
-- Round 1: spawning 3 fresh spec-verifiers (spec-compliance / edge-cases /
-  contract-surface), each given ONLY the proposal dir + `git diff main...
-  flow-contract-notes`.
+- **Round 1 — SKIPPED per operator lean directive** (human operator, via team
+  lead): no fresh spec-verifier panel and no self-check spec read-through for this
+  change, to cut agent/token overhead. Trust the implementation. Spec harness for
+  this change = testCommand + full behavior suite only; independent from-spec
+  verification is deferred to Gate 2 human review on the PR.
+
+## Ship metrics
+
+- Verifier panels run: 0 (skipped per lean directive).
+- Findings per round: n/a.
+- Escalations: 0.
+- testCommand: `pytest tests/flows/test_contract_notes.py` → 30 passed.
+- Behavior harness (full `uv run pytest`) on rebased head → 205 passed, 1 warning.
+- Rebase: clean, 0 conflicts, 3 commits replayed onto origin/main @ 9b6d31e.
+- PR: #5 (Gate 2 pending).
 
 ## Open questions / carried-forward [CONFIRM]
 

@@ -4,8 +4,8 @@ Vertical slice — the self-contained Contract Note flow module. Exactly two
 owned files (`app/flows/contract_notes.py`, `tests/flows/test_contract_notes.py`);
 `app/flows/__init__.py` is engine-owned (discovery registry) and NOT created here.
 
-- [ ] **T1 — Scaffold.** `tasks.md` + `loop.md` in the proposal dir. (this commit)
-- [ ] **T2 — Flow module.** `app/flows/contract_notes.py`:
+- [x] **T1 — Scaffold.** `tasks.md` + `loop.md` in the proposal dir. (this commit)
+- [x] **T2 — Flow module.** `app/flows/contract_notes.py`:
   - module-level `FLOW: FlowSpec` (intent `report_contract_notes`, window from
     remote-config: floor 2018-01-01, cap today, no max range) discovered by
     module presence — no registration import.
@@ -21,13 +21,15 @@ owned files (`app/flows/contract_notes.py`, `tests/flows/test_contract_notes.py`
   - **FLAG A defense:** `client_id`/`client_code` always the session `user_id`,
     never user input; `file_id` lives only in a session-scoped token vault —
     never on the wire, never logged.
-- [ ] **T3 — Tests from the proposal.** `tests/flows/test_contract_notes.py`:
+- [x] **T3 — Tests from the proposal.** `tests/flows/test_contract_notes.py`:
   discovery/registration, session-bound identity + snake_case list request,
   StatusCode branching (204 / 1 / 2+ / >50), note-list keyed by `file_id` with
   correct badges, download validation + one-silent-retry → E-FETCH, timeout →
   E-TIMEOUT, `file_id` never on the wire nor logged, session-scoped token,
   calendar bounds, email confirmation (single + bulk).
-- [ ] **T4 — Spec harness.** `pytest tests/flows/test_contract_notes.py` green +
-  fresh spec-verifier panel with zero divergences.
-- [ ] **T5 — Ship.** Rebase onto latest origin/main, full `uv run pytest` green,
-  push, open PR.
+- [x] **T4 — Spec harness.** `pytest tests/flows/test_contract_notes.py` green
+  (30 passed). Fresh spec-verifier panel SKIPPED per operator lean directive
+  (trust the implementation; token/overhead cut) — spec harness = testCommand +
+  full suite only.
+- [x] **T5 — Ship.** Rebased cleanly onto latest origin/main (PRs #2, #3 merged),
+  full `uv run pytest` green (205 passed), pushed, PR #5 open.
