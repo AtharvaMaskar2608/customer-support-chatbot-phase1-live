@@ -40,12 +40,15 @@ testCommand: `pytest tests/finx_adapters/`.
       authType/authorization-SSO-JWT/source, camelCase body, cmlLink at
       body.cmlLink, never handed SessionId, HTTP-401->FinXAuthError, cmlLink
       never logged)
-- [ ] Task 6 — MF profile adapter (first-name-only PII discipline)
+- [x] Task 6 — MF profile adapter, first-name-only PII discipline (5 tests
+      green: SSO-JWT auth + {InvCode} body; success reduced to first name only;
+      PAN/email/mobile/DOB/bank never in returned envelope or logs; error
+      discards payload; 401->FinXAuthError)
 - [ ] Task 7 — COTI holdings adapter
 - [ ] Task 8 — facade + package exports
 - [ ] Task 9 — consolidated redaction/no-leak tests + doneCondition sweep
 
-Current task: Task 6.
+Current task: Task 7.
 
 ## Verifier rounds
 
