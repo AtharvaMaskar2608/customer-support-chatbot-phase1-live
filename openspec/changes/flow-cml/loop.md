@@ -3,7 +3,7 @@
 Resume-from-this-file log for the flow-cml worktree lead. If it isn't here, it
 didn't happen.
 
-## Status: SHIPPING (lean tests-green path) — PR link filled in below once opened
+## Status: SHIPPED — PR #16 (lean tests-green path), Gate 2 pending
 - Directive (2026-07-17, human operator via team lead), superseding earlier passes:
   skip the fresh self-check / spec-divergence review; the gate is tests-green. Run
   testCommand → rebase onto origin/main → full `uv run pytest -q` → if green, ship.
@@ -81,4 +81,4 @@ DONE — shipped via the lean tests-green path. PR open for Gate 2.
 - testCommand: 16 passed. Full behavior harness (rebased onto ecb6ac3): 312 passed.
 - Rebase: clean, 0 conflicts. Escalations: 1 earlier (error-chip contradiction) —
   resolved by the operator's tests-green directive (deferred to Gate 2).
-- PR: __PR_LINK__
+- PR: #16 — https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/16
