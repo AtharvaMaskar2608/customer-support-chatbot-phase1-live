@@ -33,7 +33,7 @@ it didn't happen.
 | T1 | Scaffold Vite+React+TS under widget/ | done (npm install ok; typecheck+smoke green) |
 | T2 | Generate wire types from frozen schema | done (gen:types → wireTypes.generated.ts; Block union; coverage test green) |
 | T3 | Design tokens + theming | done (FinX tokens light+dark; useTheme; no-web-font grep test green) |
-| T4 | Bootstrap from URL params | pending |
+| T4 | Bootstrap from URL params | done (6 params → SessionContext; entry_surface from page; accessToken never persisted/logged — tests green) |
 | T5 | Mock server + fixtures | pending |
 | T6 | chatClient + conversation state | pending |
 | T7 | Render-block component set | pending |
@@ -43,7 +43,7 @@ it didn't happen.
 | T11 | App assembly + mock entrypoint | pending |
 | T12 | Agent-driven E2E | pending |
 
-Current task: T4 (about to start) — bootstrap from URL params
+Current task: T5 (about to start) — mock server + fixtures
 
 ## Verifier rounds
 (none yet)
