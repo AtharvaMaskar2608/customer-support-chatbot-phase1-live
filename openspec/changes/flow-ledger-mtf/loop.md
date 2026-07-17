@@ -1,9 +1,14 @@
 # loop.md — flow-ledger-mtf
 
+Status: **SHIPPED** — PR #6 (https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/6), Gate 2 pending.
+
 Worktree: `/home/choice/projects/customer-support/flow-ledger-mtf`
-Branch: `flow-ledger-mtf` (base main @ cfb22a1 — contracts-foundation merged, PR #1)
-Owner directive: Wave 1 full fan-out; target PR ~30 min. FAST VERIFY (1 combined
-verifier, bound 2 rounds).
+Branch: `flow-ledger-mtf` (rebased onto origin/main @ 9b6d31e — PR #2 finx-http-adapters
+and PR #3 flow-brokerage merged; base was cfb22a1 / PR #1 contracts-foundation).
+Owner directive (superseded): Wave 1 full fan-out; target PR ~30 min.
+**Final directive (human operator, token-overhead cut): LEAN NO-PANEL — skip the
+fresh-verifier panel AND the self-check spec read-through entirely; trust the
+implementation. Ship on green testCommand + green full suite on rebased head.**
 
 ## Contract summary (frozen, read-only — verified present on main)
 
@@ -60,13 +65,30 @@ verifier, bound 2 rounds).
 - [x] 4. `pytest tests/flows/test_ledger.py` → 32 passed. Full `uv run pytest` →
       114 passed (82 baseline + 32). doneCondition items each covered by a test.
 
+- [x] 5. Ship. Per LEAN NO-PANEL directive: verifier panel SKIPPED, self-check
+      read-through SKIPPED. Rebased onto origin/main (9b6d31e, clean, no conflicts);
+      testCommand green (32 passed); full repo suite green (207 passed) on rebased
+      head; branch pushed; PR #6 opened.
+
 ## Current task
 
-- Task 5: fresh spec-verifier (FAST VERIFY: 1 combined verifier, all 3 lenses).
+- Done. Awaiting Gate 2 human review on PR #6.
 
 ## Verifier rounds
 
-- none yet.
+- none — SKIPPED by explicit human-operator directive (lean no-panel, token-overhead
+  cut). Implementation trusted; correctness rests on the 32 from-proposal tests +
+  full-suite green on the rebased head.
+
+## Final metrics
+
+- Tasks completed: 5/5 (task 5 = ship; verifier sub-step waived by directive).
+- Verifier panels run: 0 (waived). Findings: n/a. Escalations: 0.
+- testCommand: `pytest tests/flows/test_ledger.py` → 32 passed.
+- Behavior harness (full `uv run pytest -q`) on rebased head: 207 passed, 1 warning.
+- Rebase: onto origin/main @ 9b6d31e, clean (no conflicts).
+- Files: `app/flows/ledger.py` (668 LOC), `tests/flows/test_ledger.py` (488 LOC,
+  32 tests), `tests/flows/__init__.py` (empty).
 
 ## Open questions / [CONFIRM] / [GAP]
 
