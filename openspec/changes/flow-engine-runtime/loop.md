@@ -46,7 +46,8 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
       test_calendar.py 9 passed)
 - [x] T4 FY resolution (fy.py: resolve_fy via frozen helpers, normalize_fy,
       out-of-window -> EYearError with no adapter call; test_fy.py 6 passed)
-- [ ] T5 follow-up cap
+- [x] T5 follow-up cap (chips.py shared factories + followups.py enforce_followups
+      cap-from-ctx; test_followups.py 3 passed)
 - [ ] T6 selection/byte cache
 - [ ] T7 error mapping
 - [ ] T8 delivery assembly
@@ -54,7 +55,7 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [ ] T10 executor + public API
 - [ ] T11 suite green + doneCondition
 
-Current task: T5.
+Current task: T6.
 
 ## Verifier rounds
 (none yet)
