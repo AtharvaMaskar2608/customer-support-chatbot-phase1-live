@@ -44,11 +44,14 @@ testCommand: `pytest tests/finx_adapters/`.
       green: SSO-JWT auth + {InvCode} body; success reduced to first name only;
       PAN/email/mobile/DOB/bank never in returned envelope or logs; error
       discards payload; 401->FinXAuthError)
-- [ ] Task 7 — COTI holdings adapter
+- [x] Task 7 — COTI holdings adapter (4 tests green: Session-prefixed auth +
+      ssotoken SSO-JWT header + body accessToken FINX-JWT; lDictHoldingData
+      keyed by ISIN; SessionId/both JWTs never logged; 401->FinXAuthError;
+      in-band Fail returned not raised)
 - [ ] Task 8 — facade + package exports
 - [ ] Task 9 — consolidated redaction/no-leak tests + doneCondition sweep
 
-Current task: Task 7.
+Current task: Task 8.
 
 ## Verifier rounds
 
