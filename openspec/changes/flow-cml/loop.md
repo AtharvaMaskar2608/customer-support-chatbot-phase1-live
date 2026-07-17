@@ -3,7 +3,7 @@
 Resume-from-this-file log for the flow-cml worktree lead. If it isn't here, it
 didn't happen.
 
-## Status: CORRECTIVE PR open — render-#4 chips (PR #16 merged the wrong version)
+## Status: CORRECTIVE PR #18 open — render-#4 chips (PR #16 merged the frozen version)
 - **What happened**: PR #16 (branch `flow-cml`) was opened first with the frozen-
   taxonomy (T2) recovery chips. The operator then decided render-seq #4 (flow-
   specific 2-chip set). I implemented render-#4 and force-pushed it to `flow-cml`,
@@ -69,4 +69,4 @@ reported to the team lead.
   clean cherry-pick of the render-#4 commit onto current main (0 conflicts).
 - Escalations: 2 — (1) error-chip contradiction → resolved render-#4; (2) PR #16
   merged the frozen version instead of render-#4 → corrective PR (this).
-- PRs: #16 (MERGED, frozen — superseded) + corrective PR __CORRECTIVE_PR__.
+- PRs: #16 (MERGED, frozen — superseded) + corrective PR #18 — https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/18.
