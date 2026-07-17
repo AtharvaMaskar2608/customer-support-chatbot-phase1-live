@@ -48,7 +48,10 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
 - [x] Task 2 — precedence resolver (`_resolve_precedence` on frozen
       PRECEDENCE_TOKENS; word-boundary token match; report-only override +
       generalization carve-out; test_precedence.py green, 16 cases)
-- [ ] Task 3 — FY/AY normalization
+- [x] Task 3 — FY/AY normalization (`parse_fy_or_ay` + `_extract_params`;
+      consecutive-year guard rejects ISO date fragments; AY start S → FY S-1 +
+      needs_confirmation; segment/format/delivery augment only unset fields;
+      non-report intents no-op; test_fy_normalization.py green, 12 cases)
 - [ ] Task 4 — language detection + sticky rule
 - [ ] Task 5 — follow-up + escalation
 - [ ] Task 6 — classifier + route() assembly
