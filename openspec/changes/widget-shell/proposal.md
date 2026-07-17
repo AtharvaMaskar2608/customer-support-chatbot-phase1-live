@@ -81,11 +81,27 @@ A React single-page widget (Vite + TypeScript) that:
   and follow-up cap (2) are enforced server-side and surfaced by the blocks the
   server returns; the widget does not re-implement the caps.
 
+- **WebMCP page-tool registration (agent-native surface, additive)** — the
+  widget registers a small set of page-level tools via the W3C WebMCP draft API
+  (`document.modelContext.registerTool({name, description, inputSchema,
+  execute})`): `send_message` (free text), `tap_chip` (by actionToken),
+  `get_conversation_state` (read-only block log + turn state). Typed against
+  the `webmcp-types` npm package (dev dependency, type definitions only);
+  wrapped in feature detection (`if (document.modelContext) …`) so it is a
+  silent no-op in every browser that does not implement the draft — no
+  polyfill, no runtime dependency, no behavioral change for normal users.
+  Registration code lives in `widget/src/webmcp.ts` (widget-owned; no backend
+  or contract change — the tools call the same internal actions the UI uses).
+
 **Development strategy:** build against a mock server (or Vite dev middleware /
 MSW) that implements the wire contract and serves fixtures for every block type
 and both entry seeds, so the widget parallelizes fully with the backend. The
 prototype screens in `docs/prototype/screens/` are the visual acceptance
-reference.
+reference. **Agent-driven E2E is part of done** (Gate-1 amendment,
+2026-07-17): Claude Code must be able to drive the running widget against the
+mock server via the project-scoped Playwright MCP server (`.mcp.json` →
+`@playwright/mcp`) or the /browse harness — open the widget, send a free-text
+message, walk a stepper via chips, and observe the resulting blocks.
 
 ## Capabilities
 
@@ -110,7 +126,9 @@ read-only and adds no backend behavior. It does not modify any frozen contract.
   a static remote-config GET (chip sets, greeting pool, placeholder pool, limits
   — schema owned by `remote-config`). No other network surface exists in this
   code.
-- **Out of scope**: Playwright/browser e2e (optional later); real backend
+- **Out of scope**: WebMCP beyond registration (no polyfill; native browser
+  support does not exist yet — the tools activate automatically when a browser
+  agent implements the draft); real backend
   integration (arrives when `conversation-orchestrator` lands `POST /api/chat`);
   holding-file delivery and Global-Detail download (owner-BLOCKED — the widget
   renders holdings only as a `data-card`, never a file card); streaming
@@ -133,6 +151,7 @@ widget/
   src/
     main.tsx                   # mount, URL-param bootstrap
     bootstrap.ts               # parse userId/sessionId/accessToken/isDarkTheme/platform/page
+    webmcp.ts                  # WebMCP page-tool registration (webmcp-types devDep; feature-detected no-op)
     theme/
       tokens.css               # FinX design tokens (light + dark), system font stack
       useTheme.ts              # isDarkTheme param + prefers-color-scheme fallback
@@ -284,6 +303,19 @@ frontend dependency graph per the ownership map.
    mock server and appends returned blocks in order; `accessToken` never appears
    in logs or persisted storage.
 
+6. WebMCP registration verified by unit test: with a mocked
+   `document.modelContext`, the three page tools register with valid
+   input_schemas and `execute` routes to the same internal actions the UI
+   uses; with `document.modelContext` absent, the widget boots identically
+   (feature-detected no-op).
+7. **Agent-driven E2E (required)**: an agent session (project-scoped
+   Playwright MCP from `.mcp.json`, or /browse) drives the built widget
+   against the mock server — loads the entry surface, sends a free-text
+   message, taps chips through a stepper to a file card, and asserts the
+   rendered blocks. This proves "Claude Code can test the frontend" as a
+   deliverable, not an afterthought.
+
 **Test command:** `npm --prefix widget test` (vitest + react-testing-library,
 fixture-based, no live API). Type safety: `npm --prefix widget run typecheck`
-(tsc `--noEmit`). Playwright browser e2e is optional and deferred.
+(tsc `--noEmit`). E2E: the agent-driven pass above, run against
+`npm --prefix widget run dev:mock`.

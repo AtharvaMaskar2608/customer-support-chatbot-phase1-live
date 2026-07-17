@@ -24,9 +24,10 @@ The system SHALL define the wrapper to expose a single completion method that
 accepts messages, an optional system prompt, and optional tools, and returns the
 response text plus token usage (prompt and completion tokens). The wrapper SHALL
 contain no prompt text, no routing logic, and no flow logic — those belong to the
-router and RAG changes. The wrapper SHALL NOT send `temperature`, `top_p`, or
-`top_k`, because `claude-sonnet-5` runs adaptive thinking by default and rejects
-non-default sampling parameters.
+router and RAG changes. The wrapper SHALL NOT expose or send `temperature`,
+`top_p`, or `top_k` (`claude-sonnet-5` rejects non-default sampling parameters),
+SHALL omit the `thinking` parameter (adaptive thinking is on by default), and SHALL
+default `max_tokens` to approximately 16000 for non-streaming calls.
 
 #### Scenario: Wrapper returns text and usage
 
@@ -55,14 +56,23 @@ not on the raw Anthropic client.
 The wrapper SHALL pass `tools=`, `tool_choice=`, and `output_config.format` through
 to the Anthropic SDK unchanged. Structured LLM outputs SHALL arrive only as
 schema-validated `tool_use` blocks or `output_config.format` json_schema output.
-The system SHALL NOT parse free-text JSON for any structured decision, anywhere.
-The wrapper SHALL surface the response `stop_reason` (including `tool_use`,
-`pause_turn`, and `refusal`) so the orchestrator can drive the agentic loop.
+The canonical mechanism for structured **non-tool** output (e.g. `RagAnswer` flags
+and citations) SHALL be `output_config: {format: {type: "json_schema", schema:
+...}}` (or the SDK's `messages.parse()` with the Pydantic model); the deprecated
+top-level `output_format` parameter SHALL NOT be used. The system SHALL NOT parse
+free-text JSON for any structured decision, anywhere. The wrapper SHALL surface the
+response `stop_reason` (including `tool_use`, `pause_turn`, and `refusal`) so the
+orchestrator can drive the agentic loop.
 
 #### Scenario: Tools and tool_choice pass through
 
 - **WHEN** the caller supplies `tools=` and `tool_choice=`
 - **THEN** the wrapper SHALL forward them unchanged and return the `tool_use` blocks and `stop_reason` without post-processing the model text
+
+#### Scenario: Structured non-tool output uses output_config.format
+
+- **WHEN** a structured non-tool output is needed
+- **THEN** it SHALL be requested via `output_config.format` json_schema (or `messages.parse()`), never via the deprecated top-level `output_format` parameter
 
 #### Scenario: No free-text JSON parsing
 

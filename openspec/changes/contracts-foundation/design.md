@@ -269,9 +269,10 @@ and `output_config.format` through unchanged (native tool use + structured
 non-tool outputs, D15); structured decisions arrive only as schema-validated
 `tool_use` blocks or `output_config.format` json_schema output, never parsed from
 free-text JSON. Because `claude-sonnet-5` runs adaptive thinking by default and
-rejects non-default sampling params, the wrapper does not send
-`temperature`/`top_p`/`top_k`. Model IDs verified current against the Anthropic
-model catalog.
+rejects non-default sampling params, the wrapper does not expose or send
+`temperature`/`top_p`/`top_k`, omits the `thinking` parameter (adaptive by
+default), and defaults `max_tokens` to ~16000 for non-streaming calls. Model IDs
+verified current against the Anthropic model catalog.
 
 ### D10 — Config reaches the widget in the chat response, not a separate fetch
 
@@ -371,17 +372,20 @@ The router issues its classification as a **forced** single tool call:
 Structured **non-tool** outputs (e.g. grounded RAG generation shapes) use
 `output_config.format` json_schema. Prompt-then-parse-JSON is forbidden everywhere.
 
-The orchestrator turn loop is an explicit `while stop_reason == "tool_use"` loop:
-issue the Claude call with `tools=`; on `stop_reason == "tool_use"`, execute **all**
-`tool_use` blocks via the registry, append the assistant content (including the
+The orchestrator turn loop is an explicit `while` over `stop_reason`: issue the
+Claude call with `tools=`; on `tool_use`, execute **all** `tool_use` blocks in the
+assistant message via the registry, append the assistant content (including the
 `tool_use` blocks) and return **all** `tool_result` blocks (each carrying its
-matching `tool_use_id`) in **one** user message, then re-call. A `pause_turn`
-stop reason is re-sent to resume; a `refusal` stop reason routes to escalation.
-The loop is **bounded at ≤3 tool iterations per turn**, then escalates. Structured
-UI events (chip / calendar / stepper selections) bypass the LLM entirely and drive
-the deterministic engine directly. Fulfilment stays deterministic **inside** the
-tool implementations (spec §2.2 preserved — the LLM chooses the tool; the tool code
-drives the fixed flow).
+matching `tool_use_id`) in **one** user message (never split across messages), then
+re-call; on `pause_turn`, re-send and continue; on `end_turn`, break with the final
+text; on `refusal`, map to the escalation path. The loop is **bounded at ≤3 tool
+iterations per turn**, then escalates. This change deliberately chooses the
+**explicit manual loop over the SDK's beta tool_runner** — no beta dependency, and
+deterministic, verifiable exit conditions (per CLAUDE.md's machine-loop principle).
+Structured UI events (chip / calendar / stepper selections) bypass the LLM entirely
+and drive the deterministic engine directly. Fulfilment stays deterministic
+**inside** the tool implementations (spec §2.2 preserved — the LLM chooses the tool;
+the tool code drives the fixed flow).
 
 - **Rationale:** the Anthropic customer-support agentic pattern — schema-validated
   tool calls, not free-text JSON — removes an entire class of parse-error handling,
