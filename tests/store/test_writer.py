@@ -230,3 +230,83 @@ async def test_worker_continues_after_a_transient_failure(fake_factory):
 
     assert writer.dropped_count == 1
     assert conn.commits == 1  # the second record committed
+
+
+# --- 6. Worker holds its own connection (reused across turns; reconnect on error) --
+
+
+async def test_worker_reuses_one_connection_across_turns(fake_factory):
+    """The worker opens ITS OWN connection once and reuses it for every turn,
+    closing it once at shutdown — not a connect/disconnect per turn."""
+    writer = ConversationStoreWriter(fake_factory)
+    await writer.start()
+    for i in range(4):
+        writer.enqueue(make_record(turn_number=i))
+    await writer.stop()
+
+    assert fake_factory.call_count == 1  # one connection for all four turns
+    assert fake_factory.conn.opened == 1
+    assert fake_factory.conn.closed == 1  # released cleanly at stop
+    assert fake_factory.conn.commits == 4
+
+
+async def test_worker_reconnects_after_an_insert_error(fake_factory):
+    """A failed insert discards the (possibly broken) connection; the next turn
+    reconnects — so one bad turn does not poison the writer."""
+    conn = fake_factory.conn
+    writer = ConversationStoreWriter(fake_factory)
+    await writer.start()
+
+    conn.raise_on_execute = RuntimeError("connection reset")
+    writer.enqueue(make_record())
+    while writer.dropped_count == 0:
+        await asyncio.sleep(0)
+    conn.raise_on_execute = None
+    writer.enqueue(make_record())
+    await writer.stop()
+
+    assert writer.dropped_count == 1
+    assert conn.commits == 1
+    # Reconnected after the error: the factory was asked for a fresh connection
+    # a second time (open on turn 1, discard on error, reopen on turn 2).
+    assert fake_factory.call_count == 2
+    assert conn.closed == 2  # broken conn closed after the error + clean close at stop
+
+
+async def test_connection_factory_failure_is_contained(fake_conn):
+    """If opening the connection itself raises, the record is dropped and the
+    worker survives to serve the next record once the factory recovers."""
+    factory = FakeFactory(fake_conn, open_error=RuntimeError("db down"))
+    writer = ConversationStoreWriter(factory)
+    await writer.start()
+
+    writer.enqueue(make_record())
+    while writer.dropped_count == 0:
+        await asyncio.sleep(0)
+    assert writer.dropped_count == 1  # open failed -> log-and-drop, worker alive
+
+    factory.open_error = None  # DB comes back
+    writer.enqueue(make_record())
+    await writer.stop()
+    assert fake_conn.commits == 1  # the worker recovered and persisted the next turn
+
+
+async def test_stop_does_not_hang_if_worker_already_exited(fake_factory):
+    """The no-hang guard: even if the worker task has exited with records still
+    unfinished (task_done never called), stop() must not block forever on the
+    drain."""
+    writer = ConversationStoreWriter(fake_factory)
+    await writer.start()
+
+    # Simulate a dead worker: cancel its task and let it finish.
+    writer._worker_task.cancel()
+    try:
+        await writer._worker_task
+    except asyncio.CancelledError:
+        pass
+    # An unfinished item sits in the queue (queue.join() would block forever).
+    writer.enqueue(make_record())
+
+    # stop() must still return promptly rather than hang on queue.join().
+    await asyncio.wait_for(writer.stop(), timeout=2.0)
+    assert writer._worker_task is None

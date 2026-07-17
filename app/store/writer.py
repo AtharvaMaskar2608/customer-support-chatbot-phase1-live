@@ -98,15 +98,28 @@ class ConversationStoreWriter:
     async def stop(self) -> None:
         """Drain queued records, then cancel the worker and release it.
 
-        Waits for every already-enqueued record to be processed (``queue.join()``)
-        before cancelling, so a clean lifespan shutdown does not silently drop the
-        tail of the queue.
+        Waits for every already-enqueued record to be processed before cancelling,
+        so a clean lifespan shutdown does not silently drop the tail of the queue.
+        The drain is raced against the worker task: if the worker has already
+        exited (it should not — the loop is un-killable — but this is the guard),
+        ``stop()`` still returns instead of blocking on a ``queue.join()`` that can
+        never complete.
         """
         if self._worker_task is None:
             return
+        join_task = asyncio.ensure_future(self._queue.join())
         try:
-            await self._queue.join()
+            await asyncio.wait(
+                {join_task, self._worker_task},
+                return_when=asyncio.FIRST_COMPLETED,
+            )
         finally:
+            if not join_task.done():
+                join_task.cancel()
+                try:
+                    await join_task
+                except asyncio.CancelledError:
+                    pass
             self._worker_task.cancel()
             try:
                 await self._worker_task
@@ -124,39 +137,64 @@ class ConversationStoreWriter:
         try:
             self._queue.put_nowait(record)
         except asyncio.QueueFull:
-            self._drop(record, "queue full")
+            self._safe_drop(record, "queue full")
 
     async def _worker(self) -> None:
-        """Drain the queue forever: insert each turn, log-and-drop on failure.
+        """Drain the queue forever on the worker's own dedicated DB connection.
 
-        A single failing insert must never kill the worker or surface to the
-        caller — the loop catches everything, drops the record, and continues.
-        Exactly one ``task_done()`` per pulled item keeps ``stop()``'s
-        ``queue.join()`` accurate. Cancellation (from ``stop()``) propagates out.
+        The worker opens one connection (its own, never shared with the request
+        path) and reuses it across turns. It is un-killable by design: any insert
+        failure is logged-and-dropped and the (possibly broken) connection is
+        discarded so the next record reconnects — a single bad turn never tears
+        down the worker or reaches the caller. Exactly one ``task_done()`` per
+        pulled item keeps ``stop()``'s drain accurate. Only cancellation (from
+        ``stop()``) ends the loop; the ``finally`` releases the connection.
         """
-        while True:
-            record = await self._queue.get()
-            try:
-                await self._insert_turn(record)
-            except asyncio.CancelledError:
+        cm = None  # the open connection context manager, held for the worker's life
+        conn = None
+        try:
+            while True:
+                record = await self._queue.get()
+                try:
+                    if conn is None:
+                        cm = self._connection_factory()
+                        conn = await cm.__aenter__()
+                    await self._insert_turn(conn, record)
+                except asyncio.CancelledError:
+                    self._queue.task_done()
+                    raise
+                except Exception as exc:  # noqa: BLE001 — log-and-drop is the policy
+                    self._safe_drop(record, "insert failed", exc)
+                    # Discard the connection: after a failed transaction (or a dead
+                    # socket) it may be unusable, so the next record reconnects.
+                    cm, conn = await self._close_cm(cm)
                 self._queue.task_done()
-                raise
-            except Exception as exc:  # noqa: BLE001 — log-and-drop is the policy
-                self._drop(record, "insert failed", exc)
-            self._queue.task_done()
+        finally:
+            await self._close_cm(cm)
 
-    async def _insert_turn(self, record: TurnRecord) -> None:
-        """Persist one turn in a single transaction: upsert the parent thread
-        (satisfies the FK, records ``user_id``), then insert the turn row with
-        every §3.2 column populated."""
-        async with self._connection_factory() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute(
-                    _UPSERT_THREAD_SQL,
-                    (record.thread_id, record.user_id, record.model_version),
-                )
-                await cur.execute(_INSERT_TURN_SQL, self._turn_params(record))
-            await conn.commit()
+    async def _insert_turn(self, conn, record: TurnRecord) -> None:
+        """Persist one turn in a single transaction on the worker's connection:
+        upsert the parent thread (satisfies the FK, records ``user_id``), then
+        insert the turn row with every §3.2 column populated."""
+        async with conn.cursor() as cur:
+            await cur.execute(
+                _UPSERT_THREAD_SQL,
+                (record.thread_id, record.user_id, record.model_version),
+            )
+            await cur.execute(_INSERT_TURN_SQL, self._turn_params(record))
+        await conn.commit()
+
+    @staticmethod
+    async def _close_cm(cm) -> tuple[None, None]:
+        """Best-effort close of the worker's connection context manager. Closing a
+        broken connection must never raise into the worker, so failures here are
+        swallowed. Returns ``(None, None)`` to reset the ``cm``/``conn`` locals."""
+        if cm is not None:
+            try:
+                await cm.__aexit__(None, None, None)
+            except Exception:  # noqa: BLE001 — a failed close must not kill the worker
+                pass
+        return None, None
 
     @staticmethod
     def _turn_params(record: TurnRecord) -> tuple:
@@ -181,14 +219,27 @@ class ConversationStoreWriter:
             record.created_at,
         )
 
+    def _safe_drop(self, record, reason: str, exc: Exception | None = None) -> None:
+        """``_drop`` that can never raise into the worker loop — even a malformed
+        (non-``TurnRecord``) enqueued object must not kill the worker."""
+        try:
+            self._drop(record, reason, exc)
+        except Exception:  # noqa: BLE001 — dropping must not itself raise
+            self.dropped_count += 1
+            logger.warning("store_write_dropped: %s (record unloggable)", reason)
+
     def _drop(self, record: TurnRecord, reason: str, exc: Exception | None = None) -> None:
-        """Log-and-drop: identifiers only (never message PII) + metric bump."""
+        """Log-and-drop: identifiers only (never message PII) + metric bump.
+
+        Uses ``getattr`` so a record missing an identifier still logs and drops
+        without raising (the caller — ``enqueue`` and the worker — promise never to
+        surface an exception)."""
         self.dropped_count += 1
         logger.warning(
             "store_write_dropped: %s (thread_id=%s turn_id=%s turn_number=%s)",
             reason,
-            record.thread_id,
-            record.turn_id,
-            record.turn_number,
+            getattr(record, "thread_id", None),
+            getattr(record, "turn_id", None),
+            getattr(record, "turn_number", None),
             exc_info=exc,
         )

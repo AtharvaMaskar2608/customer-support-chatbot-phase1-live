@@ -35,10 +35,13 @@ class _FakeCursor:
 
 
 class _FakeConnCtx:
-    def __init__(self, conn: "FakeConnection") -> None:
+    def __init__(self, conn: "FakeConnection", factory: "FakeFactory") -> None:
         self._conn = conn
+        self._factory = factory
 
     async def __aenter__(self) -> "FakeConnection":
+        if self._factory.open_error is not None:
+            raise self._factory.open_error
         self._conn.opened += 1
         return self._conn
 
@@ -76,13 +79,22 @@ class FakeConnection:
 class FakeFactory:
     """A connection factory mimicking ``session_factory(engine)`` /
     ``engine.connection``: a zero-arg callable returning an async context
-    manager that yields the (single, recording) connection."""
+    manager that yields the (single, recording) connection.
 
-    def __init__(self, conn: FakeConnection) -> None:
+    ``call_count`` records how many times the writer asked for a connection (so
+    tests can prove the worker reuses one connection across turns and only
+    reconnects after an error). Set ``open_error`` to make opening a connection
+    raise, exercising the writer's connection-factory failure containment.
+    """
+
+    def __init__(self, conn: FakeConnection, open_error: Exception | None = None) -> None:
         self.conn = conn
+        self.call_count = 0
+        self.open_error = open_error
 
     def __call__(self) -> _FakeConnCtx:
-        return _FakeConnCtx(self.conn)
+        self.call_count += 1
+        return _FakeConnCtx(self.conn, self)
 
 
 @pytest.fixture
