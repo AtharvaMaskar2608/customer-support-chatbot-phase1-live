@@ -27,7 +27,10 @@ testCommand: `pytest tests/finx_adapters/`.
 - [x] Task 2 — byte-fetch helper + validation primitive (14 tests green:
       %PDF/PK accept above floor, short/empty/wrong-magic/404/5xx→FinXFetchError,
       timeout→FinXTimeoutError, signed URL never logged; frozen ByteValidation used)
-- [ ] Task 3 — .NET middleware adapter (6 endpoints)
+- [x] Task 3 — .NET middleware adapter (6 endpoints) (13 tests green:
+      URL+SessionId header/body, RequestFor 0/2 traps, GROUP1 vs Group1,
+      LoginId JIFFY/client-code, UserId neuron, With_Exp truthy, Data-not-found
+      vs Data-not-available no-data, 401->FinXAuthError, URL never logged)
 - [ ] Task 4 — Go adapter (contract list, per-note download, brokerage)
 - [ ] Task 5 — MIS adapter (CML)
 - [ ] Task 6 — MF profile adapter (first-name-only PII discipline)
@@ -35,7 +38,7 @@ testCommand: `pytest tests/finx_adapters/`.
 - [ ] Task 8 — facade + package exports
 - [ ] Task 9 — consolidated redaction/no-leak tests + doneCondition sweep
 
-Current task: Task 3.
+Current task: Task 4.
 
 ## Verifier rounds
 
