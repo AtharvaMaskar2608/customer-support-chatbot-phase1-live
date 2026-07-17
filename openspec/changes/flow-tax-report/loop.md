@@ -53,10 +53,10 @@ Worktree lead loop state. If it isn't here, it didn't happen.
 - [x] T3 — tests/flows/test_tax.py (22 tests, all from the doneCondition) + empty
   tests/flows/__init__.py. testCommand green (22 passed); full suite green
   (104 passed, 1 pre-existing unrelated warning).
-- [ ] T4 — fresh verifier + rebase + full harness + PR
+- [ ] T4 — fresh verifier + rebase + full harness + PR (in progress)
 
 ## Verifier rounds
-- (none yet)
+- Round 1: pending (one fresh spec-verifier, all 3 lenses, proposal dir + branch diff).
 
 ## Open questions
 - EC-9 (no registered email): flow supports `hide_email` in S2 and the refusal copy
