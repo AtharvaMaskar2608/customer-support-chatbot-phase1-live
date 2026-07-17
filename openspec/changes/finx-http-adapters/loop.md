@@ -51,9 +51,12 @@ testCommand: `pytest tests/finx_adapters/`.
 - [x] Task 8 — facade + package exports (6 tests green: FinXClientImpl
       satisfies FinXClient Protocol, each backend attr satisfies its Protocol,
       routes end-to-end, all public names exported)
-- [ ] Task 9 — consolidated redaction/no-leak tests + doneCondition sweep
+- [x] Task 9 — consolidated redaction/no-leak sweep (2 tests green: facade-wide
+      sweep asserts no URL/file_id/signed-query/SessionId/JWT/cmlLink/PII in any
+      log sink while endpoint diagnostics still logged; profile PII never in payload).
+      Full testCommand: 72 passed. Full repo suite: 154 passed.
 
-Current task: Task 8 done; committing task 9.
+Current task: all 9 tasks done + testCommand green. Next: fresh verifier panel (round 1).
 
 ## Verifier rounds
 
