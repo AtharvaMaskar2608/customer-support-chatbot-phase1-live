@@ -2,7 +2,11 @@
 
 Worktree lead loop state. If it isn't here, it didn't happen.
 
-- Branch: `ticketing-freshdesk` (from main @ cfb22a1 → merge of contracts-foundation PR #1)
+- **Status: SHIPPED** — PR #10:
+  https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/10
+  (Gate 2 human review pending on GitHub).
+- Branch: `ticketing-freshdesk` (from main @ cfb22a1 → merge of contracts-foundation PR #1;
+  rebased pre-ship onto origin/main @ 9b6d31e — merge of finx-http-adapters PR #2 + flow-brokerage PR #3).
 - Proposal: `openspec/changes/ticketing-freshdesk/proposal.md` + `manifest.yaml`
 - testCommand: `pytest tests/ticketing/`
 - doneCondition: manifest.yaml (exact 04 §5 payload; real-time dedupe → note;
@@ -53,17 +57,31 @@ Proposal `[CONFIRM]` items resolved against the actually-frozen code:
 - Task 6: tests/ticketing/** — conftest + 5 test files + 13 recorded fixtures (this commit).
 
 ## Test / done status
-- testCommand `pytest tests/ticketing/`: **38 passed**.
-- Full suite `pytest`: **120 passed** (82 pre-existing + 38 new), 1 pre-existing fastapi warning.
+- testCommand `pytest tests/ticketing/`: **38 passed** (pre-rebase and on rebased head).
+- Full suite `pytest -q` on the **rebased head** (base 9b6d31e): **213 passed**
+  (175 pre-existing on new main + 38 new), 1 pre-existing fastapi deprecation warning.
 - doneCondition clauses each covered: exact 04 §5 payload (test_payload), real-time dedupe →
   private note (test_dedupe), status by id + by ClientID (test_status_lookup), every non-2xx →
   ErrorBubble no-leak (test_errors), call-support chip kept (test_errors/test_dedupe), fixture-only.
 
-## Current task
-- Fast-verify: one fresh 3-lens spec-verifier panel.
-
 ## Verifier rounds
-- Round 1: pending (about to spawn).
+- **None run — deliberate.** Per human-operator lean directive (relayed by team lead) to cut
+  agent/token overhead, the fresh 3-lens spec-verifier panel AND the self-check spec read-through
+  were skipped for this change. Spec harness for this change = testCommand + full suite only;
+  implementation trusted. Gate 2 human review happens on the PR.
+
+## Ship
+- Rebased ticketing-freshdesk onto origin/main @ 9b6d31e — **clean, zero conflicts**
+  (disjoint files: change owns app/ticketing/** + tests/ticketing/**; merged PRs #2/#3 touch app/finx + flow).
+- testCommand + full repo suite green on the rebased head (see Test/done status).
+- Pushed branch; opened PR #10.
+
+## Final metrics
+- Implementation tasks: 6 (tasks 1–6) + task 0 scaffold, one commit each.
+- Verifier rounds used: 0 (skipped per lean directive).
+- Findings per round: n/a.
+- Behavior-harness runs: 1 (full suite on rebased head → 213 passed).
+- Escalations: 0.
 
 ## Open questions / escalations
 - (none)
