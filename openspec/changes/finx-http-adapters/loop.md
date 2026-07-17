@@ -48,10 +48,12 @@ testCommand: `pytest tests/finx_adapters/`.
       ssotoken SSO-JWT header + body accessToken FINX-JWT; lDictHoldingData
       keyed by ISIN; SessionId/both JWTs never logged; 401->FinXAuthError;
       in-band Fail returned not raised)
-- [ ] Task 8 — facade + package exports
+- [x] Task 8 — facade + package exports (6 tests green: FinXClientImpl
+      satisfies FinXClient Protocol, each backend attr satisfies its Protocol,
+      routes end-to-end, all public names exported)
 - [ ] Task 9 — consolidated redaction/no-leak tests + doneCondition sweep
 
-Current task: Task 8.
+Current task: Task 8 done; committing task 9.
 
 ## Verifier rounds
 
