@@ -36,14 +36,14 @@ it didn't happen.
 | T4 | Bootstrap from URL params | done (6 params → SessionContext; entry_surface from page; accessToken never persisted/logged — tests green) |
 | T5 | Mock server + fixtures | done (typed fixtures per block from prototype copy; MSW+Vite share handleChat; 14 ajv validations vs frozen schema; config_slice turn-0-only) |
 | T6 | chatClient + conversation state | done (single network surface POST /api/chat; append-only log; single-flight one-POST-per-action; E-TIMEOUT synth on transport fail; >5s slow; accessToken echoed not logged) |
-| T7 | Render-block component set | pending |
+| T7 | Render-block component set | done (11 components + RenderBlock switch; shared prototype CSS; each renders from fixture; unknown type = no-op; chip dispatch verbatim) |
 | T8 | Interaction contracts | pending |
 | T9 | Shell + entry surfaces | pending |
 | T10 | WebMCP registration | pending |
 | T11 | App assembly + mock entrypoint | pending |
 | T12 | Agent-driven E2E | pending |
 
-Current task: T7 (about to start) — render-block component set
+Current task: T8 (about to start) — interaction contracts
 
 ## Verifier rounds
 (none yet)
