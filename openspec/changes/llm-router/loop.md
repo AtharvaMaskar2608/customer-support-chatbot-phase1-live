@@ -45,7 +45,9 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
 - [x] Task 1 — externalized prompts + loader (system/taxonomy/param/follow-up
       .md + few_shots.json + education_lines.json + loader; test_prompts.py green,
       system prompt names all 16 intents, education lines only for CG/Tax-P&L)
-- [ ] Task 2 — precedence resolver
+- [x] Task 2 — precedence resolver (`_resolve_precedence` on frozen
+      PRECEDENCE_TOKENS; word-boundary token match; report-only override +
+      generalization carve-out; test_precedence.py green, 16 cases)
 - [ ] Task 3 — FY/AY normalization
 - [ ] Task 4 — language detection + sticky rule
 - [ ] Task 5 — follow-up + escalation
