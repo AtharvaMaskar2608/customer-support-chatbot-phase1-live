@@ -1,0 +1,48 @@
+change: tracing-observability
+filesTouched:
+  - app/tracing/**
+  - tests/tracing/**
+contracts:
+  defines:
+    - name: configure_tracing
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: mask_pii
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: stitch_thread
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: log_llm_span
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: span-helpers
+      kind: module
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: maybe_clear_traces
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: assert_no_local_metrics
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: tracing-conventions
+      from: contracts-foundation
+    - name: mask
+      from: contracts-foundation
+    - name: llm-client
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - conversation-orchestrator
+doneCondition: >
+  configure_tracing sets sampling_rate=1.0 in dev / the lower config rate in prod, always
+  installs mask_pii, and resolves + logs the live Anthropic path (auto-patch A or manual
+  B); mask_pii redacts every listed PII class in nested inputs/outputs and leaves non-PII
+  intact; stitch_thread sets thread_id/user_id/metadata on the current trace; the manual
+  log_llm_span path records model + token usage when auto-patch is absent; the prod guard
+  blocks local metrics when environment == "production"; and maybe_clear_traces() clears
+  buffered traces. Offline, no Confident AI connection and no real LLM call (both
+  auto-patch paths exercised via a stubbed DeepEval configure).
+testCommand: pytest tests/tracing/

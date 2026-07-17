@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choice Jini — Interactive Prototype (Phase 1)</title>
+<style>
+/* ============================================================= *
+ *  Choice Jini — interactive click-through prototype
+ *  Self-contained. No external requests, no frameworks.
+ *  Design tokens mirror docs/prototype/DESIGN_BRIEF.md (FinX theme).
+ * ============================================================= */
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+:root,.theme-light{
+  --brand:#2B6BE8; --brand-ink:#1B4FB0;
+  --positive:#17B26A; --danger:#E5484D; --warn:#F5A524;
+  --text:#1A1D21; --text-muted:#5F6B7A; --text-faint:#98A2B3;
+  --bg:#FFFFFF; --surface:#F7F9FC; --border:#D5DCE6; --hair:#EDF1F6;
+  --bubble-bot:#F1F5FB; --bubble-user:#2B6BE8; --bubble-user-ink:#FFFFFF;
+  --page:#E7ECF3; --panel:#FFFFFF; --panel-2:#F7F9FC;
+  --chip-bg:#FFFFFF; --pdf-bg:#FDECEC; --pdf-ink:#E04444;
+  --dl-bg:#E8F0FE; --dl-ink:#1D4FB8;
+  --seg-eq-bg:#E8F0FE; --seg-eq-ink:#1D4FB8; --seg-mcx-bg:#FEF4E6; --seg-mcx-ink:#B76E00;
+  --radius:14px; --radius-sm:10px; --radius-chip:999px;
+  --shadow:0 10px 40px rgba(20,29,45,.18);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,Menlo,monospace;
+}
+.theme-dark{
+  --text:#E7ECF3; --text-muted:#9AA7B8; --text-faint:#6C7A8C;
+  --bg:#0F1620; --surface:#182231; --border:#26323F; --hair:#202C3A;
+  --bubble-bot:#182231; --bubble-user:#2B6BE8; --bubble-user-ink:#FFFFFF;
+  --page:#0A0F16; --panel:#131C27; --panel-2:#0F1620;
+  --chip-bg:#1B2534; --pdf-bg:#3A1F1F; --pdf-ink:#F08A8A;
+  --dl-bg:#1E2E48; --dl-ink:#8FB6F5;
+  --seg-eq-bg:#1E2E48; --seg-eq-ink:#8FB6F5; --seg-mcx-bg:#3A2A12; --seg-mcx-ink:#E0A24E;
+  --shadow:0 10px 40px rgba(0,0,0,.5);
+}
+@media (prefers-color-scheme:dark){
+  .theme-auto{
+    --text:#E7ECF3; --text-muted:#9AA7B8; --text-faint:#6C7A8C;
+    --bg:#0F1620; --surface:#182231; --border:#26323F; --hair:#202C3A;
+    --bubble-bot:#182231; --page:#0A0F16; --panel:#131C27; --panel-2:#0F1620;
+    --chip-bg:#1B2534; --pdf-bg:#3A1F1F; --pdf-ink:#F08A8A;
+    --dl-bg:#1E2E48; --dl-ink:#8FB6F5;
+    --seg-eq-bg:#1E2E48; --seg-eq-ink:#8FB6F5; --seg-mcx-bg:#3A2A12; --seg-mcx-ink:#E0A24E;
+    --shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+}
+
+body{
+  font-family:var(--font); color:var(--text); background:var(--page);
+  min-height:100vh; -webkit-font-smoothing:antialiased;
+}
+.app{
+  display:grid; grid-template-columns:300px 1fr; min-height:100vh;
+}
+@media (max-width:860px){ .app{ grid-template-columns:1fr; } }
+
+/* ---------------- control panel ---------------- */
+.panel{
+  background:var(--panel); border-right:1px solid var(--border);
+  padding:18px 16px 40px; display:flex; flex-direction:column; gap:16px;
+  position:sticky; top:0; align-self:start; max-height:100vh; overflow-y:auto;
+}
+@media (max-width:860px){ .panel{ position:static; max-height:none; border-right:0; border-bottom:1px solid var(--border);} }
+.panel h1{ font-size:15px; margin:0; display:flex; align-items:center; gap:8px; }
+.panel h1 .mark{ width:24px;height:24px;border-radius:7px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.panel .sub{ font-size:11px; color:var(--text-muted); margin:-8px 0 0; line-height:1.5; }
+.pgroup{ display:flex; flex-direction:column; gap:7px; }
+.pgroup > .plabel{ font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); margin:2px 0; }
+.jumpgrid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.jbtn{
+  font-family:var(--font); font-size:11.5px; text-align:left; cursor:pointer;
+  background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+  padding:8px 9px; border-radius:9px; line-height:1.25; transition:.12s;
+}
+.jbtn:hover{ border-color:var(--brand); color:var(--brand); }
+.jbtn.wide{ grid-column:1 / -1; }
+.ctrlrow{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; }
+.ctrlrow label{ color:var(--text-muted); }
+select, .toggle{ font-family:var(--font); }
+select{
+  font-size:12px; padding:6px 8px; border-radius:8px; border:1px solid var(--border);
+  background:var(--panel-2); color:var(--text); cursor:pointer;
+}
+.seg-toggle{ display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.seg-toggle button{
+  font-family:var(--font); font-size:11px; padding:6px 9px; border:0; cursor:pointer;
+  background:var(--panel-2); color:var(--text-muted);
+}
+.seg-toggle button.on{ background:var(--brand); color:#fff; }
+.switch{ position:relative; width:38px; height:22px; flex:none; }
+.switch input{ opacity:0; width:0; height:0; }
+.slider{ position:absolute; inset:0; background:var(--border); border-radius:999px; cursor:pointer; transition:.15s; }
+.slider:before{ content:""; position:absolute; height:16px; width:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.15s; }
+.switch input:checked + .slider{ background:var(--brand); }
+.switch input:checked + .slider:before{ transform:translateX(16px); }
+.metric{ font-size:11px; color:var(--text-muted); background:var(--panel-2); border:1px solid var(--border); border-radius:8px; padding:7px 9px; }
+.metric b{ color:var(--text); }
+.panel .foot{ font-size:10.5px; color:var(--text-faint); line-height:1.6; margin-top:auto; }
+.panel .foot code{ font-family:var(--mono); }
+
+/* ---------------- stage ---------------- */
+.stage{
+  display:flex; align-items:center; justify-content:center; padding:32px 20px;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, rgba(43,107,232,.10), transparent 60%),
+    var(--page);
+}
+@media (max-width:860px){ .stage{ padding:18px 10px; } }
+
+/* ---------------- widget frame ---------------- */
+.widget{
+  width:400px; max-width:100%; height:660px; max-height:calc(100vh - 60px);
+  background:var(--bg); border:1px solid var(--border); border-radius:22px;
+  box-shadow:var(--shadow); display:flex; flex-direction:column; overflow:hidden;
+}
+@media (max-width:860px){ .widget{ height:74vh; } }
+.whead{
+  display:flex; align-items:center; gap:10px; padding:14px 14px 12px;
+  border-bottom:1px solid var(--hair); background:var(--bg);
+}
+.wavt{ width:30px;height:30px;border-radius:9px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none; }
+.wtitle{ flex:1; min-width:0; }
+.wtitle b{ font-size:13.5px; font-weight:600; display:block; line-height:1.2; }
+.wtitle small{ font-size:10.5px; color:var(--positive); display:flex; align-items:center; gap:4px; }
+.wtitle small .dot{ width:6px;height:6px;border-radius:50%;background:var(--positive);display:inline-block; }
+.wreset{ font-size:11px; color:var(--text-muted); cursor:pointer; padding:5px 8px; border-radius:7px; white-space:nowrap; }
+.wreset:hover{ background:var(--surface); color:var(--brand); }
+
+.feed{
+  flex:1; overflow-y:auto; padding:16px 14px 6px; display:flex; flex-direction:column; gap:9px;
+  scroll-behavior:smooth;
+}
+.feed::-webkit-scrollbar{ width:7px; }
+.feed::-webkit-scrollbar-thumb{ background:var(--border); border-radius:9px; }
+
+/* composer */
+.composer{ padding:8px 12px 6px; border-top:1px solid var(--hair); background:var(--bg); }
+.inputbar{ display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:999px; padding:6px 6px 6px 14px; background:var(--bg); }
+.inputbar input{ flex:1; border:0; outline:0; background:transparent; font-family:var(--font); font-size:13px; color:var(--text); }
+.inputbar input::placeholder{ color:var(--text-faint); }
+.sendbtn{ width:32px;height:32px;border-radius:50%;background:var(--brand);border:0;cursor:pointer;color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;flex:none; }
+.sendbtn:disabled{ opacity:.5; cursor:default; }
+.wfoot{ text-align:center; padding:5px 10px 8px; }
+.wfoot p{ margin:0; font-size:10px; color:var(--text-faint); line-height:1.5; }
+.wfoot p b{ color:var(--text-muted); font-weight:600; }
+
+/* ---------------- bubbles ---------------- */
+.u-bub{ align-self:flex-end; max-width:82%; background:var(--bubble-user); color:var(--bubble-user-ink); font-size:13px; line-height:1.45; padding:8px 13px; border-radius:16px 16px 4px 16px; word-wrap:break-word; }
+.b-bub{ align-self:flex-start; max-width:88%; background:var(--bubble-bot); border:1px solid var(--border); font-size:13px; line-height:1.5; color:var(--text); padding:9px 13px; border-radius:16px 16px 16px 4px; }
+.b-bub.warn{ border-color:var(--warn); background:color-mix(in srgb, var(--warn) 12%, var(--bg)); }
+.b-bub.danger{ border-color:var(--danger); background:color-mix(in srgb, var(--danger) 12%, var(--bg)); }
+.b-bub .muted{ color:var(--text-muted); font-size:11.5px; }
+.b-bub .edu{ color:var(--text-muted); }
+.enter{ animation:pop .18s ease; }
+@keyframes pop{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+
+/* typing / generating */
+.typing{ align-self:flex-start; background:var(--bubble-bot); border:1px solid var(--border); padding:10px 13px; border-radius:16px 16px 16px 4px; display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-muted); }
+.dots{ display:inline-flex; gap:3px; }
+.dots i{ width:5px;height:5px;border-radius:50%;background:var(--text-faint);display:inline-block;animation:blink 1s infinite; }
+.dots i:nth-child(2){ animation-delay:.2s; } .dots i:nth-child(3){ animation-delay:.4s; }
+@keyframes blink{ 0%,60%,100%{ opacity:.25; } 30%{ opacity:1; } }
+.spinner{ width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;flex:none; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* ---------------- chips ---------------- */
+.chips{ align-self:flex-start; display:flex; flex-wrap:wrap; gap:6px; max-width:94%; }
+.chips.tight{ margin-top:-3px; }
+.chip-wrap{ display:flex; flex-direction:column; gap:4px; }
+.chip{
+  font-family:var(--font); font-size:12px; border:1px solid var(--border); color:var(--text);
+  padding:8px 13px; border-radius:999px; background:var(--chip-bg); cursor:pointer; white-space:nowrap;
+  min-height:36px; display:inline-flex; align-items:center; transition:.12s;
+}
+.chip:hover{ border-color:var(--brand); color:var(--brand); }
+.chip.primary{ background:var(--brand); color:#fff; border-color:var(--brand); }
+.chip.primary:hover{ background:var(--brand-ink); color:#fff; }
+.chip.ghost{ background:var(--surface); }
+.chip.sm{ font-size:11.5px; padding:6px 11px; min-height:32px; }
+.chip.dead{ opacity:.55; cursor:default; }
+.chip.dead:hover{ border-color:var(--border); color:var(--text); }
+
+/* ---------------- cards ---------------- */
+.b-card{ align-self:flex-start; width:94%; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:11px; }
+.b-card .prompt{ margin:0; font-size:13px; color:var(--text); line-height:1.4; }
+.steplab{ margin:0; font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; }
+.stepdone{ display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--bg); border:1px solid var(--border); border-radius:11px; padding:8px 11px; }
+.stepdone b{ font-size:12px; font-weight:500; color:var(--text); }
+.stepdone .num{ color:var(--text-faint); font-weight:600; }
+.stepdone .edit{ font-size:11px; color:var(--brand); cursor:pointer; font-weight:600; white-space:nowrap; }
+.stepdone .edit:hover{ text-decoration:underline; }
+.rowchips{ display:flex; flex-direction:column; gap:6px; }
+.rowchip{ display:flex; align-items:center; justify-content:space-between; gap:8px; border:1px solid var(--border); border-radius:11px; padding:9px 12px; background:var(--bg); cursor:pointer; transition:.12s; }
+.rowchip:hover{ border-color:var(--brand); }
+.rowchip b{ font-size:12.5px; font-weight:500; color:var(--text); }
+.rowchip i{ font-style:normal; font-size:10.5px; color:var(--text-muted); }
+.hint{ margin:0; font-size:10px; color:var(--text-faint); }
+
+/* file card */
+.filecard{ align-self:flex-start; width:90%; background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:11px 12px; display:flex; align-items:center; gap:11px; }
+.pdficon{ width:36px;height:36px;border-radius:9px;background:var(--pdf-bg);display:flex;align-items:center;justify-content:center;flex:none;color:var(--pdf-ink);font-size:10px;font-weight:700;letter-spacing:.02em; }
+.pdficon.xls{ background:#E6F6EC; color:#12894E; }
+.theme-dark .pdficon.xls{ background:#12301F; color:#5DBF8A; }
+.fname{ margin:0; font-size:12.5px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fmeta{ margin:2px 0 0; font-size:10.5px; color:var(--text-muted); }
+.dlbtn{ flex:none; width:32px;height:32px;border-radius:50%;background:var(--dl-bg);border:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dl-ink); }
+.dlbtn:hover{ filter:brightness(.95); }
+.helper{ align-self:flex-start; margin:0; font-size:11.5px; color:var(--text-muted); padding-left:4px; }
+.helper span{ color:var(--brand); font-weight:600; cursor:pointer; }
+.helper span:hover{ text-decoration:underline; }
+.sysline{ align-self:flex-start; font-size:10.5px; color:var(--text-faint); padding-left:6px; }
+
+/* note-list card */
+.nlist{ align-self:flex-start; width:94%; display:flex; flex-direction:column; background:var(--bg); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.nmonth{ font-size:10px; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; padding:9px 12px 5px; background:var(--panel-2); }
+.nrow{ display:flex; align-items:center; gap:10px; padding:9px 12px; border-top:1px solid var(--hair); cursor:pointer; }
+.nrow:hover{ background:var(--surface); }
+.ndate{ flex:1; min-width:0; }
+.ndate b{ display:block; font-size:12.5px; font-weight:500; color:var(--text); line-height:1.25; }
+.ndate i{ font-style:normal; font-size:10px; color:var(--text-muted); }
+.seg{ flex:none; font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:999px; letter-spacing:.02em; }
+.seg.eq{ background:var(--seg-eq-bg); color:var(--seg-eq-ink); }
+.seg.mcx{ background:var(--seg-mcx-bg); color:var(--seg-mcx-ink); }
+.dlmini{ flex:none; width:27px;height:27px;border-radius:50%;background:var(--dl-bg);display:flex;align-items:center;justify-content:center;color:var(--dl-ink); }
+.nmore{ text-align:center; padding:10px; font-size:11.5px; font-weight:600; color:var(--brand); cursor:pointer; background:var(--panel-2); border-top:1px solid var(--hair); }
+.nmore:hover{ filter:brightness(.97); }
+
+/* data card (brokerage / holdings) */
+.datacard{ align-self:flex-start; width:94%; background:var(--bg); border:1px solid var(--border); border-radius:14px; padding:12px 13px; display:flex; flex-direction:column; gap:10px; }
+.datacard .dhead{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:var(--text); }
+.datagrp .gtitle{ font-size:11px; font-weight:700; color:var(--brand); margin:0 0 5px; letter-spacing:.01em; }
+.drow{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:5px 0; border-top:1px solid var(--hair); }
+.drow:first-of-type{ border-top:0; }
+.drow .k{ font-size:12px; color:var(--text); }
+.drow .v{ font-size:11.5px; color:var(--text-muted); text-align:right; font-variant-numeric:tabular-nums; }
+.hrow{ display:grid; grid-template-columns:1fr auto; gap:2px 10px; padding:8px 0; border-top:1px solid var(--hair); }
+.hrow:first-of-type{ border-top:0; }
+.hrow .sym{ font-size:12.5px; font-weight:600; color:var(--text); }
+.hrow .qty{ font-size:10.5px; color:var(--text-muted); }
+.hrow .val{ font-size:12.5px; text-align:right; color:var(--text); font-variant-numeric:tabular-nums; }
+.hrow .pl{ font-size:10.5px; text-align:right; font-variant-numeric:tabular-nums; }
+.pl.up{ color:var(--positive); } .pl.down{ color:var(--danger); }
+.cardfoot{ font-size:10px; color:var(--text-faint); line-height:1.5; border-top:1px solid var(--hair); padding-top:8px; }
+
+/* citation (RAG) */
+.cite{ align-self:flex-start; width:88%; background:var(--panel-2); border:1px dashed var(--border); border-radius:11px; padding:8px 11px; font-size:10.5px; color:var(--text-muted); display:flex; gap:7px; align-items:flex-start; }
+.cite b{ color:var(--text); font-weight:600; }
+
+/* ticket + call cards */
+.ticketcard{ align-self:flex-start; width:90%; background:color-mix(in srgb, var(--positive) 10%, var(--bg)); border:1px solid color-mix(in srgb, var(--positive) 40%, var(--border)); border-radius:14px; padding:11px 13px; display:flex; flex-direction:column; gap:5px; }
+.ticketcard b{ font-size:13px; color:var(--text); }
+.ticketcard small{ font-size:11px; color:var(--text-muted); line-height:1.45; }
+.callcard{ align-self:flex-start; width:80%; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:11px 13px; display:flex; align-items:center; gap:11px; }
+.callcard .ci{ width:34px;height:34px;border-radius:9px;background:var(--dl-bg);color:var(--dl-ink);display:flex;align-items:center;justify-content:center;font-size:16px;flex:none; }
+.callcard a{ font-size:13.5px; font-weight:600; color:var(--brand); text-decoration:none; }
+.callcard small{ display:block; font-size:10.5px; color:var(--text-muted); margin-top:1px; }
+
+/* calendar */
+.cal{ display:flex; flex-direction:column; gap:8px; }
+.calnav{ display:flex; align-items:center; justify-content:space-between; }
+.calnav b{ font-size:12.5px; font-weight:600; }
+.calnav button{ width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-size:14px; }
+.calnav button:disabled{ opacity:.3; cursor:default; }
+.calgrid{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.calgrid .wd{ font-size:9.5px; color:var(--text-faint); text-align:center; padding:3px 0; font-weight:600; }
+.calday{ aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:11.5px; border-radius:8px; cursor:pointer; color:var(--text); border:1px solid transparent; }
+.calday:hover:not(.off):not(.dis){ border-color:var(--brand); }
+.calday.dis{ color:var(--text-faint); opacity:.35; cursor:default; text-decoration:line-through; }
+.calday.off{ visibility:hidden; }
+.calday.inrange{ background:var(--dl-bg); border-radius:0; }
+.calday.end,.calday.start{ background:var(--brand); color:#fff; }
+.calhint{ font-size:10px; color:var(--text-faint); margin:0; }
+
+/* whats new */
+.whatsnew{ align-self:flex-end; }
+.wnpill{ font-size:11px; border:1px solid var(--border); background:var(--panel-2); color:var(--text-muted); padding:5px 10px; border-radius:999px; cursor:pointer; }
+.wnpill:hover{ border-color:var(--brand); color:var(--brand); }
+
+/* behavior notes */
+.note{
+  display:none; font-family:var(--font); font-size:10px; line-height:1.45; color:var(--brand);
+  background:color-mix(in srgb, var(--brand) 9%, var(--bg)); border-left:2px solid var(--brand);
+  padding:4px 7px; border-radius:4px; max-width:230px;
+}
+.note b{ color:var(--text); font-weight:600; }
+.note code{ font-family:var(--mono); font-size:9px; }
+body.show-notes .note{ display:block; animation:pop .18s ease; }
+.notewrap{ display:flex; flex-direction:column; gap:4px; }
+/* stand-alone element notes (composer, header) */
+body.show-notes .elnote{ display:block; }
+.elnote{ display:none; font-size:10px; color:var(--brand); background:color-mix(in srgb, var(--brand) 9%, var(--bg)); border-left:2px solid var(--brand); padding:4px 7px; border-radius:4px; margin:5px 12px 0; }
+
+.notes-banner{ display:none; align-self:stretch; margin:2px 0 4px; padding:7px 11px; border-radius:9px; font-size:10.5px; color:var(--text-muted); background:var(--panel-2); border:1px dashed var(--border); }
+body.show-notes .notes-banner{ display:block; }
+</style>
+</head>
+<body class="theme-auto">
+<div class="app">
+
+  <!-- ============ CONTROL PANEL ============ -->
+  <aside class="panel">
+    <h1><span class="mark">✦</span> Jini Prototype</h1>
+    <p class="sub">Interactive click-through of the Choice Jini support widget. Every chip, step and card responds. Backend calls are simulated with realistic mock data from the FinX API captures.</p>
+
+    <div class="pgroup">
+      <span class="plabel">Jump to a flow</span>
+      <div class="jumpgrid">
+        <button class="jbtn" data-jump="Get my P&amp;L">📊 P&amp;L</button>
+        <button class="jbtn" data-jump="Show my ledger">📒 Ledger</button>
+        <button class="jbtn" data-jump="MTF ledger">📒 MTF Ledger</button>
+        <button class="jbtn" data-jump="Tax report">🧾 Tax / CG</button>
+        <button class="jbtn" data-jump="Get my contract notes">📄 Contract Notes</button>
+        <button class="jbtn" data-jump="CML copy">🗂️ CML</button>
+        <button class="jbtn" data-jump="Show my brokerage rates">💸 Brokerage card</button>
+        <button class="jbtn" data-jump="Show my holdings">📈 Holdings</button>
+        <button class="jbtn wide" data-jump="What are my brokerage charges?">❓ RAG Q&amp;A — “brokerage charges?”</button>
+        <button class="jbtn" data-jump="Check ticket status">🎫 Ticket status</button>
+        <button class="jbtn" data-jump="I need to talk to support">🆘 Escalate</button>
+      </div>
+    </div>
+
+    <div class="pgroup">
+      <span class="plabel">Simulate a backend error</span>
+      <div class="ctrlrow">
+        <label for="errsel">Next generation returns</label>
+        <select id="errsel">
+          <option value="">✓ Success</option>
+          <option value="E-NODATA">E-NODATA (no data)</option>
+          <option value="E-TIMEOUT">E-TIMEOUT (network)</option>
+          <option value="E-FETCH">E-FETCH (broken file)</option>
+        </select>
+      </div>
+      <p class="hint">Applies to the next report generation, then any “Retry” chip. Errors render as conversational bubbles with recovery chips — never toasts.</p>
+    </div>
+
+    <div class="pgroup">
+      <span class="plabel">View</span>
+      <div class="ctrlrow">
+        <label>Theme</label>
+        <div class="seg-toggle" id="themeToggle">
+          <button data-theme="auto" class="on">Auto</button>
+          <button data-theme="light">Light</button>
+          <button data-theme="dark">Dark</button>
+        </div>
+      </div>
+      <div class="ctrlrow">
+        <label for="notesToggle">Show behavior notes</label>
+        <span class="switch"><input type="checkbox" id="notesToggle"><span class="slider"></span></span>
+      </div>
+      <p class="hint">Behavior notes overlay each interactive element with what happens on click in the real system — the endpoint called, validation run, and next state. Turns the prototype into interaction docs.</p>
+    </div>
+
+    <div class="metric" id="metric">Conversation 1 · <b><span id="msgcount">0</span>/10</b> messages</div>
+
+    <p class="foot">Post-login widget · greets by Client ID <code>X008593</code> (Phase 1). Files delivered in-chat — no email verification. Email only to the masked registered address.</p>
+  </aside>
+
+  <!-- ============ STAGE + WIDGET ============ -->
+  <main class="stage">
+    <div class="widget">
+      <div class="whead">
+        <div class="wavt">✦</div>
+        <div class="wtitle">
+          <b>Choice Jini</b>
+          <small><span class="dot"></span> online · X008593</small>
+        </div>
+        <div class="notewrap">
+          <div class="wreset" id="resetBtn">↺ Start over</div>
+        </div>
+      </div>
+      <div class="elnote" style="margin-top:0">↺ <b>Start over</b> → clears the thread, resets the 10-message cap counter and the <code>thread_id</code> (new <code>uuid4</code>), re-renders the time-aware greeting.</div>
+
+      <div class="feed" id="feed"></div>
+
+      <div class="composer">
+        <div class="inputbar">
+          <input id="composer" type="text" placeholder="Ask anything about FinX…" autocomplete="off">
+          <button class="sendbtn" id="sendBtn" aria-label="Send">↑</button>
+        </div>
+        <div class="elnote">Composer → free text goes to the <b>LLM router</b> (<code>claude-sonnet-5</code>): classifies intent (report flow / RAG / ticket) and extracts params (segment, FY, dates) already present. Only genuinely ambiguous input triggers a follow-up (max 2).</div>
+      </div>
+      <div class="wfoot">
+        <p><b>Factual answers only — never investment advice.</b></p>
+        <p>Files land right here — no email verification.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* =============================================================
+ *  Anchored "now": the DATE is pinned to 2026-07-16 to match the
+ *  API captures / report periods, but the HOUR comes from the real
+ *  clock so the greeting is genuinely time-aware.
+ * ============================================================= */
+const _real = new Date();
+const NOW = new Date(2026, 6, 16, _real.getHours(), _real.getMinutes());
+const TODAY = new Date(2026, 6, 16);
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WD  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MASKED_EMAIL = 'san***.harsha@gmail.com';
+const SUPPORT_NO = '022-6707-9999';
+const SUPPORT_HRS = 'Mon–Sat, 8:30 AM – 5:30 PM';
+
+/* ---- date helpers ---- */
+function d(y,m,day){ return new Date(y,m,day); }
+function fmt(dt){ return dt.getDate()+' '+MON[dt.getMonth()]+' '+dt.getFullYear(); }
+function fmtWD(dt){ return WD[dt.getDay()]+', '+dt.getDate()+' '+MON[dt.getMonth()]+' '+dt.getFullYear(); }
+function fmtShort(dt){ return dt.getDate()+' '+MON[dt.getMonth()]; }
+function addMonths(dt,n){ const x=new Date(dt); x.setMonth(x.getMonth()+n); return x; }
+function addDays(dt,n){ const x=new Date(dt); x.setDate(x.getDate()+n); return x; }
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function rangeLabel(from,to){ return sameDay(from,to) ? fmt(from) : fmt(from)+' – '+fmt(to); }
+/* last completed trading day relative to TODAY (skip weekends) */
+function lastTradingDay(){ let x=addDays(TODAY,-1); while(x.getDay()===0||x.getDay()===6) x=addDays(x,-1); return x; }
+/* current Indian FY string, e.g. 2026-27 given TODAY (Jul 2026 -> FY 2026-27) */
+function currentFYStart(){ return TODAY.getMonth()>=3 ? TODAY.getFullYear() : TODAY.getFullYear()-1; }
+function fyShort(startYear){ return 'FY '+startYear+'-'+String(startYear+1).slice(2); }
+function fyLong(startYear){ return startYear+'-'+(startYear+1); }
+
+/* =============================================================
+ *  MOCK DATA (shaped from docs/technical/03_finx_api_reference.md)
+ * ============================================================= */
+const BROKERAGE = [ /* get-brokerage-slab Response: array of {title, list:[{title,desc}]} */
+  { title:'Equity', list:[
+    { title:'Intraday', desc:'₹0.10 for trade value of 10 thousand' },
+    { title:'Delivery', desc:'₹1.00 for trade value of 10 thousand' } ] },
+  { title:'Derivative', list:[
+    { title:'Stock Future', desc:'₹20.00 for trade value of 10 thousand' },
+    { title:'Stock Option', desc:'₹20.00 per order' },
+    { title:'Index Future', desc:'₹20.00 for trade value of 10 thousand' },
+    { title:'Index Option', desc:'₹20.00 per order' } ] },
+  { title:'Commodity', list:[
+    { title:'Futures', desc:'₹20.00 for trade value of 10 thousand' },
+    { title:'Options', desc:'₹35.00 per order' } ] },
+  { title:'Currency', list:[
+    { title:'Futures', desc:'₹10.00 for trade value of 10 thousand' },
+    { title:'Options', desc:'₹15.00 per order' } ] },
+];
+/* Holdings: lDictHoldingData keyed by ISIN; LTP/CP in paise, ABP/ASP in rupees */
+const HOLDINGS = {
+  'INE002A01018': { Sym:'RELIANCE-EQ', Name:'Reliance Industries', Q:40,  LTP:130330, ABP:1197.38, LUT:'16-07-2026 15:29:41' },
+  'INE467B01029': { Sym:'TCS-EQ',      Name:'Tata Consultancy',   Q:15,  LTP:389515, ABP:4025.00, LUT:'16-07-2026 15:29:41' },
+  'INE009A01021': { Sym:'INFY-EQ',     Name:'Infosys',            Q:60,  LTP:157880, ABP:1642.10, LUT:'16-07-2026 15:29:41' },
+  'INE040A01034': { Sym:'HDFCBANK-EQ', Name:'HDFC Bank',          Q:25,  LTP:201540, ABP:2088.72, LUT:'16-07-2026 15:29:41' },
+};
+/* Contract-note list (Body.contractNotes); one dual-note day (09 Jun: Grp1 + MCX) */
+const CN_NOTES = [
+  { date:d(2026,4,28), group:'Grp1' },
+  { date:d(2026,5,2),  group:'Grp1' },
+  { date:d(2026,5,9),  group:'Grp1' },  // dual
+  { date:d(2026,5,9),  group:'MCX'  },  // dual
+  { date:d(2026,5,15), group:'Grp1' },
+  { date:d(2026,5,22), group:'Grp1' },
+  { date:d(2026,5,30), group:'Grp1' },
+  { date:d(2026,6,1),  group:'Grp1' },
+  { date:d(2026,6,6),  group:'Grp1' },
+  { date:d(2026,6,8),  group:'Grp1' },
+  { date:d(2026,6,10), group:'Grp1' },
+  { date:d(2026,6,13), group:'Grp1' },
+  { date:d(2026,6,14), group:'Grp1' },
+  { date:d(2026,6,15), group:'Grp1' },
+];
+
+/* =============================================================
+ *  App state
+ * ============================================================= */
+const feed = document.getElementById('feed');
+let msgCount = 0;
+let ticketSeq = 48211;
+let softClosed = false;
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+function scrollDown(){ requestAnimationFrame(()=>{ feed.scrollTop = feed.scrollHeight; }); }
+function add(node){ node.classList.add('enter'); feed.appendChild(node); scrollDown(); return node; }
+
+function bumpMsg(){
+  msgCount++;
+  document.getElementById('msgcount').textContent = msgCount;
+  if(msgCount === 10 && !softClosed){
+    softClosed = true;
+    setTimeout(softClose, 400);
+  }
+}
+function softClose(){
+  botBubble("We're 10 messages into this chat — my soft cap for one conversation. If your last request isn't sorted, I can raise a ticket so a human takes it from here.");
+  add(chipRow([
+    chip('🎫 Raise a ticket', ()=>raiseTicket('this conversation'), 'Freshdesk create-ticket tool · transcript attached in the description · returns ticket #.'),
+    chip('↺ Start over', resetConversation, 'Clears the thread + resets the cap (new conversation).'),
+  ]));
+}
+
+/* ---- bubbles ---- */
+function userBubble(text){ add(el('div','u-bub', esc(text))); }
+function botBubble(html, variant){ const b=el('div','b-bub'+(variant?' '+variant:''), html); return add(b); }
+
+/* ---- chips ---- */
+function chip(label, onClick, note, opts){
+  opts = opts || {};
+  const wrap = el('div','chip-wrap');
+  const c = el('button','chip'+(opts.cls?' '+opts.cls:''), label);
+  if(opts.dead){ c.classList.add('dead'); }
+  else c.onclick = ()=>{ if(opts.keep){ onClick(); } else { onClick(); } };
+  wrap.appendChild(c);
+  if(note){ wrap.appendChild(el('div','note', note)); }
+  return wrap;
+}
+function chipRow(chipEls, cls){
+  const row = el('div','chips'+(cls?' '+cls:''));
+  chipEls.forEach(x=>row.appendChild(x));
+  return row;
+}
+
+/* ---- typing / generating ---- */
+function thinking(label, cb, ms){
+  const t = el('div','typing');
+  t.innerHTML = (label ? '<span>'+esc(label)+'</span>' : '') + '<span class="dots"><i></i><i></i><i></i></span>';
+  add(t);
+  setTimeout(()=>{ t.remove(); cb(); }, ms||900);
+}
+function generating(label, cb){
+  const t = el('div','typing');
+  t.innerHTML = '<span class="spinner"></span><span>'+esc(label)+'</span>';
+  add(t);
+  setTimeout(()=>{ t.remove(); cb(); }, 1300);
+}
+
+/* ---- error select accessor ---- */
+function errMode(){ return document.getElementById('errsel').value; }
+function clearErr(){ document.getElementById('errsel').value=''; }
+
+/* =============================================================
+ *  Generic error bubble (shared taxonomy, §8.4)
+ * ============================================================= */
+function errorBubble(code, ctx){
+  ctx = ctx || {};
+  const period = ctx.period || 'that period';
+  if(code === 'E-NODATA'){
+    botBubble('No transactions found for '+esc(period)+', so there\'s nothing to report there.', 'warn');
+    add(chipRow([
+      chip('Try a different range', ()=>{ if(ctx.retry) ctx.retry(); }, 'Re-opens the date step — no API call was made for the empty range.'),
+      chip('🎫 Raise a ticket', ()=>raiseTicket(ctx.subject||'this report'), 'Freshdesk create-ticket · transcript attached.'),
+    ], 'tight'));
+    return;
+  }
+  if(code === 'E-TIMEOUT'){
+    botBubble('That took longer than it should — the report didn\'t come through. Your selections are saved.', 'warn');
+    add(chipRow([
+      chip('↺ Retry', ()=>{ if(ctx.retry) ctx.retry(); }, 'Re-issues the same request. Selections persisted server-side (E-TIMEOUT).'),
+      chip('🎫 Raise a ticket', ()=>raiseTicket(ctx.subject||'this report'), 'Escalate to a human — transcript attached.'),
+    ], 'tight'));
+    return;
+  }
+  if(code === 'E-FETCH'){
+    // E-FETCH auto-retries once silently before showing the second line.
+    botBubble('The report generated but arrived incomplete on my side — let me redo it.', 'warn');
+    thinking('', ()=>{
+      botBubble('Still not coming through cleanly.', 'danger');
+      add(chipRow([
+        chip('↺ Try again', ()=>{ if(ctx.retry) ctx.retry(); }, 'Fresh generation (bypasses byte-cache). Byte validation runs again: size floor + magic bytes.'),
+        chip('✉️ Email me it', ()=>{ if(ctx.email) ctx.email(); }, 'Falls back to the email branch (RequestFor:1) to the registered address.'),
+        chip('🎫 Raise a ticket', ()=>raiseTicket(ctx.subject||'this report'), 'Escalate — transcript attached.'),
+      ], 'tight'));
+    }, 1100);
+    return;
+  }
+  // default E-UNKNOWN
+  botBubble('Something went wrong generating that report on our side.', 'danger');
+  add(chipRow([
+    chip('↺ Retry', ()=>{ if(ctx.retry) ctx.retry(); }, 'Re-issues the request.'),
+    chip('🎫 Raise a ticket', ()=>raiseTicket(ctx.subject||'this report'), 'Escalate to support.'),
+  ], 'tight'));
+}
+
+/* =============================================================
+ *  File-card delivery (shared 1d primitive)
+ * ============================================================= */
+function deliverFile(o){
+  // o: { caption, name, size, kind:'PDF'|'Excel', password, trouble, postChips }
+  if(o.caption) botBubble(o.caption + ' <span style="color:var(--positive)">✓</span>');
+  const card = el('div','filecard');
+  const kind = o.kind || 'PDF';
+  const meta = o.size + ' · ' + kind + (o.password ? ' · 🔒 password: PAN' : '');
+  card.innerHTML =
+    '<div class="pdficon'+(kind==='Excel'?' xls':'')+'">'+(kind==='Excel'?'XLS':'PDF')+'</div>'+
+    '<div style="flex:1;min-width:0"><p class="fname">'+esc(o.name)+'</p><p class="fmeta">'+esc(meta)+'</p></div>';
+  const dl = el('button','dlbtn');
+  dl.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg>';
+  dl.onclick = ()=>{
+    dl.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--positive)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+    add(el('div','sysline','Saved to your device (demo). In production the backend streams pre-validated bytes — the source URL / file_id never reaches the client.'));
+  };
+  card.appendChild(dl);
+  add(card);
+  // behavior note for the file card
+  const cardNote = el('div','chips','');
+  cardNote.appendChild(el('div','note','<b>Download</b> → backend already fetched the report URL server-side, validated bytes (size floor + <code>%PDF</code> magic), and streams them here. The unauthenticated URL is never exposed or logged.'));
+  add(cardNote);
+
+  if(o.trouble !== false){
+    const h = el('p','helper','Trouble opening it? <span>Tell me.</span>');
+    h.querySelector('span').onclick = ()=>{ o.trouble && o.trouble(); };
+    add(h);
+  }
+  if(o.postChips) add(o.postChips);
+}
+
+/* email-sent card (shared) */
+function deliverEmail(o){
+  // o: { what, subject, retry, hereInstead }
+  botBubble('Done — your '+o.what+' is on its way to <b>'+MASKED_EMAIL+'</b>.<br><span class="muted">Usually arrives within 2 minutes.</span>');
+  const en = el('div','chips','');
+  en.appendChild(el('div','note','Email branch: middleware sends the mail itself (<code>RequestFor:1</code>). The bot never handles the address — registered email only, masked, not editable in-bot.'));
+  add(en);
+  const h = el('p','helper','Didn\'t get it? <span>Tell me.</span>');
+  h.querySelector('span').onclick = ()=>{
+    add(chipRow([
+      chip('↺ Resend', ()=>{ userBubble('Resend it'); botBubble('Re-sent — allow up to 2 minutes.'); }, 'Re-runs the email call.'),
+      chip('📄 Get it here instead', ()=>{ if(o.hereInstead) o.hereInstead(); }, 'Jumps to the delivery step with the in-chat option.'),
+      chip('🎫 Raise a ticket', ()=>raiseTicket(o.subject||'this report'), 'Escalate to support.'),
+    ], 'tight'));
+  };
+  add(h);
+}
+
+/* generic trouble-opening reply */
+function troubleOpening(o){
+  userBubble("I can't open the file");
+  botBubble("Sorry about that — let's fix it. A couple of quick things:<br>• A PDF opens in any PDF viewer" + (o.password ? " (this one's password-protected — the password is your <b>PAN</b>, in capitals)." : " — it's not password-protected.") + (o.excel ? "<br>• Excel (.xlsx) opens in Excel, Google Sheets or WPS." : "") + "<br>If it still won't open, the file may have arrived incomplete — pick an option:");
+  const chipsArr = [ chip('↺ Send it again', ()=>{ if(o.again) o.again(); }, 'Fresh API call + byte validation — never re-pushes possibly-corrupt cached bytes.') ];
+  if(o.email) chipsArr.push(chip('✉️ Email it instead', ()=>o.email(), 'Switch to the email branch to the registered address.'));
+  chipsArr.push(chip('🎫 Raise a ticket', ()=>raiseTicket(o.subject||'this report'), 'Escalate to a human.'));
+  add(chipRow(chipsArr, 'tight'));
+}
+
+/* =============================================================
+ *  Stepper engine (P&L / Ledger / Tax share it)
+ *  Steps: {key, label, prompt, kind:'chips'|'date', chips?, dateCfg?, summary}
+ * ============================================================= */
+function Stepper(cfg){
+  const S = { cfg, step:0, sel:{}, node:null, dateMode:'presets', cal:null, finished:false };
+  S.node = el('div','b-card');
+  botBubble(cfg.intro);   // conversational lead-in bubble above the card
+  add(S.node);
+  renderStepper(S);
+  return S;
+}
+function renderStepper(S){
+  const steps = S.cfg.steps;
+  S.node.innerHTML = '';
+  // completed rows
+  for(let i=0; i<S.step; i++){
+    const st = steps[i];
+    const row = el('div','stepdone');
+    row.innerHTML = '<b><span class="num">'+(i+1)+' · </span>'+st.label+' — '+esc(S.sel[st.key].summary)+'</b>';
+    const editWrap = el('div','notewrap');
+    const edit = el('span','edit','Edit');
+    edit.onclick = ()=>editStep(S,i);
+    editWrap.appendChild(edit);
+    editWrap.appendChild(el('div','note','Tapping <b>Edit</b> re-opens this step and clears all downstream selections. Nothing is re-fetched until generation; the earlier file card stays in history. Cache is keyed per-selection.'));
+    row.appendChild(editWrap);
+    S.node.appendChild(row);
+  }
+  // active step
+  if(S.step < steps.length){
+    const st = steps[S.step];
+    S.node.appendChild(el('p','prompt', st.prompt));
+    if(st.kind === 'chips'){
+      S.node.appendChild(el('p','steplab', (S.step+1)+' · '+st.label));
+      const row = el('div','chips');
+      st.chips.forEach(ch=>{
+        row.appendChild(chip(ch.label, ()=>{
+          S.sel[st.key] = { value: ch.value, summary: ch.summary || ch.label.replace(/^[^\w]+/,'') };
+          advance(S);
+        }, ch.note, ch.cls ? { cls: ch.cls } : undefined));
+      });
+      S.node.appendChild(row);
+      if(st.hint) S.node.appendChild(el('p','hint', st.hint));
+    } else if(st.kind === 'date'){
+      renderDateStep(S, st);
+    }
+  }
+}
+function editStep(S, i){
+  S.step = i;
+  const steps = S.cfg.steps;
+  for(let j=i; j<steps.length; j++){ delete S.sel[steps[j].key]; }
+  S.dateMode = 'presets'; S.cal = null;
+  renderStepper(S);
+  scrollDown();
+}
+function advance(S){
+  S.step++;
+  if(S.step >= S.cfg.steps.length){
+    renderStepper(S);   // render all-done rows
+    S.finished = true;
+    S.cfg.finish(S);
+  } else {
+    S.dateMode = 'presets'; S.cal = null;
+    renderStepper(S);
+  }
+}
+
+/* ---- date step (presets + calendar + confirm) ---- */
+function renderDateStep(S, st){
+  const cfg = st.dateCfg;
+  S.node.appendChild(el('p','steplab', (S.step+1)+' · '+st.label));
+  if(S.dateMode === 'presets'){
+    const box = el('div','rowchips');
+    cfg.presets.forEach(p=>{
+      const r = el('div','rowchip');
+      r.innerHTML = '<b>'+p.label+'</b><i>'+(p.sub||'')+'</i>';
+      r.onclick = ()=>{
+        if(p.custom){ S.dateMode='calendar'; S.cal={ view:new Date(cfg.calStart||TODAY.getFullYear(), (cfg.calStartMonth!=null?cfg.calStartMonth:TODAY.getMonth()), 1), start:null, end:null }; renderStepper(S); }
+        else { S.sel[st.key] = { value:{from:p.from,to:p.to}, summary: rangeLabel(p.from,p.to) }; advance(S); }
+      };
+      box.appendChild(r);
+      if(p.note){ const w=el('div','notewrap'); w.appendChild(el('div','note',p.note)); box.appendChild(w); }
+    });
+    S.node.appendChild(box);
+    if(cfg.hint) S.node.appendChild(el('p','hint', cfg.hint));
+  } else if(S.dateMode === 'calendar'){
+    renderCalendar(S, st);
+  } else if(S.dateMode === 'confirm'){
+    const sel = S.cal;
+    S.node.appendChild(el('p','prompt','Got it — '+rangeLabel(sel.start, sel.end)+'. Confirm?'));
+    const row = el('div','chips');
+    row.appendChild(chip('Confirm', ()=>{ S.sel[st.key] = { value:{from:sel.start,to:sel.end}, summary: rangeLabel(sel.start,sel.end) }; advance(S); }, 'Locks the range and moves to the delivery step. Range validated client-side already — the picker made out-of-range dates unselectable.', {cls:'primary'}));
+    row.appendChild(chip('Change dates', ()=>{ S.dateMode='calendar'; S.cal.start=null; S.cal.end=null; renderStepper(S); }, 'Re-opens the calendar.'));
+    S.node.appendChild(row);
+  }
+}
+function renderCalendar(S, st){
+  const cfg = st.dateCfg;
+  const cal = S.cal;
+  const floor = cfg.floor, cap = cfg.cap;
+  const maxDays = cfg.maxRangeYears ? cfg.maxRangeYears*365 : null;
+  const wrap = el('div','cal');
+  // nav
+  const nav = el('div','calnav');
+  const prev = el('button', null, '‹');
+  const next = el('button', null, '›');
+  const title = el('b', null, MON[cal.view.getMonth()]+' '+cal.view.getFullYear());
+  const prevMonthLast = new Date(cal.view.getFullYear(), cal.view.getMonth(), 0);
+  const nextMonthFirst = new Date(cal.view.getFullYear(), cal.view.getMonth()+1, 1);
+  prev.disabled = prevMonthLast < floor;
+  next.disabled = nextMonthFirst > cap;
+  prev.onclick = ()=>{ cal.view = new Date(cal.view.getFullYear(), cal.view.getMonth()-1, 1); renderStepper(S); };
+  next.onclick = ()=>{ cal.view = new Date(cal.view.getFullYear(), cal.view.getMonth()+1, 1); renderStepper(S); };
+  nav.appendChild(prev); nav.appendChild(title); nav.appendChild(next);
+  wrap.appendChild(nav);
+  // grid
+  const grid = el('div','calgrid');
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(w=>grid.appendChild(el('div','wd',w)));
+  const first = new Date(cal.view.getFullYear(), cal.view.getMonth(), 1);
+  const startOffset = first.getDay();
+  const daysInMonth = new Date(cal.view.getFullYear(), cal.view.getMonth()+1, 0).getDate();
+  for(let i=0;i<startOffset;i++){ grid.appendChild(el('div','calday off','')); }
+  for(let day=1; day<=daysInMonth; day++){
+    const cur = new Date(cal.view.getFullYear(), cal.view.getMonth(), day);
+    const cell = el('div','calday', String(day));
+    let disabled = cur < floor || cur > cap;
+    if(!disabled && cal.start && !cal.end && maxDays){
+      if(cur > addDays(cal.start, maxDays)) disabled = true;
+    }
+    if(disabled){ cell.classList.add('dis'); }
+    else {
+      if(cal.start && sameDay(cur, cal.start)) cell.classList.add('start');
+      if(cal.end && sameDay(cur, cal.end)) cell.classList.add('end');
+      if(cal.start && cal.end && cur>cal.start && cur<cal.end) cell.classList.add('inrange');
+      cell.onclick = ()=>{
+        if(!cal.start || cal.end){ cal.start = cur; cal.end = null; }
+        else if(cur < cal.start){ cal.start = cur; }
+        else { cal.end = cur; }
+        if(cal.start && cal.end){ S.dateMode='confirm'; }
+        renderStepper(S);
+      };
+    }
+    grid.appendChild(cell);
+  }
+  wrap.appendChild(grid);
+  let hint = 'Floor '+fmt(floor)+' · up to '+fmt(cap);
+  if(cal.start && !cal.end && maxDays) hint = 'Up to '+fmt(addDays(cal.start, maxDays))+' — max '+cfg.maxRangeYears+'-year range';
+  wrap.appendChild(el('p','calhint', hint));
+  S.node.appendChild(wrap);
+  const nw = el('div','notewrap');
+  nw.appendChild(el('div','note','In-chat calendar. Out-of-range dates are <b>hard-disabled</b> (greyed, non-tappable) so an invalid range can\'t be built — every remaining error is an API-level conversational bubble, never a picker error.'+(maxDays?' Picking a start dims everything past start+'+cfg.maxRangeYears+'yr.':'')));
+  S.node.appendChild(nw);
+}
+
+/* =============================================================
+ *  P&L flow (variant 2a — stepper)
+ * ============================================================= */
+function startPnL(seg){
+  const pnlDates = {
+    floor: d(2018,0,1), cap: addDays(TODAY,7), maxRangeYears:2,
+    calStart: TODAY.getFullYear(), calStartMonth: TODAY.getMonth(),
+    hint:'From Jan 2018 · up to today+7 · max 2-year range',
+    presets:[
+      { label:'This FY', sub:fmt(d(currentFYStart(),3,1))+' – '+fmt(TODAY), from:d(currentFYStart(),3,1), to:TODAY, note:'Preset — resolves to fixed dates, skips the calendar. Covers ~80% of P&L requests.' },
+      { label:'This month', sub:fmt(d(TODAY.getFullYear(),TODAY.getMonth(),1))+' – '+fmt(TODAY), from:d(TODAY.getFullYear(),TODAY.getMonth(),1), to:TODAY },
+      { label:'Last 3 months', sub:fmt(addMonths(TODAY,-3))+' – '+fmt(TODAY), from:addMonths(TODAY,-3), to:TODAY },
+      { label:'Custom range 📅', custom:true, note:'Opens the in-chat calendar (floor Jan 2018, cap today+7, 2-year clamp).' },
+    ]
+  };
+  const S = Stepper({
+    intro:'Sure — I\'ll pull your P&amp;L. Let\'s scope it.',
+    steps:[
+      { key:'segment', label:'Segment', prompt:'Which segment?', kind:'chips',
+        chips:[
+          { label:'Equity', value:'Cash', summary:'Equity', note:'Maps to <code>Group:"Cash"</code> on GetGlobalPNLPDF. Customer-facing label only — “Cash/Derv/Comm” never shown.' },
+          { label:'F&O', value:'Derv', summary:'F&O', note:'Maps to <code>Group:"Derv"</code>. Never displayed as “Derv”.' },
+          { label:'Commodity', value:'Comm', summary:'Commodity', note:'Maps to <code>Group:"Comm"</code>.' },
+        ] },
+      { key:'range', label:'Date range', prompt:'For which period?', kind:'date', dateCfg:pnlDates },
+      { key:'delivery', label:'Delivery', prompt:'How do you want it?', kind:'chips',
+        chips:[
+          { label:'📄 PDF, right here', value:'pdf', summary:'PDF here', note:'POST /api/middleware/GetGlobalPNLPDF · <code>RequestFor:0</code> (download) · <code>With_Exp:true</code> · returns a URL → backend fetches + validates → file card.' },
+          { label:'✉️ Email me it', value:'email', summary:'Email', note:'Same endpoint · <code>RequestFor:1</code> · middleware emails the registered address; masks it before the confirmation shows.' },
+        ] },
+    ],
+    finish: pnlFinish,
+  });
+  // pre-fill segment if routed from free text
+  if(seg){ S.sel['segment']={value:seg.value,summary:seg.summary}; S.step=1; renderStepper(S); }
+}
+function pnlFinish(S){
+  const seg = S.sel.segment.summary;
+  const rng = S.sel.range.value;
+  const period = rangeLabel(rng.from, rng.to);
+  const subject = 'P&L ('+seg+', '+period+')';
+  if(S.sel.delivery.value === 'email'){
+    generating('On it — emailing your '+seg+' P&L…', ()=>{
+      const em = errMode();
+      if(em){ clearErr(); return errorBubble(em, { period, subject, retry:()=>pnlFinish(S), email:()=>{ S.sel.delivery.value='email'; pnlFinish(S); } }); }
+      deliverEmail({ what:seg+' P&L for '+period, subject, hereInstead:()=>{ editStep(S,2); } });
+    });
+    return;
+  }
+  generating('On it — generating your '+seg+' P&L…', ()=>{
+    const em = errMode();
+    if(em){ clearErr(); return errorBubble(em, { period, subject, retry:()=>pnlFinish(S), email:()=>{ S.sel.delivery.value='email'; pnlFinish(S); } }); }
+    deliverFile({
+      caption:'Here\'s your '+seg+' P&L for '+period+' (incl. charges)',
+      name:'PNL_'+seg.replace(/[^\w]/g,'')+'_'+cmpDate(rng.from)+'-'+cmpDate(rng.to)+'.pdf',
+      size:'214 KB', kind:'PDF', password:true,
+      trouble:()=>troubleOpening({ password:true, subject, again:()=>pnlFinish(S), email:()=>{ S.sel.delivery.value='email'; pnlFinish(S); } }),
+      postChips: chipRow([
+        chip('📑 Scrip-wise detail', ()=>{ userBubble('Scrip-wise detail'); globalDetailOffer(seg, period); }, 'Post-delivery discovery chip → Global Detail Report, carrying this segment + dates as pre-filled editable steps.'),
+        chip('✉️ Email me it', ()=>{ S.sel.delivery.value='email'; pnlFinish(S); }, 'Re-runs delivery via the email branch.'),
+        chip('🎫 Raise a ticket', ()=>raiseTicket(subject), 'Escalate to support.'),
+      ], 'tight'),
+    });
+  });
+}
+function cmpDate(dt){ return dt.getDate()+MON[dt.getMonth()]+dt.getFullYear(); }
+
+function globalDetailOffer(seg, period){
+  botBubble('That level of detail lives in the <b>Global Detail Report</b> — trade-by-trade, scrip-wise. Want it for '+seg+', '+period+'?');
+  add(chipRow([
+    chip('Yes, get it', ()=>{ generating('Generating your Global Detail Report…', ()=>{
+      const em=errMode(); if(em){ clearErr(); return errorBubble(em,{period,subject:'Global Detail Report'}); }
+      deliverFile({ caption:'Here\'s your Global Detail Report — '+seg+', '+period, name:'Global_Detail_Report_'+seg.replace(/[^\w]/g,'')+'.pdf', size:'188 KB', kind:'PDF', password:false,
+        trouble:()=>troubleOpening({subject:'Global Detail Report', again:()=>globalDetailOffer(seg,period)}),
+        postChips: chipRow([ chip('🎫 Raise a ticket', ()=>raiseTicket('Global Detail Report'), 'Escalate.') ],'tight') });
+    }); }, 'Two-API sequence (data → download), invisible to the user. PDF only, no password.'),
+    chip('No, stay with P&L', ()=>{ botBubble('No problem — your P&L is above whenever you need it.'); }, 'Dismisses the offer.'),
+  ], 'tight'));
+}
+
+/* =============================================================
+ *  Ledger / MTF Ledger flow
+ * ============================================================= */
+function startLedger(type){
+  const ledgerDates = {
+    floor: d(2019,0,1), cap: addDays(TODAY,7),
+    calStart: TODAY.getFullYear(), calStartMonth: TODAY.getMonth(),
+    hint:'From Jan 2019 · up to today · no range limit',
+    presets:[
+      { label:'Last 3 months', sub:fmt(addMonths(TODAY,-3))+' – '+fmt(TODAY), from:addMonths(TODAY,-3), to:TODAY },
+      { label:'Last FY', sub:fmt(d(currentFYStart()-1,3,1))+' – '+fmt(d(currentFYStart(),2,31)), from:d(currentFYStart()-1,3,1), to:d(currentFYStart(),2,31), note:'Preset shows resolved dates so “Last FY” is unambiguous.' },
+      { label:'Custom range 📅', custom:true, note:'Calendar — floor Jan 2019, cap today, no max-range clamp.' },
+    ]
+  };
+  const steps = [
+    { key:'type', label:'Report type', prompt:'Which statement?', kind:'chips',
+      chips:[
+        { label:'Ledger', value:'ledger', summary:'Ledger', note:'GetLedgerDetailsPDF · <code>Group:"GROUP1"</code> · <code>Margin:0</code>.' },
+        { label:'MTF Ledger', value:'mtf', summary:'MTF Ledger', note:'Same endpoint · <code>Margin:1</code> (MTF discriminator — still [CONFIRM] pending an MTF-holding account).' },
+      ] },
+    { key:'range', label:'Date range', prompt:'For which period?', kind:'date', dateCfg:ledgerDates },
+    { key:'delivery', label:'Delivery', prompt:'How do you want it?', kind:'chips',
+      chips:[
+        { label:'📄 PDF, right here', value:'pdf', summary:'PDF here', note:'<code>RequestFor:0</code> → URL → backend fetch + validate → file card. No Excel for ledger.' },
+        { label:'✉️ Send to email', value:'email', summary:'Email', note:'<code>RequestFor:1</code> → registered address (masked).' },
+      ] },
+  ];
+  const S = Stepper({
+    intro:'Happy to — let\'s get your ledger.',
+    steps, finish: ledgerFinish,
+  });
+  if(type){ S.sel['type']={value:type, summary: type==='mtf'?'MTF Ledger':'Ledger'}; S.step=1; renderStepper(S); }
+}
+function ledgerFinish(S){
+  const isMtf = S.sel.type.value==='mtf';
+  const label = isMtf ? 'MTF Ledger' : 'Ledger';
+  const rng = S.sel.range.value;
+  const period = rangeLabel(rng.from, rng.to);
+  const subject = label+' ('+period+')';
+  if(S.sel.delivery.value==='email'){
+    generating('Generating your '+label+'…', ()=>{
+      const em=errMode(); if(em){ clearErr(); return errorBubble(em,{period,subject,retry:()=>ledgerFinish(S)}); }
+      deliverEmail({ what:label+' for '+period, subject, hereInstead:()=>editStep(S,2) });
+    });
+    return;
+  }
+  generating('Generating your '+label+'…', ()=>{
+    const em=errMode(); if(em){ clearErr(); return errorBubble(em,{period,subject,retry:()=>ledgerFinish(S),email:()=>{S.sel.delivery.value='email';ledgerFinish(S);}}); }
+    deliverFile({
+      caption:'Here\'s your '+label+' for '+period,
+      name:(isMtf?'MTF_Ledger_':'Ledger_')+cmpDate(rng.from)+'-'+cmpDate(rng.to)+'.pdf',
+      size:'61 KB', kind:'PDF', password:false,
+      trouble:()=>troubleOpening({subject, again:()=>ledgerFinish(S), email:()=>{S.sel.delivery.value='email';ledgerFinish(S);}}),
+      postChips: chipRow([
+        chip('✉️ Email it instead', ()=>{S.sel.delivery.value='email';ledgerFinish(S);}, 'Switch to the email branch.'),
+        chip('🎫 Raise a ticket', ()=>raiseTicket(subject), 'Escalate.'),
+      ], 'tight'),
+    });
+  });
+}
+
+/* =============================================================
+ *  Tax Report / Capital Gain flow
+ * ============================================================= */
+function startTax(intent){ // intent: 'cg' | 'taxpnl' | undefined
+  if(intent==='cg') botBubble('Quick note — your capital gains are part of the Tax Report, so that\'s what I\'ll get you. It has everything you need for filing. 👍', '');
+  else if(intent==='taxpnl') botBubble('Heads-up — on FinX the Tax P&L is the Tax Report. Same document, one report. Setting it up now.', '');
+  const cur = currentFYStart();          // 2026 -> FY 2026-27 (year-to-date)
+  const def = cur-1;                      // last completed FY (default)
+  const fyChips = [
+    { label:fyShort(def), value:def, summary:fyShort(def), note:'Default (pre-highlighted) — last completed FY, the tax-filing year. Payload <code>FinYear:"'+fyLong(def)+'"</code>.', cls:'primary' },
+    { label:fyShort(cur)+' · year-to-date', value:cur, summary:fyShort(cur)+' (YTD)', note:'Current in-progress FY. File card carries the provisional “figures may change till 31 Mar” caption.' },
+    { label:fyShort(def-1), value:def-1, summary:fyShort(def-1), note:'Payload <code>FinYear:"'+fyLong(def-1)+'"</code>. Window rolls forward every 1 April — never hardcoded.' },
+  ];
+  const S = Stepper({
+    intro:'Sure — which financial year?',
+    steps:[
+      { key:'fy', label:'Financial year', prompt:'Pick a financial year:', kind:'chips', hint:'Current + last 2 financial years available.',
+        chips: fyChips.map(c=>({ label:c.label, value:c.value, summary:c.summary, note:c.note, cls:c.cls })) },
+      { key:'delivery', label:'How you want it', prompt:'How do you want it?', kind:'chips',
+        chips:[
+          { label:'📄 PDF, right here', value:'pdf', summary:'PDF here', note:'GetTaxReportPDF · <code>RequestFor:2</code> (download) · <code>FileFormat:1</code>.' },
+          { label:'📊 Excel, right here', value:'excel', summary:'Excel here', note:'Same endpoint · <code>FileFormat:2</code>. Excel confirmed by the 2026-07-16 capture.' },
+          { label:'✉️ Email me both', value:'email', summary:'Email (PDF + Excel)', note:'<code>RequestFor:1</code> ×2 (PDF + Excel) to the registered address.' },
+        ] },
+    ],
+    finish: taxFinish,
+  });
+  // stash whether CG for the caption
+  S.cg = (intent==='cg');
+}
+function taxFinish(S){
+  const startY = S.sel.fy.value;
+  const fyS = fyShort(startY);
+  const compact = 'FY'+startY+'-'+String(startY+1).slice(2);
+  const isCurrent = (startY === currentFYStart());
+  const subject = 'Tax Report '+fyS;
+  const del = S.sel.delivery.value;
+  if(del==='email'){
+    generating('On it — Tax Report for '+fyS+'…', ()=>{
+      const em=errMode(); if(em){ clearErr(); return errorBubble(em,{period:fyS,subject,retry:()=>taxFinish(S)}); }
+      deliverEmail({ what:'Tax Report for '+fyS+' (PDF + Excel)', subject, hereInstead:()=>editStep(S,1) });
+    });
+    return;
+  }
+  const kind = del==='excel' ? 'Excel' : 'PDF';
+  generating('On it — Tax Report for '+fyS+'…', ()=>{
+    const em=errMode(); if(em){ clearErr(); return errorBubble(em,{period:fyS,subject,retry:()=>taxFinish(S),email:()=>{S.sel.delivery.value='email';taxFinish(S);}}); }
+    let cap = 'Here\'s your Tax Report for '+fyS + (S.cg ? ' — capital gains are inside' : '');
+    deliverFile({
+      caption: cap,
+      name:'Tax_Report_'+compact+(kind==='Excel'?'.xlsx':'.pdf'),
+      size: kind==='Excel'?'96 KB':'212 KB', kind, password:false,
+      trouble:()=>troubleOpening({excel:true, subject, again:()=>taxFinish(S), email:()=>{S.sel.delivery.value='email';taxFinish(S);}}),
+      postChips: (function(){
+        const other = kind==='Excel' ? 'PDF' : 'Excel';
+        return chipRow([
+          chip((other==='Excel'?'📊':'📄')+' Also get it as '+other, ()=>{ S.sel.delivery.value = other==='Excel'?'excel':'pdf'; taxFinish(S); }, 'Serves from 15-min cache if warm, else re-calls with the other FileFormat. New card, same FY.'),
+          chip('✉️ Email me both', ()=>{ S.sel.delivery.value='email'; taxFinish(S); }, 'Email branch — both formats.'),
+          chip('🎫 Raise a ticket', ()=>raiseTicket(subject), 'Escalate.'),
+        ], 'tight');
+      })() ,
+      extraNote: isCurrent ? 'Provisional (year-to-date): covers 1 Apr '+startY+' – '+fmt(TODAY)+', figures may change till 31 Mar.' : null,
+    });
+    if(isCurrent) add(el('div','sysline','Covers 1 Apr '+startY+' – '+fmt(TODAY)+' · year-to-date, figures may change till 31 Mar.'));
+  });
+}
+
+/* =============================================================
+ *  Contract Notes flow (date step -> note-list -> per-note file)
+ * ============================================================= */
+function startContractNotes(){
+  const cnDates = {
+    floor: d(2018,0,1), cap: TODAY,   // cap = today, no +7 (notes only for completed trading days)
+    calStart: TODAY.getFullYear(), calStartMonth: TODAY.getMonth(),
+    hint:'From Jan 2018 · up to today · no range limit',
+    presets:[
+      { label:'Last trading day', sub:fmtWD(lastTradingDay()), from:lastTradingDay(), to:lastTradingDay(), note:'Single-day → skips the list and delivers the note directly (1-note case).' },
+      { label:'Last 7 days', sub:fmt(addDays(TODAY,-7))+' – '+fmt(TODAY), from:addDays(TODAY,-7), to:TODAY },
+      { label:'This month', sub:fmt(d(TODAY.getFullYear(),TODAY.getMonth(),1))+' – '+fmt(TODAY), from:d(TODAY.getFullYear(),TODAY.getMonth(),1), to:TODAY },
+      { label:'Custom range 📅', custom:true, note:'Calendar — floor Jan 2018, cap today, no max range.' },
+    ]
+  };
+  Stepper({
+    intro:'Sure — which days do you need?',
+    steps:[ { key:'range', label:'Date range', prompt:'Pick the days:', kind:'date', dateCfg:cnDates } ],
+    finish: cnFinish,
+  });
+}
+function cnFinish(S){
+  const rng = S.sel.range.value;
+  const period = rangeLabel(rng.from, rng.to);
+  // simulate the data API branch on body StatusCode
+  generating('Fetching your contract notes…', ()=>{
+    const em = errMode();
+    if(em==='E-NODATA'){ clearErr(); botBubble('No contract notes between '+period+' — notes are only generated for days you traded.','warn'); add(chipRow([ chip('Try a different range', ()=>editStep(S,0), 'Re-opens the date step.'), chip('🎫 Raise a ticket', ()=>raiseTicket('Contract notes'), 'Escalate.') ],'tight')); return; }
+    // single day -> deliver one note directly (skip the list)
+    if(sameDay(rng.from, rng.to)){
+      cnDeliverOne(fmtWD(rng.from).split(',')[0]+', '+fmtShort(rng.from), cmpDate(rng.from), false);
+      return;
+    }
+    cnList(S, period);
+  });
+}
+function cnList(S, period){
+  botBubble('Found <b>'+CN_NOTES.length+' contract notes</b> between '+period+' — tap any to get it here.');
+  const list = el('div','nlist');
+  let shown = 0, page = 10, lastMonth = '';
+  function build(){
+    // clear list body but keep re-render simple: rebuild fully
+    list.innerHTML = '';
+    let count = 0, curMonth = '';
+    for(let i=0;i<CN_NOTES.length && count<shown;i++){
+      const n = CN_NOTES[i];
+      const mk = MON[n.date.getMonth()]+' '+n.date.getFullYear();
+      if(mk!==curMonth){ curMonth=mk; list.appendChild(el('div','nmonth', mk.toUpperCase())); }
+      // dual-note day → show badge
+      const dual = CN_NOTES.filter(x=>sameDay(x.date,n.date)).length>1;
+      const row = el('div','nrow');
+      const seg = n.group==='MCX' ? '<span class="seg mcx">MCX</span>' : (dual?'<span class="seg eq">NSE·BSE</span>':'');
+      const sub = n.group==='MCX' ? 'Commodity' : 'Equity & F&O';
+      row.innerHTML = '<div class="ndate"><b>'+WD[n.date.getDay()]+', '+fmtShort(n.date)+'</b><i>'+sub+'</i></div>'+seg+
+        '<div class="dlmini"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg></div>';
+      row.onclick = ()=> cnDeliverOne(WD[n.date.getDay()]+', '+fmtShort(n.date), cmpDate(n.date), n.group==='MCX');
+      list.appendChild(row);
+      count++;
+    }
+    const remaining = CN_NOTES.length - shown;
+    if(remaining>0){
+      const more = el('div','nmore','Show more ('+remaining+' remaining)');
+      more.onclick = ()=>{ shown = Math.min(CN_NOTES.length, shown+page); build(); scrollDown(); };
+      list.appendChild(more);
+    }
+  }
+  shown = Math.min(page, CN_NOTES.length);
+  build();
+  add(list);
+  const nw = el('div','chips','');
+  nw.appendChild(el('div','note','Note-list card (paginated 10/page, month dividers). Rows keyed by <code>file_id</code> — a row tap calls the per-note download (raw PDF bytes) and streams a file card. Segment badge shows only on dual-note days (Grp1 + MCX).'));
+  add(nw);
+  add(chipRow([
+    chip('✉️ Email all '+CN_NOTES.length, ()=>{ userBubble('✉️ Email all '+CN_NOTES.length); botBubble('Done — <b>'+CN_NOTES.length+' contract notes</b> ('+period+') are on their way to <b>'+MASKED_EMAIL+'</b>.<br><span class="muted">Usually arrives within 2 minutes.</span>'); add(chipRow([ chip('↺ Resend', ()=>{userBubble('Resend');botBubble('Re-sent — allow up to 2 minutes.');},'Re-runs the bulk email.'), chip('🎫 Raise a ticket', ()=>raiseTicket('Contract notes'), 'Escalate.') ],'tight')); }, 'Bulk = email-only by design (no download-all). Registered address, masked.'),
+    chip('📅 Change dates', ()=>editStep(S,0), 'Re-opens the date step; delivered cards stay in history.'),
+  ], 'tight'));
+}
+function cnDeliverOne(dayLabel, compact, isMcx){
+  userBubble('Contract note for '+dayLabel);
+  generating('Fetching that note…', ()=>{
+    const em = errMode();
+    if(em==='E-FETCH' || em==='E-TIMEOUT'){ clearErr(); botBubble('That note generated but arrived incomplete on my side.','warn'); add(chipRow([ chip('↺ Try again', ()=>cnDeliverOne(dayLabel,compact,isMcx), 'One silent retry already ran; this is a fresh download call.'), chip('✉️ Email it instead', ()=>{botBubble('On its way to '+MASKED_EMAIL+'.');}, 'Email branch.'), chip('🎫 Raise a ticket', ()=>raiseTicket('Contract note'), 'Escalate.') ],'tight')); return; }
+    deliverFile({
+      caption:'Here\'s your contract note for '+dayLabel,
+      name:'Contract_Note_'+compact+(isMcx?'_MCX':'')+'.pdf',
+      size:'96 KB', kind:'PDF', password:false,
+      trouble:()=>troubleOpening({subject:'Contract note', again:()=>cnDeliverOne(dayLabel,compact,isMcx), email:()=>{botBubble('On its way to '+MASKED_EMAIL+'.');}}),
+      postChips: chipRow([
+        chip('✉️ Email this note', ()=>{ botBubble('Done — that note is on its way to <b>'+MASKED_EMAIL+'</b>.'); }, 'Single-note email branch.'),
+        chip('📅 Other dates', ()=>{ userBubble('Other dates'); startContractNotes(); }, 'Re-opens the date step.'),
+      ], 'tight'),
+    });
+  });
+}
+
+/* =============================================================
+ *  Brokerage — data card (dynamic from slab data). No steps.
+ * ============================================================= */
+function showBrokerageCard(){
+  thinking('Fetching your brokerage plan…', ()=>{
+    const em = errMode();
+    if(em){ clearErr(); botBubble('Couldn\'t fetch your brokerage details just now.','warn'); add(chipRow([ chip('↺ Retry', showBrokerageCard, 'One silent retry runs first; this re-calls get-brokerage-slab.'), chip('🎫 Raise a ticket', ()=>raiseTicket('Brokerage details'), 'Escalate.') ],'tight')); return; }
+    botBubble('Here are your current brokerage rates 👇');
+    const card = el('div','datacard');
+    card.appendChild(el('div','dhead','💸 Your brokerage plan'));
+    BROKERAGE.forEach(grp=>{
+      const g = el('div','datagrp');
+      g.appendChild(el('p','gtitle', grp.title));
+      grp.list.forEach(row=>{
+        const r = el('div','drow');
+        r.innerHTML = '<span class="k">'+esc(row.title)+'</span><span class="v">'+esc(row.desc)+'</span>';
+        g.appendChild(r);
+      });
+      card.appendChild(g);
+    });
+    card.appendChild(el('div','cardfoot','Rates only — for the exact charge on a specific trade, open its contract note. Factual info, never investment advice.'));
+    add(card);
+    const nw = el('div','chips',''); nw.appendChild(el('div','note','Data card built <b>dynamically</b> from the get-brokerage-slab <code>Response</code> array (JWT auth). Segments &amp; row counts differ per client — nothing hardcoded; <code>desc</code> rendered verbatim. No PDF/email for brokerage.'));
+    add(nw);
+    add(chipRow([
+      chip('📄 Email me this?', ()=>{ userBubble('Email me my brokerage'); botBubble('Brokerage details live right here — there\'s no document for this one. 🙂'); }, 'EC-7: no file path exists for brokerage by design.'),
+      chip('🎫 Raise a ticket', ()=>raiseTicket('Brokerage'), 'Escalate (e.g. a charge dispute).'),
+    ], 'tight'));
+  });
+}
+
+/* =============================================================
+ *  Holdings — live data card
+ * ============================================================= */
+function showHoldings(){
+  thinking('Pulling your live holdings…', ()=>{
+    const em = errMode();
+    if(em){ clearErr(); botBubble('Couldn\'t fetch your holdings just now.','warn'); add(chipRow([ chip('↺ Retry', showHoldings, 'Re-calls the Holdings endpoint (3-credential auth).'), chip('🎫 Raise a ticket', ()=>raiseTicket('Holdings'), 'Escalate.') ],'tight')); return; }
+    botBubble('Here\'s your portfolio right now 👇');
+    const card = el('div','datacard');
+    card.appendChild(el('div','dhead','📈 Your holdings'));
+    let totCur=0, totInv=0, lut='';
+    Object.keys(HOLDINGS).forEach(isin=>{
+      const h = HOLDINGS[isin];
+      const ltp = h.LTP/100;               // paise -> rupees
+      const cur = h.Q*ltp, inv = h.Q*h.ABP, pl = cur-inv;
+      totCur+=cur; totInv+=inv; lut=h.LUT;
+      const pct = (pl/inv*100);
+      const row = el('div','hrow');
+      row.innerHTML =
+        '<div class="sym">'+esc(h.Sym)+'</div>'+
+        '<div class="val">₹'+fmtMoney(cur)+'</div>'+
+        '<div class="qty">'+h.Q+' qty · LTP ₹'+fmtMoney(ltp)+' · avg ₹'+fmtMoney(h.ABP)+'</div>'+
+        '<div class="pl '+(pl>=0?'up':'down')+'">'+(pl>=0?'+':'−')+'₹'+fmtMoney(Math.abs(pl))+' ('+(pl>=0?'+':'−')+Math.abs(pct).toFixed(1)+'%)</div>';
+      card.appendChild(row);
+    });
+    const totPl = totCur-totInv;
+    const tr = el('div','drow'); tr.style.borderTop='1px solid var(--border)'; tr.style.marginTop='2px';
+    tr.innerHTML = '<span class="k" style="font-weight:600">Current value</span><span class="v" style="font-weight:600;color:var(--text)">₹'+fmtMoney(totCur)+' · '+(totPl>=0?'+':'−')+'₹'+fmtMoney(Math.abs(totPl))+'</span>';
+    card.appendChild(tr);
+    card.appendChild(el('div','cardfoot','Live prices, updated '+lut+'. Factual info, never investment advice.'));
+    add(card);
+    const nw=el('div','chips',''); nw.appendChild(el('div','note','Live-data card from Holdings (<code>lDictHoldingData</code>, keyed by ISIN). <code>LTP/CP</code> are in <b>paise</b> (÷100); <code>ABP/ASP</code> in rupees — normalized before render. Not a file: no captured PDF endpoint for holdings.'));
+    add(nw);
+    add(chipRow([ chip('🎫 Raise a ticket', ()=>raiseTicket('Holdings'), 'Escalate a discrepancy.') ], 'tight'));
+  });
+}
+function fmtMoney(n){ return n.toLocaleString('en-IN',{minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+/* =============================================================
+ *  CML — intent -> API -> PDF (no steps)
+ * ============================================================= */
+function startCML(){
+  generating('Getting your CML…', ()=>{
+    const em = errMode();
+    if(em){ clearErr(); return errorBubble(em==='E-NODATA'?'E-UNKNOWN':em, { subject:'CML', retry:startCML }); }
+    deliverFile({
+      caption:'Here\'s your Client Master List',
+      name:'Client_Master_List.pdf', size:'9 KB', kind:'PDF', password:false,
+      trouble:()=>troubleOpening({subject:'CML', again:startCML}),
+      postChips: chipRow([
+        chip('Something incorrect in it? 🎫', ()=>raiseTicket('CML — details correction'), 'High-frequency follow-up: CML asks are often “my address/bank/nominee is wrong” — a service request, not a re-download.'),
+      ], 'tight'),
+    });
+    add(el('div','sysline','Backend fetched the S3 pre-signed cmlLink server-side and discarded it (URL never cached/logged/exposed). Filename kept as the server\'s own — CML carries nothing sensitive.'));
+  });
+}
+
+/* =============================================================
+ *  RAG Q&A — "What are my brokerage charges?"
+ * ============================================================= */
+function ragBrokerage(){
+  thinking('', ()=>{
+    botBubble('Your brokerage depends on your plan and segment. On FinX these are flat rates set on your account — per order or per ₹10,000 of trade value — not a cut of your profits. For example, equity delivery and intraday sit on different slabs, and options are charged per order.');
+    botBubble('Charges are applied at the time of each trade and itemised on that trade\'s contract note. I can show your exact current rates or pull a contract note whenever you like.', '');
+    const c = el('div','cite');
+    c.innerHTML = '📚 <div>Grounded in <b>FinX Knowledge Base</b> — “Brokerage &amp; charges” · TAT: instant.<br>Factual info only — never investment advice.</div>';
+    add(c);
+    const nw=el('div','chips',''); nw.appendChild(el('div','note','RAG path (not a report flow): hybrid retrieval (FTS + pgvector cosine over <code>qa_chunks</code>, 3072-dim) → Claude generation grounded in retrieved chunks. Answer cites the KB and refuses investment advice by construction.'));
+    add(nw);
+    add(chipRow([
+      chip('📊 See my exact rates', ()=>{ userBubble('Show my exact rates'); showBrokerageCard(); }, 'Hands off from the RAG explanation to the Brokerage data card (get-brokerage-slab).'),
+      chip('🎫 Raise a ticket', ()=>raiseTicket('Brokerage question'), 'Escalate if the KB answer isn\'t enough.'),
+    ], 'tight'));
+  }, 1000);
+}
+
+/* =============================================================
+ *  Ticket status / raise ticket / call support
+ * ============================================================= */
+function ticketStatus(){
+  thinking('Checking your tickets…', ()=>{
+    botBubble('You\'ve got <b>no open tickets</b> right now, X008593. Want me to raise one, or is there something I can pull for you?');
+    add(chipRow([
+      chip('🎫 Raise a ticket', ()=>raiseTicket('New request'), 'Freshdesk create-ticket · transcript attached.'),
+      chip('📞 Call support', callSupport, 'Shows the support number + timings (in-DOM card — no dialer dialog).'),
+    ], 'tight'));
+  });
+}
+function raiseTicket(subject){
+  userBubble('Raise a ticket');
+  generating('Raising your ticket…', ()=>{
+    const id = ticketSeq++;
+    const card = el('div','ticketcard');
+    card.innerHTML = '<b>🎫 Ticket #'+id+' raised</b><small>Our team will reach out within 24 hours'+(subject?' about <b>'+esc(subject)+'</b>':'')+'. Track it anytime — just ask “ticket status”.</small>';
+    add(card);
+    const nw=el('div','chips',''); nw.appendChild(el('div','note','Freshdesk create-ticket tool: the full conversation transcript is written into the ticket description; the field cascade is set from the detected intent. The call-support chip stays reachable even after a ticket is raised.'));
+    add(nw);
+    add(chipRow([ chip('📞 Call support instead', callSupport, 'Instant path — support number + call timings.') ], 'tight'));
+  });
+}
+function callSupport(){
+  const card = el('div','callcard');
+  card.innerHTML = '<div class="ci">📞</div><div><a href="tel:'+SUPPORT_NO.replace(/[^0-9]/g,'')+'">'+SUPPORT_NO+'</a><small>'+SUPPORT_HRS+'</small></div>';
+  add(card);
+}
+
+/* =============================================================
+ *  Intent router (free text) + dispatch
+ * ============================================================= */
+function classify(text){
+  const t = ' '+text.toLowerCase()+' ';
+  if(/ticket status|my ticket|track.*ticket|check.*ticket/.test(t)) return ()=>ticketStatus();
+  if(/raise.*ticket|talk to (support|someone|a human|an agent)|speak to|human agent|contact support|need help from|escalat/.test(t)) return ()=>raiseTicket('Support request');
+  if(/tax|capital gain|\bcg\b|itr|tax p&l|tax pnl/.test(t)){
+    if(/capital gain|\bcg\b/.test(t)) return ()=>startTax('cg');
+    if(/tax p&l|tax pnl/.test(t)) return ()=>startTax('taxpnl');
+    return ()=>startTax();
+  }
+  if(/mtf|margin trading|margin funding/.test(t)) return ()=>startLedger('mtf');
+  if(/ledger|account statement|statement of account|fund statement/.test(t)) return ()=>startLedger();
+  if(/contract note|\bcn\b|\becn\b|trade confirmation|trade bill|trade detail/.test(t)) return ()=>startContractNotes();
+  if(/cml|client master/.test(t)) return ()=>startCML();
+  if(/holding|portfolio/.test(t)) return ()=>showHoldings();
+  if(/brokerage|brokrage|slab/.test(t)){
+    if(/show|rate|slab|plan|exact|my brokerage plan/.test(t)) return ()=>showBrokerageCard();
+    return ()=>ragBrokerage();   // "what are my brokerage charges?" -> RAG
+  }
+  if(/global|detail report|scrip/.test(t)) return ()=>globalDetailOffer('Equity', 'the same period');
+  if(/p\s*&?\s*l|pnl|profit/.test(t)) return ()=>startPnL();
+  return null;
+}
+function dispatch(text, opts){
+  opts = opts || {};
+  text = text.trim();
+  if(!text) return;
+  if(!opts.silent){ userBubble(text); bumpMsg(); }
+  const handler = classify(text);
+  if(handler){ setTimeout(handler, 120); }
+  else {
+    thinking('', ()=>{
+      botBubble('I can fetch your reports — P&L, ledger, tax, contract notes, CML — show your brokerage rates or holdings, or answer questions about FinX. Try one of these:');
+      add(chipRow([
+        chip('📊 Get my P&L', ()=>dispatch('Get my P&L'), 'Routes to the P&L stepper (variant 2a).'),
+        chip('📒 Show my ledger', ()=>dispatch('Show my ledger'), 'Routes to the Ledger flow.'),
+        chip('❓ Brokerage charges?', ()=>dispatch('What are my brokerage charges?'), 'Routes to the RAG path.'),
+        chip('🎫 Raise a ticket', ()=>raiseTicket('General query'), 'Escalate to support.'),
+      ], 'tight'));
+    }, 700);
+  }
+}
+
+/* =============================================================
+ *  Greeting + entry surface (variant 1a)
+ * ============================================================= */
+function greeting(){
+  const h = NOW.getHours(), m = NOW.getMinutes(), hm = h*60+m;
+  if(h>=6 && h<9)             return 'Good morning, X008593 ☀️ What can I get for you?';
+  if(hm>=555 && hm<=930)      return 'Hi X008593 — markets are live. Need a report or a quick answer?'; // 09:15–15:30
+  if(hm>930 && hm<=1380)      return 'Hi X008593 👋 Markets are closed — I\'m not.';                     // 15:30–23:00
+  return 'Hey X008593 — what do you need?';
+}
+function renderEntry(){
+  botBubble(greeting());
+  botBubble('I can fetch your reports instantly, explain charges and processes, or check your ticket status. <span class="muted">Files land right here in chat — no email verification needed.</span>', '');
+  // What's New pill
+  const wn = el('div','whatsnew');
+  const pill = el('span','wnpill','✨ What\'s New');
+  let open = false;
+  pill.onclick = ()=>{
+    if(open) return; open = true;
+    botBubble('<b>✨ What\'s new</b><br>⚡ 11 reports, instant — P&L, Ledger, Holding, Tax + 7 more, delivered here as PDF or Excel.<br>🔓 No email verification — you\'re logged in, so reports come straight to you.<br>🎫 Raise a support ticket without leaving chat.', '');
+  };
+  wn.appendChild(pill);
+  add(wn);
+  // "Popular right now" chips
+  const lab = el('div','notes-banner','“Popular right now” — the 4 entry chips are data-driven (chosen by ticket volume) and remote-config. Each is a first message that kicks off a flow or the RAG path.');
+  add(lab);
+  add(chipRow([
+    chip('📊 Get my P&L', ()=>dispatch('Get my P&L'), 'Highest-volume report cluster → P&L stepper (variant 2a).'),
+    chip('📒 Show my ledger', ()=>dispatch('Show my ledger'), 'Second access-friction cluster → Ledger flow.'),
+    chip('🎫 Check ticket status', ()=>dispatch('Check ticket status'), 'Open-ticket awareness → Freshdesk lookup.'),
+    chip('❓ What are my brokerage charges?', ()=>dispatch('What are my brokerage charges?'), 'Explanation intent → RAG path (grounded KB answer).'),
+  ]));
+}
+
+/* =============================================================
+ *  Wiring
+ * ============================================================= */
+function resetConversation(){
+  feed.innerHTML = '';
+  msgCount = 0; softClosed = false;
+  document.getElementById('msgcount').textContent = '0';
+  clearErr();
+  renderEntry();
+}
+document.getElementById('resetBtn').onclick = resetConversation;
+
+const composer = document.getElementById('composer');
+const sendBtn = document.getElementById('sendBtn');
+function send(){ const v = composer.value; if(!v.trim()) return; composer.value=''; dispatch(v); }
+sendBtn.onclick = send;
+composer.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); send(); } });
+
+// jump buttons
+document.querySelectorAll('.jbtn').forEach(b=>{
+  b.onclick = ()=>{ dispatch(b.getAttribute('data-jump')); };
+});
+
+// theme toggle
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.querySelectorAll('button').forEach(btn=>{
+  btn.onclick = ()=>{
+    themeToggle.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    btn.classList.add('on');
+    document.body.className = document.body.className.replace(/theme-\w+/,'').trim();
+    document.body.classList.add('theme-'+btn.getAttribute('data-theme'));
+    // preserve show-notes
+  };
+});
+
+// behavior notes toggle
+document.getElementById('notesToggle').addEventListener('change', e=>{
+  document.body.classList.toggle('show-notes', e.target.checked);
+});
+
+// boot
+renderEntry();
+</script>
+</body>
+</html>

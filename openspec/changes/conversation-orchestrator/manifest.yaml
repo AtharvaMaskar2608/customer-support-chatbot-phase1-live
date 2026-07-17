@@ -1,0 +1,72 @@
+change: conversation-orchestrator
+filesTouched:
+  - app/orchestrator/**
+  - app/main.py
+  - tests/orchestrator/**
+contracts:
+  defines:
+    - name: POST /api/chat/session
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST /api/chat
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: bootstrap_session
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: handle_turn
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: SessionStateStore
+      kind: module
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: chat-wire-api
+      from: contracts-foundation
+    - name: SessionContext
+      from: contracts-foundation
+    - name: router-contract
+      from: contracts-foundation
+    - name: flow-engine-contract
+      from: contracts-foundation
+    - name: remote-config
+      from: contracts-foundation
+    - name: error-taxonomy
+      from: contracts-foundation
+    - name: tracing-conventions
+      from: contracts-foundation
+    - name: TurnRecord
+      from: contracts-foundation
+    - name: llm-client
+      from: contracts-foundation
+    - name: router.classify
+      from: llm-router
+    - name: engine.step
+      from: flow-engine-runtime
+    - name: rag.answer
+      from: rag-service
+    - name: ticketing.raise_ticket
+      from: ticketing-freshdesk
+    - name: store.enqueue
+      from: conversation-store-writer
+    - name: configure_tracing
+      from: tracing-observability
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - flow-engine-runtime
+  - llm-router
+  - rag-service
+  - ticketing-freshdesk
+  - conversation-store-writer
+  - tracing-observability
+doneCondition: >
+  POST /api/chat/session returns a time-correct greeting plus the correct entry surface's
+  chips from remote-config; POST /api/chat runs a full turn against in-memory fakes,
+  dispatching each Intent to the right service and emitting only valid chat-wire-api
+  blocks; the 10-message soft close, the two-follow-up escalation, and the sticky-language
+  rule are enforced; thread_id is generated once and echoed every turn; store.enqueue and
+  the tracing root span are invoked (asserted via fakes) without the response awaiting the
+  DB write; and client_id is taken from the session, never the request body. Fixture/fake
+  based, no live FinX/Freshdesk, no DB, no real LLM call.
+testCommand: pytest tests/orchestrator/

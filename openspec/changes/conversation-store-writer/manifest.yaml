@@ -1,0 +1,38 @@
+change: conversation-store-writer
+filesTouched:
+  - app/store/writer.py
+  - app/store/migrations/0002_*
+  - tests/store/**
+contracts:
+  defines:
+    - name: ConversationStoreWriter
+      kind: module
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: enqueue
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: conversation_turns-0002-index
+      kind: schema
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: TurnRecord
+      from: contracts-foundation
+    - name: conversation-store
+      from: contracts-foundation
+    - name: Intent
+      from: contracts-foundation
+    - name: db-config
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - conversation-orchestrator
+doneCondition: >
+  enqueue() returns before the insert completes (proven by an ordering assertion so the
+  response path never blocks on the DB); the worker inserts a TurnRecord into
+  conversation_turns with every required section 3.2 column populated; a forced insert
+  error and a queue-full condition each log-and-drop without raising into the caller;
+  start()/stop() cleanly drain and shut down; and the 0002 migration applies on top of
+  0001. Tested against a disposable Postgres (testcontainer / ephemeral schema with
+  0001+0002 applied) or a fake connection double, never the live/prod DB.
+testCommand: pytest tests/store/

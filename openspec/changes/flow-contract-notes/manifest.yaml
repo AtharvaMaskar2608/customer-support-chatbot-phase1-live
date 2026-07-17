@@ -1,0 +1,51 @@
+change: flow-contract-notes
+filesTouched:
+  - app/flows/contract_notes.py
+  - tests/flows/test_contract_notes.py
+contracts:
+  defines:
+    - name: POST finx.choiceindia.com/middleware-go/report/contract
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST api.choiceindia.com/middleware-go/contract/download
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: FLOW
+      kind: module
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: FlowState
+      from: contracts-foundation
+    - name: Step
+      from: contracts-foundation
+    - name: date-window-config
+      from: contracts-foundation
+    - name: byte-validation-cache-config
+      from: contracts-foundation
+    - name: Intent.CONTRACT_NOTES
+      from: contracts-foundation
+    - name: FinXClient
+      from: contracts-foundation
+    - name: contract-note-list-download-models
+      from: contracts-foundation
+    - name: remote-config
+      from: contracts-foundation
+    - name: error-taxonomy
+      from: contracts-foundation
+    - name: chat-wire-api
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - finx-http-adapters
+  - flow-engine-runtime
+  - widget-shell
+doneCondition: >
+  app/flows/contract_notes.py is discovered/registered; a full walk drives the list call
+  (session-bound client_id, snake_case, header-only auth), branches correctly on Body
+  StatusCode (204 / 1-note / 2+-note / >50-nudge), renders the note-list keyed by file_id
+  with correct segment badges, and downloads a note via the api. host with the "Session "
+  prefix, validating raw PDF bytes; download failure triggers one silent retry then
+  E-FETCH; and no client_id/file_id is ever taken from user input or logged. Against
+  fixture-based FinX mocks, no live API.
+testCommand: pytest tests/flows/test_contract_notes.py

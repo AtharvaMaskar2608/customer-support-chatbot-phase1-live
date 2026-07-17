@@ -1,0 +1,82 @@
+change: finx-http-adapters
+filesTouched:
+  - app/finx/adapters/**
+  - tests/finx_adapters/**
+contracts:
+  defines:
+    - name: fetch_report_bytes
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: FinXAuthError
+      kind: type
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: FinXTimeoutError
+      kind: type
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: FinXFetchError
+      kind: type
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: FinXTransportError
+      kind: type
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST /api/middleware/GetGlobalPNLPDF
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST /api/middleware/GetLedgerDetailsPDF
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST /api/middleware/GetTaxReportPDF
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST /api/middleware/GetGlobalPNLNew
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST /api/middleware/GetLedgerDetails
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST /api/middleware/GetDetailedPNL
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST finx.choiceindia.com/middleware-go/report/contract
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST api.choiceindia.com/middleware-go/contract/download
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST api.choiceindia.com/middleware-go/v2/get-brokerage-slab
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST /mis/reports/generate
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST mf.choiceindia.com/api/v2/investor/profile/extended
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST finxomne.choiceindia.com/COTI/V1/Holdings
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: FinXClient
+      from: contracts-foundation
+    - name: envelope-parsers
+      from: contracts-foundation
+    - name: finx-request-response-models
+      from: contracts-foundation
+    - name: ReportFormat
+      from: contracts-foundation
+    - name: byte-validation-config
+      from: contracts-foundation
+    - name: finx-capture-fixtures
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+doneCondition: >
+  All five per-backend adapters implement their frozen FinXClient interface methods;
+  every endpoint in the Contracts table is request-assembled per its field-level traps
+  and parsed via the correct frozen envelope parser; the HTTP 401 auth-failure path
+  raises FinXAuthError for the .NET and MIS envelopes; timeouts/network failures raise
+  FinXTimeoutError; fetch_report_bytes accepts valid %PDF / PK bytes above the size floor
+  and raises FinXFetchError on short/empty/wrong-magic bytes; and no test asserts a
+  URL / file_id / Reason reaching a client-visible sink. All fixture/httpx-mock based,
+  zero live FinX calls.
+testCommand: pytest tests/finx_adapters/

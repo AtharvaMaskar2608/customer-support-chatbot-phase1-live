@@ -1,0 +1,142 @@
+change: contracts-foundation
+
+filesTouched:
+  - pyproject.toml
+  - uv.lock
+  - .env.example
+  - app/main.py
+  - app/contracts/**
+  - app/contracts/schema/chat_wire.schema.json
+  - app/contracts/schema/tools.schema.json
+  - app/finx/interfaces.py
+  - app/finx/envelopes.py
+  - app/finx/models.py
+  - app/finx/__init__.py
+  - app/llm/client.py
+  - app/llm/__init__.py
+  - app/config/**
+  - app/store/__init__.py
+  - app/store/schema.py
+  - app/store/migrations/0001_conversation_store.sql
+  - app/store/migrations/runner.py
+  - tests/contracts/**
+  - tests/finx/**
+  - tests/fixtures/finx/**
+
+contracts:
+  defines:
+    # chat-wire-api
+    - name: SessionContext
+      kind: type
+      structureRef: "specs/chat-wire-api/spec.md#requirement-session-bootstrap-from-url-parameters"
+    - name: ChatRequest / ChatResponse
+      kind: type
+      structureRef: "specs/chat-wire-api/spec.md#requirement-chat-turn-requestresponse-envelope"
+    - name: RenderBlock union (bubble/user_bubble/chip_row/stepper_card/calendar/file_card/note_list_card/data_card/error_bubble/ticket_confirmation/generating)
+      kind: type
+      structureRef: "specs/chat-wire-api/spec.md#requirement-render-block-type-taxonomy"
+    - name: ChipAction
+      kind: type
+      structureRef: "specs/chat-wire-api/spec.md#requirement-chip-action-contract"
+    - name: config_slice (session-seed config)
+      kind: type
+      structureRef: "specs/chat-wire-api/spec.md#requirement-session-seed-config-delivery"
+    - name: chat_wire.schema.json (generated wire-union JSON Schema)
+      kind: schema
+      structureRef: "specs/chat-wire-api/spec.md#requirement-render-block-type-taxonomy"
+    # router-contract
+    - name: Intent (frozen 16-value enum)
+      kind: type
+      structureRef: "specs/router-contract/spec.md#requirement-complete-intent-enum"
+    - name: ExtractedParams / Segment / ReportFormat
+      kind: type
+      structureRef: "specs/router-contract/spec.md#requirement-extracted-parameters"
+    - name: ConversationContext
+      kind: type
+      structureRef: "specs/router-contract/spec.md#requirement-conversation-context-input"
+    - name: RouterResult
+      kind: type
+      structureRef: "specs/router-contract/spec.md#requirement-router-result-fields-and-follow-up-cap"
+    - name: RetrievedChunk / RagAnswer / retrieval_context
+      kind: type
+      structureRef: "specs/router-contract/spec.md#requirement-rag-answer-and-retrieved-chunk-contract-types"
+    - name: RaiseTicket tool request/result
+      kind: type
+      structureRef: "specs/router-contract/spec.md#requirement-raise-ticket-tool-contract"
+    - name: Agent tool registry (route/get_pnl_report/get_ledger_report/get_contract_notes/get_tax_report/get_cml/get_brokerage_slabs/search_kb/raise_ticket/get_ticket_status) + tools.schema.json
+      kind: schema
+      structureRef: "specs/router-contract/spec.md#requirement-agent-tool-definitions"
+    - name: Routing via forced tool use (route tool + tool_choice)
+      kind: module
+      structureRef: "specs/router-contract/spec.md#requirement-routing-via-forced-tool-use"
+    - name: LLM wrapper native tool-use passthrough (tools/tool_choice/output_config)
+      kind: type
+      structureRef: "specs/llm-client/spec.md#requirement-native-tool-use-passthrough-no-free-text-json-parsing"
+    # finx-client
+    - name: FinXClient facade + 5 backend adapter Protocols
+      kind: type
+      structureRef: "specs/finx-client/spec.md#requirement-per-backend-adapter-set-for-five-hosts"
+    - name: ParsedEnvelope + 3 envelope parsers (parse_dotnet/parse_go/parse_mis)
+      kind: module
+      structureRef: "specs/finx-client/spec.md#requirement-three-response-envelope-parsers"
+    - name: Per-endpoint typed request/response models + EndpointSpec descriptors
+      kind: type
+      structureRef: "specs/finx-client/spec.md#requirement-typed-requestresponse-models-per-captured-endpoint"
+    # flow-engine-contract
+    - name: FlowState / Step / transitions
+      kind: type
+      structureRef: "specs/flow-engine-contract/spec.md#requirement-flow-and-step-state-machine-types"
+    - name: FlowConfig (per-flow date windows)
+      kind: type
+      structureRef: "specs/flow-engine-contract/spec.md#requirement-per-flow-date-windows-differ-by-design"
+    - name: FY helpers (currentFY/supportedFYs/defaultFY/short-long mapping) — IMPLEMENTED
+      kind: module
+      structureRef: "specs/flow-engine-contract/spec.md#requirement-financial-year-helpers-computed-dynamically"
+    - name: FlowSpec protocol + module-level FLOW registration (no registration imports)
+      kind: type
+      structureRef: "specs/flow-engine-contract/spec.md#requirement-flow-registration-via-module-level-flow-and-discovery"
+    # conversation-store
+    - name: 0001 threads/turns schema + schema_migrations
+      kind: schema
+      structureRef: "specs/conversation-store/spec.md#requirement-turns-table-captures-decisions-and-tool-traces"
+    - name: TurnRecord DTO
+      kind: type
+      structureRef: "specs/conversation-store/spec.md#requirement-turnrecord-producerconsumer-dto"
+    - name: migration runner (forward-only numbered SQL convention)
+      kind: module
+      structureRef: "specs/conversation-store/spec.md#requirement-forward-only-numbered-migration-convention"
+    # remote-config
+    - name: RemoteConfig schema (limits/chips/greeting/whats_new/products/calendar-bounds/RAG-tunables)
+      kind: schema
+      structureRef: "specs/remote-config/spec.md#requirement-runtime-limits-are-remote-config"
+    # tracing-conventions
+    - name: SpanType taxonomy + configure() setup contract + mask signature
+      kind: type
+      structureRef: "specs/tracing-conventions/spec.md#requirement-typed-span-taxonomy"
+    # error-taxonomy
+    - name: ErrorCode enum + ErrorCopy config
+      kind: type
+      structureRef: "specs/error-taxonomy/spec.md#requirement-five-conversational-error-codes"
+    # llm-client
+    - name: LLM client wrapper (pinned claude-sonnet-5 / claude-haiku-4-5-20251001)
+      kind: type
+      structureRef: "specs/llm-client/spec.md#requirement-pinned-model-ids-with-configurable-toggle"
+    # shared DB access (design-only; no spec requirement)
+    - name: app/config/db.py async engine + session factory
+      kind: module
+      structureRef: "design.md#d14-shared-rag-store-contract-types-decouple-producers-from-consumers"
+  consumes: []
+
+dependsOn: []
+
+doneCondition: >
+  The backend package skeleton, all frozen contract types/interfaces/schemas
+  (wire, router, RAG, flow, store, config, tracing, error, llm-client), the three
+  FinX envelope parsers with sanitized capture-fixture tests, the RemoteConfig
+  schema + defaults, the shared async DB engine/session factory, the
+  conversation-store 0001 migration + runner, the generated chat-wire JSON Schema
+  with a drift test, and the POST /api/chat session-seed stub all exist and import
+  cleanly; the full contract + parser suite passes offline (no network, no live
+  DB). openspec validate --strict passes.
+
+testCommand: pytest tests/contracts tests/finx

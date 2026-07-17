@@ -1,0 +1,36 @@
+change: llm-router
+filesTouched:
+  - app/llm/router.py
+  - app/llm/prompts/**
+  - tests/llm_router/**
+contracts:
+  defines:
+    - name: route
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: Intent
+      from: contracts-foundation
+    - name: ExtractedParams
+      from: contracts-foundation
+    - name: RouterResult
+      from: contracts-foundation
+    - name: ConversationContext
+      from: contracts-foundation
+    - name: llm-client
+      from: contracts-foundation
+    - name: currentFY
+      from: contracts-foundation
+    - name: supportedFYs
+      from: contracts-foundation
+    - name: follow_up_cap
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+doneCondition: >
+  route(utterance, ctx) produces the correct RouterResult for the golden utterance set
+  spanning English/Hindi/Hinglish/typos, with the section 2.5 precedence rules, AY-to-FY
+  confirmation flagging, one-shot follow-up generation, and sticky-language all covered,
+  with no live LLM call in CI (record/replay at the client boundary via FakeLLMClient plus
+  golden fixtures; deterministic precedence/FY/language layers unit-tested with no LLM).
+testCommand: pytest tests/llm_router/

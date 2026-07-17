@@ -1,0 +1,29 @@
+change: widget-shell
+filesTouched:
+  - widget/**
+contracts:
+  defines: []
+  consumes:
+    - name: chat-wire-api
+      from: contracts-foundation
+    - name: remote-config
+      from: contracts-foundation
+    - name: error-taxonomy
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - conversation-orchestrator
+doneCondition: >
+  Every render-block wire type (bubble, chip-row, stepper-card, calendar, file-card,
+  note-list, data-card, error-bubble, ticket-confirmation) renders from a fixture and
+  matches its prototype screen; both entry surfaces render from their seed fixtures
+  (1a Support, 1b Reports) selected by the page URL param; interaction contracts are
+  verified (stepper edit clears downstream, calendar hard-disables out-of-range dates,
+  note-list paginates 10/page, data-card renders arbitrary dynamic groups without
+  hardcoding); shell behaviors are verified (web frame collapse/unread/position-persist,
+  app WebView full-screen, theming from isDarkTheme with prefers-color-scheme fallback and
+  no web font, persistent compliance footer, >5s Generating indicator); and the turn loop
+  issues exactly one POST /api/chat per action against the mock server, appending blocks
+  in order with accessToken never logged or persisted. Vitest fixture-based, no live API.
+testCommand: npm --prefix widget test

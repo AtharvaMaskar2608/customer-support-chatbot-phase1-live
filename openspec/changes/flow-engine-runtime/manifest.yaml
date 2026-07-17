@@ -1,0 +1,82 @@
+change: flow-engine-runtime
+filesTouched:
+  - app/engine/**
+  - app/flows/__init__.py
+  - tests/engine/**
+contracts:
+  defines:
+    - name: advance
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: next_step
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: reopen_step
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: enforce_followups
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: build_calendar
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: validate_range
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: resolve_fy
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: deliver
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: map_error
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: register
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: flow-discovery-registry
+      kind: module
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: FlowState
+      from: contracts-foundation
+    - name: Step
+      from: contracts-foundation
+    - name: date-window-config
+      from: contracts-foundation
+    - name: FY-helpers
+      from: contracts-foundation
+    - name: byte-validation-cache-config
+      from: contracts-foundation
+    - name: chat-wire-api
+      from: contracts-foundation
+    - name: error-taxonomy
+      from: contracts-foundation
+    - name: Intent
+      from: contracts-foundation
+    - name: FinXClient
+      from: contracts-foundation
+    - name: fetch_report_bytes
+      from: finx-http-adapters
+    - name: FinXTimeoutError
+      from: finx-http-adapters
+    - name: FinXFetchError
+      from: finx-http-adapters
+    - name: FinXAuthError
+      from: finx-http-adapters
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - finx-http-adapters
+doneCondition: >
+  advance() drives a flow from first step through generation and delivery
+  deterministically; stepper-edit clears downstream selections and refetches nothing
+  until generation; the two-follow-up cap escalates on the third; calendars hard-disable
+  out-of-range dates and out-of-window FYs yield E-YEAR with no adapter call; a
+  FinXFetchError triggers exactly one silent retry then E-FETCH; the 15-min cache returns
+  cached bytes within TTL and resend bypasses it; delivery renames display filenames
+  (CML excepted) and masks the email; error mapping emits the verbatim section 8.4 copy;
+  and the registry discovers a test FlowDefinition with no edit to app/flows/__init__.py.
+  Built against fake adapters and frozen contract fixtures, zero network and zero LLM.
+testCommand: pytest tests/engine/

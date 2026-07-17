@@ -1,0 +1,44 @@
+change: flow-brokerage
+filesTouched:
+  - app/flows/brokerage.py
+  - tests/flows/test_brokerage.py
+contracts:
+  defines:
+    - name: POST api.choiceindia.com/middleware-go/v2/get-brokerage-slab
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: FLOW
+      kind: module
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: FlowState
+      from: contracts-foundation
+    - name: Step
+      from: contracts-foundation
+    - name: session-scoped-cache-config
+      from: contracts-foundation
+    - name: Intent.BROKERAGE
+      from: contracts-foundation
+    - name: FinXClient
+      from: contracts-foundation
+    - name: get-brokerage-slab-models
+      from: contracts-foundation
+    - name: chat-wire-api-data-card
+      from: contracts-foundation
+    - name: error-taxonomy
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - finx-http-adapters
+  - flow-engine-runtime
+  - widget-shell
+doneCondition: >
+  app/flows/brokerage.py is discovered/registered; the intent (chip or free text) drives
+  one get-brokerage-slab call with {ClientID: <session client>} over the JWT adapter; the
+  Response array renders as a data card with segments and rows iterated dynamically and
+  desc verbatim (a fixture with a non-standard segment set / row count proves no
+  hardcoding, and no rupee figure is ever computed); no PDF/email path exists; and API
+  failure triggers one silent retry then the conversational error bubble. Against
+  fixture-based FinX mocks (multi-segment slab + variant + failure fixtures), no live API.
+testCommand: pytest tests/flows/test_brokerage.py

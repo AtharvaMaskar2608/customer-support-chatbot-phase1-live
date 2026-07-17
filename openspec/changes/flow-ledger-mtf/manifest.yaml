@@ -1,0 +1,46 @@
+change: flow-ledger-mtf
+filesTouched:
+  - app/flows/ledger.py
+  - tests/flows/test_ledger.py
+contracts:
+  defines:
+    - name: POST /api/middleware/GetLedgerDetailsPDF
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: FLOW
+      kind: module
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: FlowState
+      from: contracts-foundation
+    - name: Step
+      from: contracts-foundation
+    - name: date-window-config
+      from: contracts-foundation
+    - name: byte-validation-cache-config
+      from: contracts-foundation
+    - name: Intent.LEDGER
+      from: contracts-foundation
+    - name: Intent.MTF_LEDGER
+      from: contracts-foundation
+    - name: FinXClient
+      from: contracts-foundation
+    - name: GetLedgerDetailsPDF-models
+      from: contracts-foundation
+    - name: error-taxonomy
+      from: contracts-foundation
+    - name: chat-wire-api
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - finx-http-adapters
+  - flow-engine-runtime
+doneCondition: >
+  app/flows/ledger.py is discovered/registered; a full step walk for both Ledger and MTF
+  Ledger drives the correct GetLedgerDetailsPDF request (LoginId = client code,
+  Group: "GROUP1", Margin per report type, RequestFor per branch); no-data/auth/fetch
+  failures map to the correct E-* bubbles; the 2019 floor / today+7 cap / no-clamp window
+  is enforced; and the MTF path is exercised behind the [CONFIRM] caveat. Against
+  fixture-based FinX mocks, no live API.
+testCommand: pytest tests/flows/test_ledger.py

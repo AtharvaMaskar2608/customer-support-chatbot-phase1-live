@@ -1,0 +1,52 @@
+change: rag-service
+filesTouched:
+  - app/rag/embeddings.py
+  - app/rag/retriever.py
+  - app/rag/generator.py
+  - app/rag/service.py
+  - app/rag/models.py
+  - app/rag/config.py
+  - app/rag/prompts/**
+  - tests/rag/**
+contracts:
+  defines:
+    - name: respond
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: retrieve
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: answer
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: RetrievedChunk
+      kind: type
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: RagAnswer
+      kind: type
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: RetrievalContext
+      kind: type
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: RagError
+      kind: type
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: llm-client
+      from: contracts-foundation
+    - name: ConversationContext
+      from: contracts-foundation
+    - name: mask
+      from: contracts-foundation
+    - name: async-db-session
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+doneCondition: >
+  Hybrid retrieval (vector + FTS + RRF) returns the expected fused ranking against a
+  seeded pgvector test DB, and grounded generation produces citation-bearing answers that
+  refuse-and-escalate on the B3 numeric-gap and D4 no-match cases and refuse investment
+  advice / resist prompt injection (C-series), all without a live LLM in CI. Retrieval
+  runs against an ephemeral pgvector container seeded from a committed JSONL fixture;
+  generation/refusal tests use a FakeRetriever and FakeLLMClient (no DB, no network).
+testCommand: pytest tests/rag/

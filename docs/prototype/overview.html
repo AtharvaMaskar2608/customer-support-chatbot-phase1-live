@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choice Jini — Project Overview (Phase 1 · Live)</title>
+<style>
+/* ============================================================
+   Choice Jini — end-to-end overview
+   Self-contained. Tokens from docs/prototype/DESIGN_BRIEF.md
+   ============================================================ */
+:root{
+  --brand:#2B6BE8; --brand-ink:#1B4FB0; --brand-link:#1B4FB0;
+  --positive:#17B26A; --danger:#E5484D; --warn:#F5A524;
+  --text:#1A1D21; --text-muted:#5F6B7A;
+  --bg:#FFFFFF; --surface:#F7F9FC; --surface-2:#EEF2F8; --border:#D5DCE6;
+  --bubble-bot:#F1F5FB; --bubble-user:#2B6BE8; --bubble-user-ink:#FFFFFF;
+  --radius:14px; --radius-sm:10px; --radius-chip:999px;
+  --shadow:0 6px 24px rgba(20,29,45,.12);
+  --shadow-sm:0 2px 8px rgba(20,29,45,.07);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,Menlo,Consolas,monospace;
+  --tint-info:rgba(43,107,232,.09);
+  --tint-warn:rgba(245,165,36,.13);
+  --tint-danger:rgba(229,72,77,.10);
+  --tint-ok:rgba(23,178,106,.12);
+  --hero-1:#1B4FB0; --hero-2:#2B6BE8;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --brand:#2B6BE8; --brand-ink:#7BA6F2; --brand-link:#7BA6F2;
+    --text:#E7ECF3; --text-muted:#9AA7B8;
+    --bg:#0F1620; --surface:#182231; --surface-2:#1E2A3C; --border:#27364C;
+    --bubble-bot:#182231;
+    --shadow:0 8px 30px rgba(0,0,0,.45);
+    --shadow-sm:0 2px 10px rgba(0,0,0,.35);
+    --tint-info:rgba(43,107,232,.18);
+    --tint-warn:rgba(245,165,36,.16);
+    --tint-danger:rgba(229,72,77,.18);
+    --tint-ok:rgba(23,178,106,.17);
+    --hero-1:#13233f; --hero-2:#1d3f79;
+  }
+}
+:root[data-theme="dark"]{
+  --brand:#2B6BE8; --brand-ink:#7BA6F2; --brand-link:#7BA6F2;
+  --text:#E7ECF3; --text-muted:#9AA7B8;
+  --bg:#0F1620; --surface:#182231; --surface-2:#1E2A3C; --border:#27364C;
+  --bubble-bot:#182231;
+  --shadow:0 8px 30px rgba(0,0,0,.45);
+  --shadow-sm:0 2px 10px rgba(0,0,0,.35);
+  --tint-info:rgba(43,107,232,.18);
+  --tint-warn:rgba(245,165,36,.16);
+  --tint-danger:rgba(229,72,77,.18);
+  --tint-ok:rgba(23,178,106,.17);
+  --hero-1:#13233f; --hero-2:#1d3f79;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:var(--font); font-size:16px; line-height:1.65;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+a{color:var(--brand-link); text-decoration:none}
+a:hover{text-decoration:underline}
+code,kbd{font-family:var(--mono); font-size:.86em}
+:where(p) code,:where(li) code,:where(td) code,:where(th) code{
+  background:var(--surface-2); border:1px solid var(--border);
+  padding:.06em .4em; border-radius:6px; white-space:nowrap;
+}
+h1,h2,h3,h4{line-height:1.2; font-weight:700; letter-spacing:-.01em}
+
+/* ---------- Hero ---------- */
+.hero{
+  position:relative; overflow:hidden; color:#fff;
+  background:
+    radial-gradient(900px 420px at 82% -10%, rgba(255,255,255,.20), transparent 60%),
+    radial-gradient(700px 360px at 8% 120%, rgba(23,178,106,.28), transparent 55%),
+    linear-gradient(135deg, var(--hero-1), var(--hero-2));
+}
+.hero__inner{max-width:1180px; margin:0 auto; padding:60px 28px 52px}
+.hero__brandrow{display:flex; align-items:center; gap:13px; margin-bottom:26px}
+.hero__avatar{
+  width:46px; height:46px; border-radius:13px; display:grid; place-items:center;
+  background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.28);
+  font-size:22px; backdrop-filter:blur(4px);
+}
+.hero__brand{font-weight:700; font-size:1.06rem; letter-spacing:.01em}
+.hero__brand small{display:block; font-weight:500; opacity:.82; font-size:.78rem; letter-spacing:.04em}
+.hero__phase{
+  margin-left:auto; font-size:.72rem; font-weight:600; letter-spacing:.06em;
+  text-transform:uppercase; padding:6px 12px; border-radius:var(--radius-chip);
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.28);
+}
+.hero h1{font-size:clamp(2rem,4.6vw,3.15rem); margin:0 0 .35em; max-width:16ch}
+.hero__lede{font-size:clamp(1.05rem,2vw,1.32rem); font-weight:400; line-height:1.5; max-width:60ch; opacity:.95; margin:0 0 26px}
+.hero__trust{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:34px}
+.hero__trust span{
+  font-size:.86rem; font-weight:500; padding:7px 14px; border-radius:var(--radius-chip);
+  background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.26);
+}
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px}
+.stat{
+  background:rgba(255,255,255,.11); border:1px solid rgba(255,255,255,.22);
+  border-radius:var(--radius); padding:16px 18px; backdrop-filter:blur(3px);
+}
+.stat b{display:block; font-size:1.7rem; line-height:1.1; letter-spacing:-.02em}
+.stat span{font-size:.8rem; opacity:.9; line-height:1.35; display:block; margin-top:3px}
+
+/* ---------- Layout ---------- */
+.layout{max-width:1180px; margin:0 auto; padding:0 28px; display:grid; grid-template-columns:238px 1fr; gap:44px; align-items:start}
+.toc{position:sticky; top:0; align-self:start; max-height:100vh; overflow:auto; padding:32px 0 40px}
+.toc__title{font-size:.72rem; text-transform:uppercase; letter-spacing:.09em; color:var(--text-muted); font-weight:700; margin:0 0 12px 12px}
+.toc ol{list-style:none; margin:0; padding:0; counter-reset:toc}
+.toc li{counter-increment:toc}
+.toc a{
+  display:flex; gap:10px; align-items:baseline; padding:8px 12px; border-radius:var(--radius-sm);
+  color:var(--text-muted); font-size:.9rem; font-weight:500; line-height:1.3;
+  border-left:2px solid transparent; transition:background .15s,color .15s;
+}
+.toc a::before{content:counter(toc,decimal-leading-zero); font-variant-numeric:tabular-nums; font-size:.72rem; color:var(--brand); font-weight:700; opacity:.65}
+.toc a:hover{background:var(--surface); color:var(--text); text-decoration:none}
+.toc a.active{background:var(--surface); color:var(--brand-ink); border-left-color:var(--brand); font-weight:600}
+.toc a.active::before{opacity:1}
+.themebtn{
+  margin:16px 0 0 12px; font:inherit; font-size:.82rem; font-weight:600; cursor:pointer;
+  display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border-radius:var(--radius-chip);
+  background:var(--surface); color:var(--text); border:1px solid var(--border);
+}
+.themebtn:hover{border-color:var(--brand)}
+
+main{padding:40px 0 90px; min-width:0}
+
+/* ---------- Sections ---------- */
+.section{margin-bottom:64px; scroll-margin-top:24px}
+.section__eyebrow{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+.section__num{
+  font-variant-numeric:tabular-nums; font-weight:700; font-size:.78rem; color:#fff;
+  background:var(--brand); width:26px; height:26px; border-radius:8px; display:grid; place-items:center;
+}
+.section__kicker{font-size:.74rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-muted); font-weight:700}
+.section>h2{font-size:clamp(1.5rem,3vw,2rem); margin:0 0 .35em}
+.section__intro{font-size:1.08rem; color:var(--text); max-width:66ch; margin:0 0 24px}
+.section h3{font-size:1.2rem; margin:34px 0 12px}
+.section h4{font-size:1rem; margin:22px 0 8px}
+p{margin:0 0 14px}
+
+/* ---------- Cards ---------- */
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px; box-shadow:var(--shadow-sm)}
+.card + .card{margin-top:16px}
+.grid{display:grid; gap:16px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.feature h4{margin:0 0 6px; font-size:1.02rem; display:flex; align-items:center; gap:9px}
+.feature p{margin:0; color:var(--text-muted); font-size:.94rem}
+.feature__ic{font-size:1.15rem; line-height:1}
+
+/* ---------- Callouts ---------- */
+.callout{border-radius:var(--radius); padding:16px 18px 16px 20px; margin:20px 0; border:1px solid var(--border); position:relative}
+.callout::before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:4px 0 0 4px}
+.callout h4{margin:0 0 5px; font-size:.98rem; display:flex; align-items:center; gap:8px}
+.callout p:last-child{margin-bottom:0}
+.callout--info{background:var(--tint-info)} .callout--info::before{background:var(--brand)}
+.callout--warn{background:var(--tint-warn)} .callout--warn::before{background:var(--warn)}
+.callout--danger{background:var(--tint-danger)} .callout--danger::before{background:var(--danger)}
+.callout--ok{background:var(--tint-ok)} .callout--ok::before{background:var(--positive)}
+
+/* ---------- Pills ---------- */
+.pill{display:inline-flex; align-items:center; gap:5px; font-size:.76rem; font-weight:600; padding:3px 10px; border-radius:var(--radius-chip); white-space:nowrap; line-height:1.5}
+.pill--ok{background:var(--tint-ok); color:var(--positive)}
+.pill--warn{background:var(--tint-warn); color:#B4780A}
+.pill--stop{background:var(--tint-danger); color:var(--danger)}
+.pill--info{background:var(--tint-info); color:var(--brand-ink)}
+.pill--muted{background:var(--surface-2); color:var(--text-muted)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill--warn{color:#F5C57A}}
+:root[data-theme="dark"] .pill--warn{color:#F5C57A}
+
+/* ---------- Tables ---------- */
+.table-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius); margin:18px 0; box-shadow:var(--shadow-sm); -webkit-overflow-scrolling:touch}
+table{border-collapse:collapse; width:100%; min-width:560px; font-size:.9rem}
+thead th{background:var(--surface-2); text-align:left; font-weight:700; font-size:.76rem; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); padding:11px 15px; position:sticky; top:0}
+td{padding:11px 15px; border-top:1px solid var(--border); vertical-align:top}
+tbody tr:nth-child(even) td{background:var(--surface)}
+td b{font-weight:650}
+.td-mono{font-family:var(--mono); font-size:.82rem; color:var(--text-muted); white-space:nowrap}
+
+/* ---------- Architecture diagram ---------- */
+.diagram{border:1px solid var(--border); border-radius:var(--radius); padding:20px; background:var(--surface); margin:22px 0; box-shadow:var(--shadow-sm)}
+.tier{border:1px dashed var(--border); border-radius:var(--radius); padding:14px 14px 16px; position:relative; margin:0}
+.tier--backend{border-style:solid; background:var(--tint-info); border-color:rgba(43,107,232,.35)}
+.tier__label{display:inline-block; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:12px}
+.tier__row{display:flex; flex-wrap:wrap; gap:10px}
+.tier__row + .tier__row{margin-top:10px}
+.node{
+  flex:1 1 150px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm);
+  padding:11px 13px; font-size:.86rem; font-weight:600; box-shadow:var(--shadow-sm); min-width:0;
+}
+.node small{display:block; font-weight:400; color:var(--text-muted); font-size:.76rem; margin-top:2px; line-height:1.35}
+.node code{font-size:.76rem}
+.node--router{flex-basis:100%; border-color:var(--brand); border-width:1.5px; background:var(--bg)}
+.node--engine{border-left:3px solid var(--brand)}
+.node--cross{border-left:3px solid var(--positive); background:var(--surface)}
+.node--ext{border-left:3px solid var(--text-muted)}
+.node--client{border-left:3px solid var(--warn)}
+.flow-arrow{
+  display:flex; align-items:center; justify-content:center; gap:10px; color:var(--text-muted);
+  font-size:.8rem; font-weight:600; padding:9px 0; text-align:center;
+}
+.flow-arrow span{max-width:70ch}
+
+/* ---------- Lifecycle stepper ---------- */
+.lifecycle{list-style:none; counter-reset:life; margin:22px 0; padding:0}
+.lifecycle li{counter-increment:life; position:relative; padding:0 0 22px 52px; margin:0}
+.lifecycle li::before{
+  content:counter(life); position:absolute; left:0; top:0; width:34px; height:34px; border-radius:50%;
+  background:var(--brand); color:#fff; font-weight:700; font-size:.95rem; display:grid; place-items:center; z-index:1;
+}
+.lifecycle li::after{content:""; position:absolute; left:16px; top:34px; bottom:0; width:2px; background:var(--border)}
+.lifecycle li:last-child{padding-bottom:0}
+.lifecycle li:last-child::after{display:none}
+.lifecycle b{display:block; font-size:1rem}
+.lifecycle p{margin:2px 0 0; color:var(--text-muted); font-size:.93rem}
+
+/* ---------- Fan-out (hosts) ---------- */
+.fanout{display:grid; grid-template-columns:1fr; gap:12px; margin:20px 0}
+.fanhub{background:var(--brand); color:#fff; border-radius:var(--radius); padding:14px 18px; font-weight:700; text-align:center; box-shadow:var(--shadow-sm)}
+.fanhub small{display:block; font-weight:500; opacity:.9; font-size:.8rem; margin-top:2px}
+.fanrow{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px}
+.host{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:13px 15px; box-shadow:var(--shadow-sm)}
+.host b{display:block; font-size:.9rem}
+.host code{display:block; font-family:var(--mono); font-size:.76rem; color:var(--brand-ink); margin:3px 0 6px; word-break:break-all}
+.host span{font-size:.78rem; color:var(--text-muted); line-height:1.35; display:block}
+
+/* ---------- Misc ---------- */
+.lead-list{margin:0 0 14px; padding-left:1.1em}
+.lead-list li{margin-bottom:7px}
+.two-col{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px}
+.tag{display:inline-block; font-family:var(--mono); font-size:.78rem; background:var(--surface-2); border:1px solid var(--border); border-radius:6px; padding:1px 7px; margin:2px 3px 2px 0}
+.divider{height:1px; background:var(--border); border:0; margin:40px 0}
+.footer{max-width:1180px; margin:0 auto; padding:30px 28px 60px; color:var(--text-muted); font-size:.85rem; border-top:1px solid var(--border)}
+.footer b{color:var(--text)}
+.footer a{font-family:var(--mono); font-size:.82rem}
+
+/* ---------- Responsive ---------- */
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr; gap:0}
+  .toc{position:static; max-height:none; padding:22px 0 4px; border-bottom:1px solid var(--border); margin-bottom:8px}
+  .toc ol{display:flex; flex-wrap:wrap; gap:4px}
+  .toc a{border-left:0; padding:7px 11px}
+  .toc a.active{border-left:0}
+  .themebtn{margin-left:12px}
+  main{padding-top:26px}
+}
+@media (max-width:560px){
+  .hero__inner{padding:44px 20px 40px}
+  .layout{padding:0 20px}
+  .footer{padding:26px 20px 50px}
+  .hero__phase{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero__inner">
+    <div class="hero__brandrow">
+      <div class="hero__avatar">✦</div>
+      <div class="hero__brand">Choice Jini<small>FinX · Customer Support Chatbot</small></div>
+      <div class="hero__phase">Phase 1 · Live</div>
+    </div>
+    <h1>The support agent that lives inside FinX.</h1>
+    <p class="hero__lede">
+      Jini is an agentic, WhatsApp-style chatbot embedded in Choice India's FinX trading app.
+      It fetches a client's reports as downloadable files and answers their factual questions —
+      all after login, so nobody has to re-verify their email or wait on a human.
+    </p>
+    <div class="hero__trust">
+      <span>📎 Files land right here — no email verification</span>
+      <span>🛡️ Factual answers only — never investment advice</span>
+      <span>🎫 A human is always one tap away</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>11</b><span>report flows delivered in-chat</span></div>
+      <div class="stat"><b>1,102</b><span>knowledge-base entries for RAG Q&amp;A</span></div>
+      <div class="stat"><b>5</b><span>FinX backends stitched together</span></div>
+      <div class="stat"><b>0</b><span>email round-trips (post-login)</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <p class="toc__title">On this page</p>
+    <ol>
+      <li><a href="#summary">Executive summary</a></li>
+      <li><a href="#scope">What we're building</a></li>
+      <li><a href="#architecture">How it works</a></li>
+      <li><a href="#catalog">The report catalog</a></li>
+      <li><a href="#data">Data &amp; knowledge base</a></li>
+      <li><a href="#integration">Integration reality</a></li>
+      <li><a href="#security">Security &amp; compliance</a></li>
+      <li><a href="#evaluation">Evaluation &amp; quality</a></li>
+      <li><a href="#status">Status &amp; what's next</a></li>
+    </ol>
+    <button class="themebtn" id="themebtn" type="button" aria-label="Toggle colour theme">
+      <span id="themeicon">🌙</span><span id="themelabel">Dark</span>
+    </button>
+  </nav>
+
+  <main>
+
+    <!-- 1 · EXECUTIVE SUMMARY -->
+    <section class="section" id="summary">
+      <div class="section__eyebrow"><span class="section__num">1</span><span class="section__kicker">Start here</span></div>
+      <h2>Executive summary</h2>
+      <p class="section__intro">
+        Choice Jini is a customer-support chatbot for <b>FinX</b>, Choice India's retail trading platform.
+        It ships as a React page inside the FinX Android/iOS app (a WebView) and as a floating window on the
+        FinX website. Its single job: <b>take routine work off the human support team</b>.
+      </p>
+
+      <div class="two-col">
+        <div class="card">
+          <h4 style="margin-top:0">Who it's for</h4>
+          <p style="margin-bottom:0">Logged-in FinX retail trading clients. The widget is <b>post-login</b> and inherits the app's
+          authentication — that is the core design premise, not a detail.</p>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">The problem it kills</h4>
+          <p style="margin-bottom:0">"Verification required from your registered email" appears in <b>every</b> support-ticket cluster
+          (58 P&amp;L + 14 Holding + 5 Ledger + 9 Contract-Note tickets). Because Jini is post-login, that entire
+          friction category disappears — reports arrive straight in the chat.</p>
+        </div>
+      </div>
+
+      <h3>What Jini does — two capabilities</h3>
+      <div class="grid grid-2">
+        <div class="card feature">
+          <h4><span class="feature__ic">📊</span> Fetch reports</h4>
+          <p>Eleven deterministic report flows (P&amp;L, Ledger, Tax, Contract Notes, CML and more). The client picks a
+          few options via tappable chips; Jini fetches the file server-side and drops it in the chat as a download card —
+          or emails it to their registered address.</p>
+        </div>
+        <div class="card feature">
+          <h4><span class="feature__ic">💬</span> Answer questions</h4>
+          <p>A retrieval-augmented (RAG) function answers explanatory and process questions ("what are my brokerage
+          charges?", "how do I check trade details?") from an existing 1,102-entry knowledge base — grounded, cited,
+          and never guessed.</p>
+        </div>
+      </div>
+
+      <h3>Headline capabilities</h3>
+      <ul class="lead-list">
+        <li><b>In-chat file delivery, no email round-trip.</b> Reports come back as file cards the client downloads on the spot.</li>
+        <li><b>Deterministic and auditable.</b> A thin LLM only classifies intent and reads parameters out of free text; hardcoded flows do the fulfilment. The model never improvises a report.</li>
+        <li><b>A human is always reachable.</b> Every conversation can raise a Freshdesk ticket (with the transcript attached) and shows a call-support chip — which stays visible even after a ticket is raised.</li>
+        <li><b>Built to improve itself.</b> Every turn is written to a conversation store and traced, so quality can be measured and a fine-tuned model built later.</li>
+        <li><b>Compliant by construction.</b> A persistent footer reads "Factual answers only — never investment advice", and the bot refuses to give any.</li>
+      </ul>
+
+      <div class="callout callout--info">
+        <h4>💡 The one-line pitch</h4>
+        <p>Jini turns the most common, most tedious support requests — "send me my report" and "explain this charge" —
+        into a two-tap, self-serve conversation that happens without a human, without an email, and without leaving the app.</p>
+      </div>
+    </section>
+
+    <!-- 2 · SCOPE -->
+    <section class="section" id="scope">
+      <div class="section__eyebrow"><span class="section__num">2</span><span class="section__kicker">Phase 1 scope</span></div>
+      <h2>What we're building</h2>
+      <p class="section__intro">
+        The launch — internally "Phase 1 · Live" — is the complete system: the widget, all report flows, the RAG
+        function, ticketing, the conversation store, and tracing. The owner's decision is a <b>full build</b>, RAG and
+        APIs together.
+      </p>
+
+      <div class="grid grid-3">
+        <div class="card feature"><h4><span class="feature__ic">🧩</span> Report flows</h4><p>11 deterministic flows, each a small hardcoded state machine over the FinX report APIs.</p></div>
+        <div class="card feature"><h4><span class="feature__ic">🔎</span> RAG Q&amp;A</h4><p>Hybrid retrieval over the existing <code>qa_chunks</code> knowledge base, answered by Claude.</p></div>
+        <div class="card feature"><h4><span class="feature__ic">🎫</span> Ticketing</h4><p>Freshdesk raise-ticket tool + call-support chip, always reachable.</p></div>
+        <div class="card feature"><h4><span class="feature__ic">🗄️</span> Conversation store</h4><p>Every turn written to PostgreSQL by a background thread.</p></div>
+        <div class="card feature"><h4><span class="feature__ic">🛰️</span> Tracing</h4><p>DeepEval observes every turn, decision, and tool call for evaluation.</p></div>
+        <div class="card feature"><h4><span class="feature__ic">🎛️</span> Externalized config</h4><p>Guardrails, prompts, chips, and limits live in config, not code.</p></div>
+      </div>
+
+      <h3>"Phase 1" means three different things — here's the disambiguation</h3>
+      <p>The phrase is overloaded across the source docs. Reading it correctly avoids a lot of confusion:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Sense</th><th>What it means</th></tr></thead>
+          <tbody>
+            <tr><td><b>The whole build</b></td><td>"Phase 1 · Live" — widget + 11 report flows + RAG + ticketing + conversation store + tracing. <span class="pill pill--info">this document</span></td></tr>
+            <tr><td><b>Personalization tier</b></td><td>Phase 1 greets by <b>Client ID</b> (<code>X008593</code>); Phase 2 upgrades to first name via get-profile.</td></tr>
+            <tr><td><b>Test-plan phasing</b></td><td>In the QA spreadsheet, Phase 1 = <b>KB / RAG-only, no API</b>; Phase 2 = RAG + API flows. This is test <em>sequencing</em>, not build sequencing.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout--warn">
+        <h4>⚠️ A sequencing note to keep straight</h4>
+        <p>All the UI mockups show API-integrated behaviour (the test plan's "Phase 2"); there is no KB-only mockup. The
+        build is the full system — the KB-only / API split belongs to the test plan, not the release.</p>
+      </div>
+
+      <h3>The 11 report flows</h3>
+      <p>
+        <span class="tag">P&amp;L</span><span class="tag">Ledger</span><span class="tag">MTF Ledger</span>
+        <span class="tag">Contract Notes</span><span class="tag">Tax Report / Capital Gain</span><span class="tag">CML</span>
+        <span class="tag">Brokerage</span><span class="tag">Holding</span><span class="tag">Detailed / Global P&amp;L</span>
+        <span class="tag">RAG Q&amp;A</span><span class="tag">Raise ticket / call support</span>
+      </p>
+
+      <h3>Explicitly out of scope for now</h3>
+      <ul class="lead-list">
+        <li>First-name personalization (that's the Phase-2 tier) and the Haiku model toggle.</li>
+        <li>No standalone Capital-Gain API — capital gains are served inside the Tax Report.</li>
+        <li>No bulk contract-note download — bulk delivery is email-only by design.</li>
+        <li>No computed rupee brokerage figure — Jini shows the rate slabs and points to the contract note.</li>
+      </ul>
+    </section>
+
+    <!-- 3 · HOW IT WORKS -->
+    <section class="section" id="architecture">
+      <div class="section__eyebrow"><span class="section__num">3</span><span class="section__kicker">Architecture</span></div>
+      <h2>How it works</h2>
+      <p class="section__intro">
+        The core design is a <b>deterministic flow engine gated by a thin LLM router</b>. The model decides <em>what</em>
+        the user wants; hardcoded flows decide <em>how</em> to deliver it. This keeps report fulfilment predictable,
+        testable, and safe.
+      </p>
+
+      <div class="two-col">
+        <div class="card">
+          <h4 style="margin-top:0">🧭 The LLM router</h4>
+          <p style="margin-bottom:0">Classifies each utterance into an intent (a report flow, RAG, or a ticket), pulls out any
+          parameters already present in free text (financial year, dates, segment, format), and asks a follow-up
+          <b>only when genuinely ambiguous</b>. Runs on <code>claude-sonnet-5</code>, with <code>claude-haiku-4-5</code> as a
+          backend-configurable toggle.</p>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">⚙️ The flow engine</h4>
+          <p style="margin-bottom:0">Once the intent is known, a hardcoded state machine drives fulfilment — segment / date / FY /
+          format as tappable stepper cards, a deterministic API call, byte validation, and file-card delivery. The LLM
+          never improvises the fulfilment path. Guardrails, prompts, and chips are externalized as config per module.</p>
+        </div>
+      </div>
+
+      <div class="callout callout--info">
+        <h4>📌 Model IDs, pinned</h4>
+        <p>The flow spec's "sonnet-4-6" is not a real model ID. The pinned decision (2026-07-16) is
+        <code>claude-sonnet-5</code> for the router and RAG generation, with <code>claude-haiku-4-5-20251001</code> as the
+        configurable cheap-model toggle.</p>
+      </div>
+
+      <h3>System architecture</h3>
+      <div class="diagram" role="img" aria-label="Three-tier architecture: FinX clients hand off to the Jini FastAPI backend, which routes to a flow engine, RAG service, and ticket tool, which in turn reach five FinX backends, Freshdesk, Postgres+pgvector, OpenAI, and Anthropic.">
+        <div class="tier">
+          <span class="tier__label">Client</span>
+          <div class="tier__row">
+            <div class="node node--client">FinX app WebView<small>Android / iOS full-screen slide-up</small></div>
+            <div class="node node--client">FinX website<small>floating ~400×640 window</small></div>
+            <div class="node node--client">React Jini widget<small>chat UI · stepper &amp; file cards</small></div>
+          </div>
+        </div>
+        <div class="flow-arrow">▼&nbsp; <span>URL handoff — <code>userId</code> · <code>sessionId</code> · <code>accessToken</code> (JWT) · <code>isDarkTheme</code> · <code>platform</code> · <code>page</code></span></div>
+        <div class="tier tier--backend">
+          <span class="tier__label">Jini backend — Python / FastAPI</span>
+          <div class="tier__row">
+            <div class="node node--router">🧭 LLM Router — Claude <code>claude-sonnet-5</code><small>classify intent · extract params · ask ≤ 2 follow-ups only when ambiguous</small></div>
+          </div>
+          <div class="tier__row">
+            <div class="node node--engine">⚙️ Flow engine<small>11 deterministic state machines</small></div>
+            <div class="node node--engine">🔎 RAG service<small>hybrid retrieve → Claude</small></div>
+            <div class="node node--engine">🎫 Ticket tool<small>Freshdesk create / search</small></div>
+          </div>
+          <div class="tier__row">
+            <div class="node node--cross">Guardrails<small>externalized JSON/config</small></div>
+            <div class="node node--cross">Conversation-store writer<small>background thread</small></div>
+            <div class="node node--cross">DeepEval tracing<small>every turn &amp; tool call</small></div>
+          </div>
+        </div>
+        <div class="flow-arrow">▼&nbsp; <span>server-side calls · byte validation · report URLs and <code>file_id</code>s never reach the client or the logs</span></div>
+        <div class="tier">
+          <span class="tier__label">External systems</span>
+          <div class="tier__row">
+            <div class="node node--ext">5 FinX backends<small>report &amp; profile APIs</small></div>
+            <div class="node node--ext">Freshdesk<small>ticketing</small></div>
+            <div class="node node--ext">Postgres + pgvector<small>qa_chunks · conversation store</small></div>
+            <div class="node node--ext">OpenAI<small>embeddings</small></div>
+            <div class="node node--ext">Anthropic<small>Claude generation</small></div>
+          </div>
+        </div>
+      </div>
+
+      <h3>The request lifecycle — one turn, end to end</h3>
+      <ol class="lifecycle">
+        <li><b>Handoff</b><p>The FinX app opens the chat and passes context as URL query params: <code>userId</code>, <code>sessionId</code>, <code>accessToken</code> (a JWT), <code>isDarkTheme</code>, <code>platform</code>, <code>page</code>. Jini captures both the SessionId and the JWT — different backends need different ones.</p></li>
+        <li><b>Greeting</b><p>The widget shows a time-aware greeting (by Client ID in Phase 1, e.g. "Hey X008593"), four configurable starter chips, and a free-text box. Phase 2 upgrades the greeting to a first name via get-profile.</p></li>
+        <li><b>Route</b><p>The first user action — a chip or a typed message — goes to the LLM router, which classifies the intent and extracts any parameters already in the text.</p></li>
+        <li><b>Collect</b><p>The flow engine drives a deterministic stepper (segment → date range → format, etc.) with tappable chips, asking at most two follow-ups before offering escalation.</p></li>
+        <li><b>Fetch — server-side</b><p>The backend calls the FinX API server-side, fetches the returned report URL, and <b>validates the bytes</b> (a size floor plus magic-byte check). The often-unauthenticated URL never reaches the client or the logs.</p></li>
+        <li><b>Deliver</b><p>The validated bytes are delivered as a chat file card with a friendly, renamed filename. If the bytes fail validation, one silent auto-retry runs; if that fails too, a conversational error bubble with recovery chips appears — never a toast.</p></li>
+        <li><b>Persist &amp; trace</b><p>A separate thread writes the turn to PostgreSQL, and DeepEval traces the turn — decisions and tool calls included, not just the final text.</p></li>
+      </ol>
+
+      <h3>Caps &amp; escalation</h3>
+      <div class="two-col">
+        <div class="card"><h4 style="margin-top:0">Conversation cap</h4><p style="margin-bottom:0"><b>10 messages</b> per conversation (leaning toward a soft, prompt-side guardrail that tracks a "conversation number"). At the cap, Jini offers to raise a ticket or call support.</p></div>
+        <div class="card"><h4 style="margin-top:0">Follow-up cap</h4><p style="margin-bottom:0"><b>≤ 2 follow-up questions</b> per ambiguity. If it's still unresolved, Jini stops guessing and offers escalation — a ticket (with the transcript) and the call-support chip.</p></div>
+      </div>
+    </section>
+
+    <!-- 4 · CATALOG -->
+    <section class="section" id="catalog">
+      <div class="section__eyebrow"><span class="section__num">4</span><span class="section__kicker">The reports</span></div>
+      <h2>The report catalog</h2>
+      <p class="section__intro">
+        Every report is delivered as a downloadable <b>file card</b> where a document exists; two flows (Brokerage, Holding)
+        render a live <b>data card</b> instead. The status pill shows how ready each backing endpoint is.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Flow</th><th>What the user gets</th><th>Delivery</th><th>Backing endpoint · host</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><b>P&amp;L Statement</b></td>
+              <td>Profit &amp; loss for Equity / F&amp;O / Commodity over a period</td>
+              <td>File card (PDF) or email</td>
+              <td class="td-mono">GetGlobalPNLPDF · /api/middleware</td>
+              <td><span class="pill pill--ok">✅ captured</span></td>
+            </tr>
+            <tr>
+              <td><b>Ledger</b></td>
+              <td>Account statement for a date range</td>
+              <td>File card (PDF) or email</td>
+              <td class="td-mono">GetLedgerDetailsPDF · /api/middleware</td>
+              <td><span class="pill pill--ok">✅ captured</span></td>
+            </tr>
+            <tr>
+              <td><b>MTF Ledger</b></td>
+              <td>Margin-trading funding statement</td>
+              <td>File card (PDF)</td>
+              <td class="td-mono">GetLedgerDetailsPDF + Margin:1 · /api/middleware</td>
+              <td><span class="pill pill--warn">⚠️ discriminator unconfirmed</span></td>
+            </tr>
+            <tr>
+              <td><b>Contract Notes</b></td>
+              <td>Per-trading-day trade confirmations — a browsable list → per-note PDF</td>
+              <td>Note-list card → file card; bulk = email-all</td>
+              <td class="td-mono">/report/contract (list) + /contract/download · middleware-go</td>
+              <td><span class="pill pill--ok">✅ captured</span></td>
+            </tr>
+            <tr>
+              <td><b>Tax Report / Capital Gain</b></td>
+              <td>Tax report for a financial year (capital gains inside)</td>
+              <td>File card (PDF <b>or</b> Excel) or email both</td>
+              <td class="td-mono">GetTaxReportPDF · /api/middleware</td>
+              <td><span class="pill pill--ok">✅ captured</span></td>
+            </tr>
+            <tr>
+              <td><b>CML</b></td>
+              <td>Client Master List document — no steps, just fetch</td>
+              <td>File card (PDF)</td>
+              <td class="td-mono">/mis/reports/generate · MIS (JWT)</td>
+              <td><span class="pill pill--ok">✅ captured</span></td>
+            </tr>
+            <tr>
+              <td><b>Brokerage</b></td>
+              <td>Brokerage rate slabs per segment</td>
+              <td>Data card (no file — rates only)</td>
+              <td class="td-mono">get-brokerage-slab · api. (JWT)</td>
+              <td><span class="pill pill--ok">✅ captured</span></td>
+            </tr>
+            <tr>
+              <td><b>Holding Statement</b></td>
+              <td>Current portfolio holdings with live prices</td>
+              <td>Data card (no PDF endpoint captured)</td>
+              <td class="td-mono">/COTI/V1/Holdings · finxomne (3 creds)</td>
+              <td><span class="pill pill--warn">⚠️ credential &amp; file leg open</span></td>
+            </tr>
+            <tr>
+              <td><b>Detailed / Global P&amp;L</b></td>
+              <td>Scrip- and trade-level detail behind the P&amp;L</td>
+              <td>File card (intended) — no PDF endpoint yet</td>
+              <td class="td-mono">GetDetailedPNL (data) · /api/middleware</td>
+              <td><span class="pill pill--stop">⛔ file leg is a gap</span></td>
+            </tr>
+            <tr>
+              <td><b>RAG Q&amp;A</b></td>
+              <td>Factual answers to process / charges questions</td>
+              <td>In-chat answer, grounded in the KB</td>
+              <td class="td-mono">qa_chunks (pgvector) + Claude</td>
+              <td><span class="pill pill--ok">✅ KB exists</span></td>
+            </tr>
+            <tr>
+              <td><b>Raise ticket / call support</b></td>
+              <td>Escalation to a human, transcript attached</td>
+              <td>Ticket confirmation + call chip</td>
+              <td class="td-mono">POST /tickets · Freshdesk</td>
+              <td><span class="pill pill--ok">✅ captured</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout--info">
+        <h4>🧾 A couple of flow-design touches worth knowing</h4>
+        <p>Date pickers <b>hard-disable</b> out-of-range dates instead of validating after the fact — per-flow windows differ
+        by design (Ledger floors at Jan 2019; P&amp;L / Contract Note / Global Detail at Jan 2018; P&amp;L clamps to a 2-year
+        range). Contract notes are keyed by an opaque <code>file_id</code> (never by date), and dual-note days show an
+        NSE·BSE vs MCX segment badge. Brokerage and Holding cards are rendered <b>dynamically</b> from whatever the API
+        returns — segments and rows are never hardcoded.</p>
+      </div>
+    </section>
+
+    <!-- 5 · DATA -->
+    <section class="section" id="data">
+      <div class="section__eyebrow"><span class="section__num">5</span><span class="section__kicker">Data foundations</span></div>
+      <h2>Data &amp; knowledge base</h2>
+      <p class="section__intro">
+        Three data assets underpin Jini: the RAG knowledge base (which already exists), the conversation store (which we
+        design), and the trace stream that captures every decision.
+      </p>
+
+      <h3>The RAG knowledge base — reuse, don't rebuild</h3>
+      <div class="two-col">
+        <div class="card">
+          <h4 style="margin-top:0">What's there</h4>
+          <ul class="lead-list" style="margin-bottom:0">
+            <li>Table <code>qa_chunks</code> in PostgreSQL + pgvector.</li>
+            <li><b>1,102 rows</b>, embeddings at <b>3,072 dimensions</b> (<code>text-embedding-3-large</code>, full size).</li>
+            <li>One queryable text column, <code>chunk</code> = <code>Query → Solution → TAT</code> concatenated.</li>
+            <li>Tokens: max 653, mean ~59 — so no sub-chunking needed.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">Why sequential scan is correct</h4>
+          <p style="margin-bottom:0">pgvector's ANN indexes (HNSW, IVFFlat) cap at <b>2,000 dimensions</b>; the KB is 3,072-dim. At
+          1,102 rows a <b>sequential scan is exact and fast</b>, and sidesteps the conflict entirely. To scale later, the
+          option is a Matryoshka truncation to ≤ 2,000 dims. Cosine distance throughout. Query vectors must match the stored
+          model and dimension — so query-time embedding is effectively locked to <code>text-embedding-3-large</code> @ 3072.</p>
+        </div>
+      </div>
+      <div class="callout callout--warn">
+        <h4>⚠️ "Hybrid" still has an open half</h4>
+        <p>The design calls for hybrid retrieval (full-text search + vector), but the FTS half — the <code>tsvector</code>
+        setup and the fusion strategy (e.g. RRF) — plus Top-K and the reranker choice are not yet specified. These are
+        open decisions before implementation, not blockers.</p>
+      </div>
+
+      <h3>The conversation store — a Phase-1 design task</h3>
+      <p>After every bot response, a separate thread inserts the turn into PostgreSQL. The schema is undefined by design
+      (the owner asked for help deriving it). The natural columns, derived from the trace model:</p>
+      <p>
+        <span class="tag">thread_id</span><span class="tag">turn_id</span><span class="tag">user_id</span>
+        <span class="tag">user_message</span><span class="tag">assistant_message</span><span class="tag">detected_intent</span>
+        <span class="tag">tool_calls + args + results</span><span class="tag">retrieval_context</span>
+        <span class="tag">timestamps</span><span class="tag">latency / tokens</span><span class="tag">model_version</span>
+        <span class="tag">turn_number</span>
+      </p>
+      <p>It must capture <b>decisions and tool traces</b>, not just the final text — that's what makes it useful for a future
+      fine-tune.</p>
+
+      <h3>Tracing &amp; evaluation plumbing</h3>
+      <div class="two-col">
+        <div class="card">
+          <h4 style="margin-top:0">The model</h4>
+          <p style="margin-bottom:0">A <b>Trace</b> is one request lifecycle; a <b>Span</b> is one call (agent / retriever / llm / tool);
+          a <b>Thread</b> groups traces that share a <code>thread_id</code> — one conversation. The app owns state; DeepEval
+          only observes.</p>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">The tool</h4>
+          <p style="margin-bottom:0">DeepEval's <code>@observe</code> instruments every turn and tool call; an optional Confident AI
+          export works fully offline. <b>PII masking is mandatory</b> via a <code>mask=</code> hook — names, emails, Client
+          IDs, and ledger amounts are redacted before anything is exported.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 · INTEGRATION -->
+    <section class="section" id="integration">
+      <div class="section__eyebrow"><span class="section__num">6</span><span class="section__kicker">The hard part</span></div>
+      <h2>Integration reality</h2>
+      <p class="section__intro">
+        FinX is not one API. Jini's report flows reach across <b>five different hosts with several auth schemes</b>.
+        This is the single biggest engineering reality of the project — one generic client wrapper will not fit; it needs a
+        per-backend adapter set.
+      </p>
+
+      <div class="fanout">
+        <div class="fanhub">🧭 Jini backend routes the right credential to the right host<small>captures both the SessionId and the SSO JWT from the handoff</small></div>
+        <div class="fanrow">
+          <div class="host"><b>.NET legacy</b><code>finx · /api/middleware</code><span>SessionId in header <b>and</b> body · PascalCase · used by P&amp;L, Ledger/MTF, Tax</span></div>
+          <div class="host"><b>Go middleware</b><code>finx &amp; api · /middleware-go</code><span>SessionId header (some <code>Session&nbsp;</code>-prefixed) · snake_case · Contract Notes, Brokerage</span></div>
+          <div class="host"><b>MIS reports</b><code>finx · /mis/reports</code><span>SSO JWT (<code>authType: jwt</code>) · camelCase · CML</span></div>
+          <div class="host"><b>MF profile</b><code>mf · /investor/profile</code><span>SSO JWT · get-profile (Phase-2 greeting)</span></div>
+          <div class="host"><b>COTI omni</b><code>finxomne · /COTI/V1</code><span>Three credentials at once: SessionId + <code>ssotoken</code> + a FINX-issued JWT · Holdings</span></div>
+        </div>
+      </div>
+
+      <div class="callout callout--danger">
+        <h4>🔑 The credential trap: CML fails if you hand it the SessionId</h4>
+        <p>The two middleware backends authenticate with the <b>SessionId</b>. The MIS backend (CML) authenticates with the
+        <b>SSO JWT</b> — the <code>accessToken</code> the frontend hands off. They are different tokens. The widget must capture
+        and forward <em>both</em>, and the backend must route the correct one to each host.</p>
+      </div>
+
+      <h3>Session ↔ client binding</h3>
+      <p>An <code>Invalid SessionId</code> error usually means a <b>session-to-client mismatch, not an expired token</b>. The
+      .NET backend binds a SessionId to exactly one ClientId: a valid session for <code>X008593</code> returns <code>200</code>
+      for its own client but <code>401</code> for any other. The rule is simple — always send the ClientId the widget's session
+      actually owns; never mix. (This is also a good security property: the .NET backend enforces the binding.)</p>
+
+      <h3>Two error shapes to handle — read the body, then the status</h3>
+      <div class="two-col">
+        <div class="card">
+          <h4 style="margin-top:0">Business failures → HTTP 200</h4>
+          <p style="margin-bottom:0">"No data found" and similar come back as <b>HTTP 200</b> with the outcome inside the body
+          (<code>Status</code> / <code>StatusCode</code>). Branch on the body, never on the HTTP status. Each backend has its own
+          envelope and casing, so <b>two parsers</b> are required.</p>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">Auth failures → HTTP 401</h4>
+          <p style="margin-bottom:0">Bad or stale credentials return a real <b>HTTP 401</b> — and the envelope differs per backend.
+          Detect auth failure by the <em>status code</em>; then parse the right shape. Stale and garbage tokens are
+          indistinguishable, so treat any 401 as "re-auth needed".</p>
+        </div>
+      </div>
+      <div class="callout callout--info">
+        <h4>🧷 Field-level traps, by design</h4>
+        <p>Identity fields differ per endpoint (<code>LoginId="JIFFY"</code> here, <code>UserId="neuron"</code> there,
+        <code>client_id</code> elsewhere); <code>RequestFor</code> is <em>not</em> a global enum (download is <code>0</code> on P&amp;L/Ledger
+        but <code>2</code> on Tax; email is <code>1</code> everywhere); the same <code>from:</code> header is a build tag, not auth; and
+        <code>With_Exp</code> even changes the response <em>shape</em>. These are captured in the API reference and hardcoded
+        per endpoint — deliberately not centralized.</p>
+      </div>
+
+      <div class="callout callout--warn">
+        <h4>⚠️ The one true blocker: SessionId lifetime</h4>
+        <p>There is no documented login or refresh endpoint anywhere. The widget receives the SessionId from the app
+        handoff, but its acquisition, lifetime, and expiry behaviour are unmeasured. This is the biggest open integration
+        question — everything else is captured.</p>
+      </div>
+    </section>
+
+    <!-- 7 · SECURITY -->
+    <section class="section" id="security">
+      <div class="section__eyebrow"><span class="section__num">7</span><span class="section__kicker">Risks we defend against</span></div>
+      <h2>Security &amp; compliance</h2>
+      <p class="section__intro">
+        Live testing on the FinX infrastructure (2026-07-16) surfaced two real issues. These are <b>upstream platform
+        observations, not Jini bugs</b> — reported so the Jini backend defends against them and the FinX team can be
+        notified. Neither was exploited.
+      </p>
+
+      <div class="callout callout--danger">
+        <h4>🔴 Finding A — the Contract-Note chain enforces no authentication (IDOR / BOLA)</h4>
+        <p>The contract-note list and download endpoints returned <b>full data with garbage or absent credentials</b>,
+        authorizing purely on the body <code>client_id</code>. The entire chain (list <code>file_id</code>s → download PDFs) is
+        reachable with only a client code.</p>
+        <p style="margin-bottom:0"><b>How Jini defends:</b> it gates every <code>client_id</code> by the widget's authenticated session and
+        <b>never</b> proxies a user-supplied one; it treats <code>file_id</code> values as sensitive (never exposed to the client
+        or logs); and it reports the finding upstream to FinX.</p>
+      </div>
+
+      <div class="callout callout--danger">
+        <h4>🔴 Finding B — the CML signed URL's expiry is an illusion</h4>
+        <p>The CML link is an S3 pre-signed URL with a 120-second expiry, fronted by CloudFront. Testing showed CloudFront
+        caches by <b>path only</b> — it ignores the signed query string — so once any valid link warms the cache, the same
+        object is served past expiry and on repeat fetches. The "120s / single-use" assumption is false.</p>
+        <p style="margin-bottom:0"><b>How Jini defends:</b> it never relies on URL expiry as a boundary — it fetches server-side within
+        seconds, discards the link, and never surfaces or logs it. (It also notes the CML PDF is a static S3 object, so it
+        may be slightly stale.)</p>
+      </div>
+
+      <h3>PII handling</h3>
+      <div class="two-col">
+        <div class="card">
+          <h4 style="margin-top:0">get-profile: take one field, drop the rest</h4>
+          <p style="margin-bottom:0">The profile endpoint returns heavy PII — PAN, full address, email, date of birth, and a whole
+          bank-account array. Jini extracts <b>only the first name</b> (from <code>FirstHolderName</code>) for the Phase-2 greeting and
+          discards everything else. The full response is never logged, stored, traced, or sent to the client.</p>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">Masking &amp; third-party data</h4>
+          <p style="margin-bottom:0">Ledger narrations can contain a third party's name/account, and email confirmations leak the full
+          registered address — so emails are always shown masked (<code>san***.harsha@gmail.com</code>) and not editable in-bot.
+          The DeepEval <code>mask=</code> hook redacts names, emails, Client IDs, and amounts before any export.</p>
+        </div>
+      </div>
+
+      <h3>Compliance guardrails, always on</h3>
+      <ul class="lead-list">
+        <li><b>Never investment advice.</b> A persistent footer states it, and RAG answers refuse to give it and cite the KB.</li>
+        <li><b>Nothing leaks to the user.</b> Report URLs, <code>file_id</code>s, server filenames, and raw API errors are never exposed — errors are conversational bubbles; the raw <code>Reason</code> is logged server-side only. (One deliberate exception: CML keeps its harmless <code>Client_Master_List.pdf</code> name.)</li>
+        <li><b>Email only to the registered address, masked.</b> Not editable inside the bot — a compliance boundary, not a limitation.</li>
+      </ul>
+    </section>
+
+    <!-- 8 · EVALUATION -->
+    <section class="section" id="evaluation">
+      <div class="section__eyebrow"><span class="section__num">8</span><span class="section__kicker">Quality bar</span></div>
+      <h2>Evaluation &amp; quality</h2>
+      <p class="section__intro">
+        Quality is measured two ways: automated DeepEval metrics over the RAG and agent behaviour, and a manual test plan
+        of 88 human-authored cases. A single "Blocker" failure holds the launch.
+      </p>
+
+      <h3>Automated metrics (DeepEval)</h3>
+      <div class="two-col">
+        <div class="card">
+          <h4 style="margin-top:0">Single-turn RAG</h4>
+          <p>The referenceless "RAG triad": <b>Answer Relevancy</b>, <b>Faithfulness</b> (hallucination), and <b>Contextual
+          Relevancy</b>. With labels, add Contextual Precision (ranking) and Recall (embedding), plus a GEval correctness
+          criterion. Each metric diagnoses a specific component — retriever vs generator scored separately.</p>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0">Multi-turn &amp; agentic</h4>
+          <p>Retrieval happens every turn, so failure modes are context drift and cross-turn hallucination. Headline metric:
+          <b>Conversation Completeness</b>. Also Turn Relevancy, Knowledge Retention, Role Adherence, Tool-Use / Goal Accuracy,
+          and a Conversational GEval that asserts "never gives investment advice".</p>
+        </div>
+      </div>
+      <p>Test cases are generated by simulation: <code>ConversationalGolden</code> scenarios drive a
+      <code>ConversationSimulator</code> that loops simulated-user → app → outcome check. Returning
+      <code>retrieval_context</code> and <code>tools_called</code> on each turn is required plumbing — it's what unlocks the RAG and
+      tool metrics. Authoring ≥ 20 goldens is an open task; no machine-runnable golden set exists yet.</p>
+
+      <h3>Manual test plan — 88 cases across two sheets</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Sheet</th><th>Scope</th><th>Cases</th><th>Focus areas</th><th>Blockers</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><b>Phase 1</b></td>
+              <td>KB / RAG only, no API</td>
+              <td>41 (A1–E12)</td>
+              <td>Retrieval accuracy (incl. Hindi/Hinglish/typos), grounding, hallucination &amp; safety, confidence &amp; escalation, conversation quality</td>
+              <td class="td-mono">B3, C1–C3, C5–C8, D3, D4</td>
+            </tr>
+            <tr>
+              <td><b>Phase 2</b></td>
+              <td>RAG + API flows</td>
+              <td>47 (F1–M3)</td>
+              <td>Intent routing, API transactions, error handling, data correctness, multi-intent &amp; soft close, ticket / handoff, session keywords, regression</td>
+              <td class="td-mono">F7, G1, G5, H8, I1–I3</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout--danger">
+        <h4>🚫 The non-negotiable: no cross-client leakage</h4>
+        <p>Cases I1–I3 are all blockers — data must be for the right client, for the exact period, and match the backend
+        figures. G1/G5 verify the AuthToken only ever returns the session's own client. A failure here holds the launch,
+        full stop.</p>
+      </div>
+      <div class="callout callout--info">
+        <h4>🎯 Thresholds are still a decision</h4>
+        <p>No numeric pass/fail thresholds are mandated anywhere — the tutorial defaults (0.7 / 0.8) are illustrations, not
+        mandates. Picking per-metric thresholds and the DeepEval judge model is an explicit open decision. (Note: the
+        spreadsheet README counts, 36/46, don't match the actual sheet counts, 41/47 — reconcile.)</p>
+      </div>
+    </section>
+
+    <!-- 9 · STATUS -->
+    <section class="section" id="status">
+      <div class="section__eyebrow"><span class="section__num">9</span><span class="section__kicker">Where we are</span></div>
+      <h2>Status &amp; what's next</h2>
+      <p class="section__intro">
+        Discovery and spec are <b>essentially complete</b>. Every report flow's endpoints — data schemas, file-delivery
+        legs, auth-failure envelopes, session binding, and the Freshdesk structure — have been live-tested and captured.
+        The remaining items are confirmations and decisions, not blockers.
+      </p>
+
+      <div class="two-col">
+        <div class="card">
+          <h4 style="margin-top:0"><span class="pill pill--ok">✅ Captured</span></h4>
+          <ul class="lead-list" style="margin-bottom:0">
+            <li>All report data schemas (Ledger, P&amp;L, Detailed P&amp;L).</li>
+            <li>All file-delivery endpoints (PNL/Ledger/Tax PDF+Excel, contract-note list + download, CML).</li>
+            <li>Auth-failure envelopes per backend; session ↔ client binding rule.</li>
+            <li>get-profile (first-name-only), Brokerage, Holdings; Freshdesk account structure &amp; field cascade.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4 style="margin-top:0"><span class="pill pill--warn">⚠️ Confirmations owed</span></h4>
+          <ul class="lead-list" style="margin-bottom:0">
+            <li><b>MTF <code>Margin</code> discriminator</b> — <code>Margin:0</code>/<code>:1</code> were byte-identical on a no-MTF account; needs one capture from an account with live MTF holdings.</li>
+            <li><b>Holdings FINX-JWT provenance</b> — where the backend obtains the FINX-issued JWT (distinct from the SSO JWT) is unresolved.</li>
+            <li><b>Holding &amp; Global-Detail file delivery</b> — data endpoints exist, but no PDF leg; decide data-card vs capture a file endpoint.</li>
+            <li><b>SessionId lifetime</b> — acquisition and expiry still unmeasured.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout callout--info">
+        <h4>🧱 Blocked, not stubbed</h4>
+        <p>Flows without a captured file endpoint <b>wait</b> rather than ship as stubs. The launch proposals cover only
+        flows with known endpoints: <b>P&amp;L, Ledger/MTF, Contract Note (list), Tax/CG, and CML</b> — plus RAG, tracing, the
+        conversation store, and the widget shell.</p>
+      </div>
+
+      <h3>The build plan: contracts first</h3>
+      <p>Per the project's parallel-workflow rules, a <b>contracts-first change must land in main</b> before any parallel
+      fan-out. It defines the shared interfaces every downstream task depends on, so tasks never fight over the same files:</p>
+      <div class="grid grid-2">
+        <div class="card feature"><h4>1 · Widget ↔ backend wire contract</h4><p>The headline gap — chat endpoint schema, streaming decision, and render-block types (bubble, chip row, stepper, file card, note-list, error bubble).</p></div>
+        <div class="card feature"><h4>2 · Router I/O contract</h4><p>The Intent enum, <code>ExtractedParams</code>, and <code>RouterResult</code>.</p></div>
+        <div class="card feature"><h4>3 · FinXClient interface</h4><p>The per-backend adapter set, three envelope parsers, typed models, and capture fixtures.</p></div>
+        <div class="card feature"><h4>4 · Flow state machine</h4><p>The Flow/Step machine plus the guardrail config schema.</p></div>
+        <div class="card feature"><h4>5 · Conversation-store migration</h4><p>The DB migration — a single-owner task.</p></div>
+        <div class="card feature"><h4>6 · Remote-config schema</h4><p>What's New, limits, chips, greeting pool, product list.</p></div>
+        <div class="card feature"><h4>7 · Tracing conventions</h4><p>Span taxonomy, <code>configure()</code> setup, and the <code>mask</code> signature.</p></div>
+        <div class="card feature"><h4>8 · Error taxonomy</h4><p>The shared <code>E-NODATA / E-YEAR / E-TIMEOUT / E-FETCH / E-UNKNOWN</code> config.</p></div>
+        <div class="card feature"><h4>9 · LLM client wrapper</h4><p>Pinned model IDs plus the Haiku toggle.</p></div>
+      </div>
+      <div class="callout callout--warn">
+        <h4>⚠️ Merge-conflict watch</h4>
+        <p>The Intent enum, the <code>FinXClient</code>, and the remote-config schema are files every flow task will want to touch.
+        All intents, methods, and config keys are defined up front, and flow tasks are forbidden from editing them.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="footer">
+  <p><b>Choice Jini — Project Overview.</b> A communication artifact for proposals, readable end-to-end by executives,
+  PMs, and engineers. Content source of truth: the consolidated technical spec and the reconciled FinX &amp; Freshdesk API
+  references.</p>
+  <p>Sources:
+    <a href="../technical/02_technical_spec.md">technical/02_technical_spec.md</a> ·
+    <a href="../technical/03_finx_api_reference.md">03_finx_api_reference.md</a> ·
+    <a href="../technical/04_freshdesk_api_reference.md">04_freshdesk_api_reference.md</a> ·
+    <a href="../customer_support_chatbot_phase1.md">customer_support_chatbot_phase1.md</a> ·
+    design tokens from <a href="./DESIGN_BRIEF.md">prototype/DESIGN_BRIEF.md</a>.
+  </p>
+  <p style="margin-bottom:0">Status: consolidated spec DRAFT v0.2 · discovery &amp; spec phase essentially complete (2026-07-16).
+  Security findings are live-production observations reported for defence, not exploited.</p>
+</footer>
+
+<script>
+(function(){
+  /* Scroll-spy: highlight the active TOC link */
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a[href^="#"]'));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var sections = Array.prototype.slice.call(document.querySelectorAll('main .section'));
+  var current = null;
+  if ('IntersectionObserver' in window){
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting){
+          var a = map[e.target.id];
+          if (a && a !== current){
+            if (current) current.classList.remove('active');
+            a.classList.add('active');
+            current = a;
+          }
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    sections.forEach(function(s){ obs.observe(s); });
+  }
+
+  /* Theme toggle: overrides prefers-color-scheme via data-theme */
+  var root = document.documentElement;
+  var btn = document.getElementById('themebtn');
+  var icon = document.getElementById('themeicon');
+  var label = document.getElementById('themelabel');
+  function prefersDark(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  function isDark(){
+    var t = root.getAttribute('data-theme');
+    return t ? t === 'dark' : prefersDark();
+  }
+  function paint(){
+    var dark = isDark();
+    icon.textContent = dark ? '☀️' : '🌙';
+    label.textContent = dark ? 'Light' : 'Dark';
+  }
+  btn.addEventListener('click', function(){
+    root.setAttribute('data-theme', isDark() ? 'light' : 'dark');
+    paint();
+  });
+  paint();
+})();
+</script>
+</body>
+</html>

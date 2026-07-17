@@ -1,0 +1,45 @@
+change: flow-tax-report
+filesTouched:
+  - app/flows/tax.py
+  - tests/flows/test_tax.py
+contracts:
+  defines:
+    - name: POST /api/middleware/GetTaxReportPDF
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: FLOW
+      kind: module
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: FlowState
+      from: contracts-foundation
+    - name: Step
+      from: contracts-foundation
+    - name: FY-helpers
+      from: contracts-foundation
+    - name: byte-validation-cache-config
+      from: contracts-foundation
+    - name: Intent.TAX_REPORT
+      from: contracts-foundation
+    - name: FinXClient
+      from: contracts-foundation
+    - name: GetTaxReportPDF-models
+      from: contracts-foundation
+    - name: error-taxonomy
+      from: contracts-foundation
+    - name: chat-wire-api
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - finx-http-adapters
+  - flow-engine-runtime
+doneCondition: >
+  app/flows/tax.py is discovered/registered; a full walk drives GetTaxReportPDF with the
+  correct dynamic FinYear, RequestFor (2 for download / 1 for email), and FileFormat
+  (1 PDF / 2 Excel; two calls on email); CG/Tax-P&L intents prepend the education line and
+  still route here; AY-to-FY converts with confirm; out-of-window FY yields E-YEAR with no
+  API call; the string URL is fetched server-side and byte-validated per format; and
+  "Data not available." maps to E-NODATA. Against fixture-based FinX mocks (PDF-URL,
+  Excel-URL, and failure fixtures), no live API.
+testCommand: pytest tests/flows/test_tax.py

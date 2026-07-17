@@ -1,0 +1,57 @@
+change: ticketing-freshdesk
+filesTouched:
+  - app/ticketing/**
+  - tests/ticketing/**
+contracts:
+  defines:
+    - name: raise_ticket
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: get_ticket_status
+      kind: function
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST /api/v2/tickets
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: POST /api/v2/tickets/{id}/notes
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: GET /api/v2/tickets
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: GET /api/v2/tickets/{id}
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: GET /api/v2/search/tickets
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: Intent
+      from: contracts-foundation
+    - name: SessionContext
+      from: contracts-foundation
+    - name: TicketConfirmation
+      from: contracts-foundation
+    - name: ChipRow
+      from: contracts-foundation
+    - name: ErrorBubble
+      from: contracts-foundation
+    - name: DataCard
+      from: contracts-foundation
+    - name: NoteList
+      from: contracts-foundation
+    - name: error-taxonomy
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - conversation-orchestrator
+doneCondition: >
+  raise_ticket builds the exact 04 section 5 payload from a SessionContext + Intent +
+  transcript; the real-time open-ticket check short-circuits to a private note when an
+  open ticket exists; get_ticket_status maps the status enum to user copy by id and by
+  ClientID; every Freshdesk non-2xx maps to an ErrorBubble with no raw leak (H8); and the
+  confirmation keeps the call-support chip visible. Fully fixture-driven via
+  pytest-httpx/respx (recorded 201 create, list-by-requester, search, view+stats, and
+  400/409/429 error bodies), no live Freshdesk call in CI.
+testCommand: pytest tests/ticketing/

@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jini Screens · Tax Report / Capital Gain</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --brand:#2B6BE8; --brand-ink:#1B4FB0;
+  --positive:#17B26A; --danger:#E5484D; --warn:#F5A524;
+  --text:#1A1D21; --text-muted:#5F6B7A;
+  --bg:#FFFFFF; --surface:#F7F9FC; --border:#D5DCE6;
+  --bubble-bot:#F1F5FB; --bubble-user:#2B6BE8; --bubble-user-ink:#FFFFFF;
+  --radius:14px; --radius-sm:10px; --radius-chip:999px;
+  --shadow:0 6px 24px rgba(20,29,45,.12);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,Menlo,monospace;
+  --page:#EAEFF6; --card:#FFFFFF; --hair:#E6EBF2; --code:#F3F6FB;
+}
+:root[data-theme="dark"]{
+  --text:#E7ECF3; --text-muted:#9AA7B8;
+  --bg:#0F1620; --surface:#151F2C; --border:#2A3646;
+  --bubble-bot:#1B2736; --bubble-user:#2B6BE8; --bubble-user-ink:#FFFFFF;
+  --shadow:0 8px 30px rgba(0,0,0,.5);
+  --page:#0A0E14; --card:#111A26; --hair:#1E2937; --code:#0C141E;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --text:#E7ECF3; --text-muted:#9AA7B8;
+    --bg:#0F1620; --surface:#151F2C; --border:#2A3646;
+    --bubble-bot:#1B2736; --bubble-user:#2B6BE8; --bubble-user-ink:#FFFFFF;
+    --shadow:0 8px 30px rgba(0,0,0,.5);
+    --page:#0A0E14; --card:#111A26; --hair:#1E2937; --code:#0C141E;
+  }
+}
+html,body{margin:0}
+body{background:var(--page);color:var(--text);font-family:var(--font);
+  -webkit-font-smoothing:antialiased;line-height:1.5;font-size:15px}
+
+/* ---- top bar ---- */
+.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
+  padding:12px 22px;background:color-mix(in srgb,var(--page) 82%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--hair)}
+.top .mark{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em}
+.top .mark .g{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--brand),var(--brand-ink));color:#fff;font-size:15px}
+.top .crumb{color:var(--text-muted);font-weight:500}
+.top .crumb b{color:var(--text);font-weight:650}
+.top .sp{flex:1}
+.top a.home{color:var(--brand);text-decoration:none;font-weight:600;font-size:13.5px}
+.top a.home:hover{text-decoration:underline}
+.tbtn{border:1px solid var(--border);background:var(--card);color:var(--text);
+  border-radius:999px;padding:6px 13px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.tbtn:hover{border-color:var(--brand)}
+
+/* ---- page shell ---- */
+.wrap{max-width:1120px;margin:0 auto;padding:30px 22px 90px}
+.hero h1{margin:0 0 6px;font-size:27px;letter-spacing:-.02em}
+.hero p{margin:0;max-width:70ch;color:var(--text-muted);font-size:15.5px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:18px 0 8px;padding:12px 16px;
+  background:var(--card);border:1px solid var(--hair);border-radius:12px;font-size:12.5px;color:var(--text-muted)}
+.legend b{color:var(--text)}
+.legend .k{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:4px;display:inline-block}
+
+.sec{margin:44px 0 6px;font-size:13px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--brand)}
+.sec+.secsub{margin:0 0 14px;color:var(--text-muted);font-size:14px;max-width:70ch}
+
+/* ---- annotated screen block ---- */
+.screen{display:grid;grid-template-columns:334px minmax(0,1fr);gap:34px;
+  align-items:start;margin:0 0 46px}
+.phonewrap{position:sticky;top:70px}
+
+/* ---- device ---- */
+.phone{width:314px;background:#0b0e13;border-radius:42px;padding:11px;
+  box-shadow:var(--shadow),0 0 0 2px rgba(255,255,255,.04) inset;position:relative}
+:root[data-theme="dark"] .phone{background:#05070b;box-shadow:var(--shadow),0 0 0 1px #1b2634}
+.notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:22px;
+  background:#0b0e13;border-radius:0 0 14px 14px;z-index:5}
+:root[data-theme="dark"] .notch{background:#05070b}
+.screenframe{background:var(--bg);border-radius:32px;overflow:hidden;height:596px;
+  display:flex;flex-direction:column;position:relative}
+
+/* ---- widget ---- */
+.widget{display:flex;flex-direction:column;height:100%;min-height:0}
+.wg-head{display:flex;align-items:center;gap:10px;padding:12px 13px;
+  border-bottom:1px solid var(--border);background:var(--bg)}
+.ava{width:34px;height:34px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--brand),var(--brand-ink));color:#fff;font-size:17px;
+  box-shadow:0 2px 8px rgba(43,107,232,.35)}
+.wg-id{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.wg-id b{font-size:14.5px;letter-spacing:-.01em}
+.wg-id span{font-size:11.5px;color:var(--text-muted);display:flex;align-items:center;gap:5px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--positive);display:inline-block;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--positive) 22%,transparent)}
+.startover{margin-left:auto;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);
+  border-radius:999px;font:inherit;font-size:11px;font-weight:600;padding:5px 9px;white-space:nowrap}
+
+.wg-body{flex:1;min-height:0;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;
+  gap:9px;background:linear-gradient(180deg,var(--surface),var(--bg) 60%)}
+.wg-body::-webkit-scrollbar{width:6px}
+.wg-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ---- bubbles ---- */
+.msg{display:flex;max-width:100%}
+.msg.l{justify-content:flex-start}
+.msg.r{justify-content:flex-end}
+.bub{max-width:86%;padding:9px 12px;border-radius:15px;font-size:13.5px;line-height:1.5;
+  word-wrap:break-word}
+.bub.bot{background:var(--bubble-bot);color:var(--text);border-bottom-left-radius:5px}
+.bub.user{background:var(--bubble-user);color:var(--bubble-user-ink);border-bottom-right-radius:5px}
+.bub .em{font-size:12px;color:var(--text-muted);display:block;margin-top:5px}
+.bub b{font-weight:650}
+
+/* ---- chips ---- */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.chips.tight{margin-top:2px}
+.chip{border:1px solid var(--border);background:var(--card);color:var(--text);
+  border-radius:var(--radius-chip);padding:8px 13px;font:inherit;font-size:12.5px;font-weight:550;
+  min-height:34px;cursor:pointer;line-height:1.1;display:inline-flex;align-items:center;gap:5px}
+.chip:hover{border-color:var(--brand);color:var(--brand)}
+.chip.primary{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 12%,var(--card));
+  color:var(--brand);font-weight:650}
+.chip.solid{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip.ghost{color:var(--text-muted)}
+.chip .tag{font-size:10.5px;color:var(--text-muted);font-weight:500}
+.chip.primary .tag{color:var(--brand)}
+
+/* ---- stepper card ---- */
+.stepper{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:6px;box-shadow:0 1px 3px rgba(20,29,45,.05)}
+.stitle{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--text-muted);padding:8px 9px 6px}
+.step{display:flex;gap:10px;padding:9px;border-radius:11px;align-items:flex-start}
+.step+.step{border-top:1px solid var(--hair)}
+.step.active{background:color-mix(in srgb,var(--brand) 6%,transparent)}
+.snum{width:22px;height:22px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;
+  font-size:12px;font-weight:700;background:var(--surface);color:var(--text-muted);border:1px solid var(--border)}
+.step.active .snum{background:var(--brand);color:#fff;border-color:var(--brand)}
+.step.done .snum{background:var(--positive);color:#fff;border-color:var(--positive)}
+.sbody{flex:1;min-width:0}
+.slabel{font-size:12.5px;font-weight:650}
+.slabel.muted{color:var(--text-muted);font-weight:550}
+.sval{font-size:13px;margin-top:2px;color:var(--text);display:flex;align-items:center;gap:8px}
+.sval .edit{font-size:11px;color:var(--brand);font-weight:600;border:1px solid var(--border);
+  border-radius:999px;padding:1px 8px}
+.shint{font-size:11px;color:var(--text-muted);margin-top:7px}
+
+/* ---- calendar ---- */
+.cal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:11px 12px;box-shadow:0 1px 3px rgba(20,29,45,.05)}
+.cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cal-h b{font-size:13px}
+.cal-h .nav{color:var(--text-muted);font-size:14px}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-g .wd{font-size:9.5px;color:var(--text-muted);text-align:center;font-weight:600;padding:2px 0}
+.cal-g .d{aspect-ratio:1;display:grid;place-items:center;font-size:11.5px;border-radius:8px;
+  color:var(--text)}
+.cal-g .d.off{color:transparent}
+.cal-g .d.dis{color:var(--text-muted);opacity:.32;text-decoration:line-through}
+.cal-g .d.sel{background:var(--brand);color:#fff;font-weight:600}
+.cal-g .d.rng{background:color-mix(in srgb,var(--brand) 16%,transparent)}
+.cal-g .d.today{box-shadow:0 0 0 1.5px var(--brand) inset;font-weight:650}
+.cal-hint{font-size:10.5px;color:var(--warn);margin-top:8px;display:flex;gap:6px;align-items:flex-start}
+.cal-hint b{color:var(--text)}
+
+/* ---- file card ---- */
+.filecard{display:flex;gap:11px;align-items:center;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:11px;box-shadow:0 1px 3px rgba(20,29,45,.05)}
+.ficon{width:42px;height:48px;flex:0 0 auto;border-radius:8px;display:grid;place-items:center;
+  font-size:10px;font-weight:800;letter-spacing:.03em;color:#fff}
+.ficon.pdf{background:linear-gradient(160deg,#E5484D,#B4272C)}
+.ficon.xls{background:linear-gradient(160deg,#17B26A,#0E7B48)}
+.fmeta{min-width:0;flex:1}
+.fname{font-size:12.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fsub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.facts{display:flex;gap:6px;margin-top:8px}
+.fa{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;
+  padding:5px 10px;font:inherit;font-size:11.5px;font-weight:600}
+.fa.solid{background:var(--brand);border-color:var(--brand);color:#fff}
+.flink{font-size:12px;color:var(--brand);font-weight:600;margin-top:8px;cursor:pointer}
+.flink:before{content:"↳ "}
+
+/* ---- note-list card ---- */
+.notelist{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;box-shadow:0 1px 3px rgba(20,29,45,.05)}
+.nl-div{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-muted);background:var(--surface);padding:6px 12px;border-bottom:1px solid var(--hair)}
+.nl-row{display:flex;align-items:center;gap:9px;padding:9px 12px;border-bottom:1px solid var(--hair)}
+.nl-row:last-child{border-bottom:0}
+.nl-day{font-size:12.5px;font-weight:600;min-width:0;flex:1}
+.nl-day span{color:var(--text-muted);font-weight:500;font-size:11.5px;margin-left:5px}
+.nl-badge{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap;
+  background:color-mix(in srgb,var(--brand) 13%,transparent);color:var(--brand)}
+.nl-badge.mcx{background:color-mix(in srgb,var(--warn) 18%,transparent);color:#a9730a}
+.nl-dl{font-size:11px;font-weight:600;color:var(--brand);border:1px solid var(--border);
+  border-radius:8px;padding:4px 9px;white-space:nowrap}
+.nl-more{padding:9px 12px;text-align:center;font-size:12px;font-weight:600;color:var(--brand);
+  background:var(--surface)}
+.nl-foot{display:flex;gap:7px;padding:10px 12px;border-top:1px solid var(--border);flex-wrap:wrap}
+
+/* ---- data card (brokerage / holdings) ---- */
+.datacard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;box-shadow:0 1px 3px rgba(20,29,45,.05)}
+.dc-h{padding:10px 12px;border-bottom:1px solid var(--hair);font-size:12.5px;font-weight:700;
+  display:flex;align-items:center;gap:7px}
+.dgrp{border-bottom:1px solid var(--hair)}
+.dgrp:last-child{border-bottom:0}
+.dgt{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--brand);
+  padding:8px 12px 4px}
+.drow{display:flex;justify-content:space-between;gap:10px;padding:5px 12px;font-size:12px}
+.drow:last-child{padding-bottom:9px}
+.dk{color:var(--text-muted)}
+.dv{font-weight:600;text-align:right}
+/* holdings table */
+.htbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.htbl th{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);
+  text-align:right;padding:7px 10px;border-bottom:1px solid var(--hair);font-weight:700}
+.htbl th:first-child{text-align:left}
+.htbl td{padding:7px 10px;border-bottom:1px solid var(--hair);text-align:right;font-variant-numeric:tabular-nums}
+.htbl td:first-child{text-align:left;font-weight:600}
+.htbl tr:last-child td{border-bottom:0}
+.pos{color:var(--positive);font-weight:650}
+.neg{color:var(--danger);font-weight:650}
+.dc-foot{padding:8px 12px;font-size:10.5px;color:var(--text-muted);background:var(--surface);
+  border-top:1px solid var(--hair)}
+/* holdings compact rows (fit the narrow widget, keep P&L visible) */
+.hrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;
+  border-bottom:1px solid var(--hair)}
+.hrow:last-of-type{border-bottom:0}
+.hleft{min-width:0}
+.hsym{font-size:12.5px;font-weight:650}
+.hsub{font-size:10.5px;color:var(--text-muted);margin-top:2px}
+.hright{text-align:right;white-space:nowrap}
+.hltp{font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.hpnl{font-size:11px;font-weight:650;margin-top:2px;font-variant-numeric:tabular-nums}
+
+/* ---- error bubble ---- */
+.errbub{border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 9%,var(--bubble-bot))}
+.errbub.danger{border-left-color:var(--danger);background:color-mix(in srgb,var(--danger) 9%,var(--bubble-bot))}
+.errbub .etag{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--warn);display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.errbub.danger .etag{color:var(--danger)}
+
+/* ---- ticket / call ---- */
+.ticketcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px;box-shadow:0 1px 3px rgba(20,29,45,.05)}
+.tk-h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px}
+.tk-h .id{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--positive);
+  background:color-mix(in srgb,var(--positive) 13%,transparent);padding:2px 8px;border-radius:999px}
+.tk-b{font-size:12.5px;color:var(--text-muted);margin-top:7px}
+.callcard{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:11px 12px;box-shadow:0 1px 3px rgba(20,29,45,.05)}
+.callcard .ci{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:17px;
+  background:color-mix(in srgb,var(--positive) 14%,transparent)}
+.callcard .cnum{font-weight:700;font-size:13.5px}
+.callcard .ctime{font-size:11px;color:var(--text-muted)}
+
+/* ---- composer / footer ---- */
+.wg-foot{border-top:1px solid var(--border);padding:9px 11px 10px;background:var(--bg)}
+.pill-new-row{display:flex;justify-content:flex-end;margin-bottom:8px}
+.composer{display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--surface);
+  border-radius:999px;padding:8px 8px 8px 14px}
+.composer .ph{flex:1;font-size:12.5px;color:var(--text-muted)}
+.composer .send{width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;
+  display:grid;place-items:center;font-size:13px}
+.disc{font-size:10px;color:var(--text-muted);text-align:center;margin-top:7px}
+.trust{font-size:10px;color:var(--text-muted);text-align:center;margin-top:2px}
+
+/* ---- what's new pill ---- */
+.whatsnew{position:absolute;top:56px;right:12px;z-index:6}
+.wn-pill{background:var(--card);border:1px solid var(--border);border-radius:999px;padding:5px 11px;
+  font-size:11px;font-weight:650;box-shadow:0 2px 10px rgba(20,29,45,.12);display:inline-flex;gap:5px;
+  align-items:center}
+.wn-pill .rd{width:6px;height:6px;border-radius:50%;background:var(--danger)}
+.wn-panel{margin-top:7px;width:240px;background:var(--card);border:1px solid var(--border);
+  border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.wn-panel .wn-t{padding:9px 12px;font-weight:700;font-size:12.5px;border-bottom:1px solid var(--hair);
+  display:flex;align-items:center;justify-content:space-between}
+.wn-panel .wn-t .x{color:var(--text-muted);font-weight:400}
+.wn-item{padding:9px 12px;border-bottom:1px solid var(--hair);font-size:11.5px}
+.wn-item:last-child{border-bottom:0}
+.wn-item b{display:block;font-size:12px;margin-bottom:2px}
+.wn-item span{color:var(--text-muted)}
+
+/* ---- annotation note ---- */
+.note{background:var(--card);border:1px solid var(--hair);border-radius:14px;padding:16px 18px}
+.nhead{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.badge{font-family:var(--mono);font-size:11px;font-weight:700;color:#fff;background:var(--brand);
+  padding:3px 8px;border-radius:7px;letter-spacing:.02em}
+.badge.err{background:var(--warn)}
+.badge.ok{background:var(--positive)}
+.nhead h3{margin:0;font-size:16px;letter-spacing:-.01em}
+.note .act{font-size:13px;color:var(--text);font-weight:600;margin:0 0 8px;display:flex;gap:7px}
+.note .act:before{content:"▸";color:var(--brand)}
+.note p{margin:0 0 10px;font-size:14px;color:var(--text-muted)}
+.note p:last-child{margin-bottom:0}
+.note p b{color:var(--text)}
+.rule{font-size:12.5px;background:color-mix(in srgb,var(--warn) 8%,var(--card));
+  border-left:3px solid var(--warn);border-radius:0 8px 8px 0;padding:9px 12px;margin:0 0 10px;color:var(--text)}
+.rule:before{content:"Rule · ";font-weight:700;color:#a9730a}
+.rule.sec-r{border-left-color:var(--danger);background:color-mix(in srgb,var(--danger) 7%,var(--card))}
+.rule.sec-r:before{content:"Compliance · ";color:var(--danger)}
+.verbatim{font-family:var(--mono);font-size:11.5px;background:var(--code);border:1px solid var(--hair);
+  border-radius:9px;padding:10px 12px;color:var(--text);white-space:pre-wrap;line-height:1.55;margin-top:2px}
+.verbatim .vk{color:var(--text-muted)}
+
+@media (max-width:760px){
+  .screen{grid-template-columns:1fr;gap:18px;justify-items:center}
+  .phonewrap{position:static}
+  .note{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="mark"><span class="g">✦</span>Choice Jini</div>
+  <span class="crumb">Screens · <b>Tax / Capital Gain</b></span>
+  <span class="sp"></span>
+  <a class="home" href="index.html">← All flows</a>
+  <button class="tbtn" id="themebtn" type="button">◐ Theme</button>
+</div>
+<div class="wrap"><div class="hero"><h1>Tax Report / Capital Gain</h1><p>One spine, three intents (tax report / capital gain / tax P&amp;L). A financial-year step replaces the whole date-range picker; capital-gain and tax-P&amp;L intents get a one-line education bubble first, because on FinX they are all the same document.</p></div><div class="legend"><span class="k"><b>How to read these:</b></span><span class="k"><span class="sw" style="background:var(--brand)"></span>Phone frame = the widget at one state</span><span class="k">Caption = state · the user action that produced it · the governing rule</span><span class="k"><span class="sw" style="background:var(--warn)"></span>Rule callout = calendar bounds, caps, masking</span></div><div class="sec">Intent education + collect</div><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg r"><div class="bub user">capital gains report</div></div><div class="msg l"><div class="bub bot">Quick note — your capital gains are part of the Tax Report, so that&rsquo;s what I&rsquo;ll get you. It has everything you need for filing. 👍</div></div><div class="msg l"><div class="bub bot">Sure — which financial year?</div></div><div class="stepper"><div class="stitle">Tax Report</div><div class="step active"><div class="snum">1</div><div class="sbody"><div class="slabel">1 · Financial year</div><div class="chips"><button class="chip primary">FY 2025-26</button><button class="chip">FY 2026-27<span class="tag">year-to-date</span></button><button class="chip">FY 2024-25</button></div><div class="shint">Current + last 2 financial years available.</div></div></div><div class="step todo"><div class="snum">2</div><div class="sbody"><div class="slabel muted">2 · How do you want it?</div></div></div></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge ">S0</span><h3>Capital-gain education line</h3></div><div class="act">Client asks for a &lsquo;capital gains report&rsquo;.</div><p>A single informational bubble explains there&rsquo;s no separate CG report — it lives inside the Tax Report — then the stepper opens. This kills &lsquo;where&rsquo;s my CG report?&rsquo; tickets. It never asks a question or blocks the year step.</p><div class="rule">Intent precedence: the token &lsquo;tax&rsquo; beats &lsquo;p&amp;l&rsquo;; &lsquo;capital gain&rsquo;/&lsquo;CG&rsquo; always → Tax Report; bare &lsquo;P&amp;L&rsquo; → the P&amp;L flow.</div></div></section><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg r"><div class="bub user">tax report</div></div><div class="msg l"><div class="bub bot">Sure — which financial year?</div></div><div class="stepper"><div class="stitle">Tax Report</div><div class="step active"><div class="snum">1</div><div class="sbody"><div class="slabel">1 · Financial year</div><div class="chips"><button class="chip primary">FY 2025-26</button><button class="chip">FY 2026-27<span class="tag">year-to-date</span></button><button class="chip">FY 2024-25</button></div><div class="shint">Current + last 2 financial years available.</div></div></div><div class="step todo"><div class="snum">2</div><div class="sbody"><div class="slabel muted">2 · How do you want it?</div></div></div></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge ">S1</span><h3>Financial year</h3></div><div class="act">Client asks for a plain &lsquo;tax report&rsquo; (no education line).</div><p>Exactly three FY chips, computed at runtime (current + last 2, Apr–Mar boundary). The last completed FY (2025-26) is pre-highlighted and listed first because it&rsquo;s the tax-filing year; the in-progress FY carries a &lsquo;year-to-date&rsquo; tag.</p><div class="rule">Never hardcode the three years — on 1 April the window rolls forward automatically (2024-25 drops, a new YTD year appears) with no release.</div></div></section><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg l"><div class="bub bot">How do you want it?</div></div><div class="stepper"><div class="stitle">Tax Report</div><div class="step done"><div class="snum">✓</div><div class="sbody"><div class="slabel">1 · Financial year</div><div class="sval">FY 2025-26<span class="edit">Edit</span></div></div></div><div class="step active"><div class="snum">2</div><div class="sbody"><div class="slabel">2 · How do you want it?</div><div class="chips"><button class="chip primary">📄 PDF, right here</button><button class="chip">📊 Excel, right here</button><button class="chip">✉️ Email me both</button></div><div class="shint">PDF + Excel to your registered email.</div></div></div></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge ">S2</span><h3>Format &amp; delivery</h3></div><div class="act">Year confirmed.</div><p>A single step with three chips — PDF here, Excel here, or email both. Email always carries both formats.</p></div></section><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg r"><div class="bub user">📄 PDF, right here</div></div><div class="msg l"><div class="bub bot">On it — Tax Report for FY 2025-26&hellip;</div></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge ">S3</span><h3>Generating</h3></div><div class="act">Client taps PDF.</div><p>Immediate ack; if &gt;5s, &ldquo;Generating your Tax Report…&rdquo;.</p></div></section><div class="sec">Delivery</div><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg l"><div class="bub bot">Here&rsquo;s your Tax Report for FY 2025-26</div></div><div class="msg l"><div class="bub bot"><div class="filecard"><div class="ficon pdf">PDF</div><div class="fmeta"><div class="fname">Tax_Report_FY2025-26.pdf</div><div class="fsub">212 KB · PDF</div><div class="facts"><button class="fa solid">Download</button><button class="fa">Email</button></div></div></div><div class="flink">Trouble opening it? Tell me.</div></div></div><div class="chips"><button class="chip">📊 Also get it as Excel</button><button class="chip">✉️ Email me both</button><button class="chip">🎫 Raise a ticket</button></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge ok">S4a</span><h3>File card (PDF)</h3></div><div class="act">Report ready.</div><p>Renamed display name (the server name leaks ClientId), <b>no password</b> — Tax files aren&rsquo;t protected. Post-delivery chips offer the other format (served from the 15-min cache if warm) or email.</p></div></section><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg l"><div class="bub bot">Here&rsquo;s your Tax Report for FY 2026-27<span class='em'>Covers 1 Apr 2026 – 16 Jul 2026 · year-to-date, figures may change till 31 Mar.</span></div></div><div class="msg l"><div class="bub bot"><div class="filecard"><div class="ficon pdf">PDF</div><div class="fmeta"><div class="fname">Tax_Report_FY2026-27.pdf</div><div class="fsub">138 KB · PDF</div><div class="facts"><button class="fa solid">Download</button><button class="fa">Email</button></div></div></div><div class="flink">Trouble opening it? Tell me.</div></div></div><div class="chips"><button class="chip">📊 Also get it as Excel</button><button class="chip">✉️ Email me both</button><button class="chip">🎫 Raise a ticket</button></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge ok">S4a·ytd</span><h3>Current-FY provisional caption</h3></div><div class="act">Client picks the in-progress FY (2026-27).</div><p>The caption states the covered range and that figures are year-to-date and may change till 31 Mar — which makes thin early-year data self-explanatory.</p></div></section><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg l"><div class="bub bot">Here&rsquo;s your Tax Report for FY 2025-26 — capital gains are inside</div></div><div class="msg l"><div class="bub bot"><div class="filecard"><div class="ficon xls">XLSX</div><div class="fmeta"><div class="fname">Tax_Report_FY2025-26.xlsx</div><div class="fsub">104 KB · Excel</div><div class="facts"><button class="fa solid">Download</button><button class="fa">Email</button></div></div></div><div class="flink">Trouble opening it? Tell me.</div></div></div><div class="chips"><button class="chip">📄 Also get it as PDF</button><button class="chip">✉️ Email me both</button><button class="chip">🎫 Raise a ticket</button></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge ok">S4a·cg</span><h3>Capital-gain lead-in + Excel</h3></div><div class="act">Client (CG intent) picks Excel.</div><p>Lead-in adds &lsquo;— capital gains are inside&rsquo;. Excel card uses the green XLSX icon; still no password.</p></div></section><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg r"><div class="bub user">✉️ Email me both</div></div><div class="msg l"><div class="bub bot">Done — your Tax Report for FY 2025-26 (PDF + Excel) is on its way to <b>san***.harsha@gmail.com</b>.<span class='em'>Usually arrives within 2 minutes.</span></div></div><div class="msg l"><div class="bub bot">Didn&rsquo;t get it? Tell me.</div></div><div class="chips"><button class="chip">↺ Resend</button><button class="chip">📄 Get it here instead</button><button class="chip">🎫 Raise a ticket</button></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge ok">S4b</span><h3>Email both formats</h3></div><div class="act">Client taps &ldquo;Email me both&rdquo;.</div><p>Both formats emailed to the masked registered address.</p><div class="rule">Registered email only — &ldquo;I can only send reports to your registered email. Update it from Profile → Contact details, then ask me again.&rdquo;</div></div></section><div class="sec">Error states</div><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg l"><div class="bub bot errbub"><div class="etag">△ E-NODATA</div>No transactions found for FY 2024-25, so there&rsquo;s nothing to report for that year.<div class="chips"><button class="chip primary">Try FY 2025-26</button><button class="chip">🎫 Raise a ticket</button></div></div></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge err">E-NODATA</span><h3>No data in FY</h3></div><div class="act">API returns &ldquo;Data not available.&rdquo; for the chosen FY.</div><p>Offers an in-window alternative year.</p></div></section><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg r"><div class="bub user">tax report for 2019</div></div><div class="msg l"><div class="bub bot errbub"><div class="etag">△ E-YEAR</div>I can pull Tax Reports for the current and last two financial years — that&rsquo;s FY 2026-27, FY 2025-26 and FY 2024-25. Which one?<div class="chips"><button class="chip primary">FY 2025-26</button><button class="chip">FY 2026-27</button><button class="chip">FY 2024-25</button></div></div></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge err">E-YEAR</span><h3>FY outside the window</h3></div><div class="act">Client types a year older than the 3-year window.</div><p>Re-prompts with the 3 valid FY chips — <b>no API call is made</b>.</p></div></section><section class="screen"><div class="phonewrap"><div class="phone"><div class="screenframe"><div class="widget"><div class="wg-head"><div class="ava">✦</div><div class="wg-id"><b>Choice Jini</b><span><i class="dot"></i>online · X008593</span></div><button class="startover">↺ Start over</button></div><div class="wg-body"><div class="msg l"><div class="bub bot errbub"><div class="etag">△ EC-12 · partial email</div>Your PDF is on its way to <b>san***.harsha@gmail.com</b>, but the Excel didn&rsquo;t go through.<div class="chips"><button class="chip primary">↺ Retry Excel</button><button class="chip">📊 Get Excel here</button><button class="chip">🎫 Raise a ticket</button></div></div></div></div><div class="wg-foot"><div class="composer"><span class="ph">Ask anything about FinX&hellip;</span><span class="send">➤</span></div><div class="disc">Factual answers only — never investment advice.</div></div></div></div></div></div><div class="note"><div class="nhead"><span class="badge err">EC-12</span><h3>Partial dual-format email</h3></div><div class="act">Email branch: the PDF sent, the Excel failed.</div><p>Tell the truth — don&rsquo;t claim both went. Retry just the failed format.</p></div></section></div>
+<script>
+(function(){
+  var b=document.getElementById('themebtn');
+  var cur=localStorage.getItem('jini-theme');
+  if(cur){document.documentElement.setAttribute('data-theme',cur);}
+  b&&b.addEventListener('click',function(){
+    var now=document.documentElement.getAttribute('data-theme');
+    var mq=window.matchMedia('(prefers-color-scheme:dark)').matches;
+    var next = now ? (now==='dark'?'light':'dark') : (mq?'light':'dark');
+    document.documentElement.setAttribute('data-theme',next);
+    localStorage.setItem('jini-theme',next);
+  });
+})();
+</script>
+</body>
+</html>

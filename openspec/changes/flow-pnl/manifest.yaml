@@ -1,0 +1,44 @@
+change: flow-pnl
+filesTouched:
+  - app/flows/pnl.py
+  - tests/flows/test_pnl.py
+contracts:
+  defines:
+    - name: POST /api/middleware/GetGlobalPNLPDF
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: FLOW
+      kind: module
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: FlowState
+      from: contracts-foundation
+    - name: Step
+      from: contracts-foundation
+    - name: date-window-config
+      from: contracts-foundation
+    - name: byte-validation-cache-config
+      from: contracts-foundation
+    - name: Intent.PNL
+      from: contracts-foundation
+    - name: FinXClient
+      from: contracts-foundation
+    - name: GetGlobalPNLPDF-models
+      from: contracts-foundation
+    - name: error-taxonomy
+      from: contracts-foundation
+    - name: chat-wire-api
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - finx-http-adapters
+  - flow-engine-runtime
+doneCondition: >
+  app/flows/pnl.py is discovered/registered by the engine; a full step walk
+  (segment -> range -> PDF, and segment -> range -> email) drives the correct
+  GetGlobalPNLPDF request (identity fields, Group Cash/Derv/Comm mapping, RequestFor per
+  branch, With_Exp: true); no-data/auth/fetch failures map to the correct E-* bubbles;
+  the 2018 floor / today+7 cap / 2-year clamp are enforced; and email display is masked.
+  All exercised against fixture-based FinX mocks (2026-07-16 captures), no live API.
+testCommand: pytest tests/flows/test_pnl.py

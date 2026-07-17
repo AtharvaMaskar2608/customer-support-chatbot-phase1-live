@@ -1,0 +1,31 @@
+change: eval-harness
+filesTouched:
+  - evals/**
+contracts:
+  defines: []
+  consumes:
+    - name: chat-wire-api
+      from: contracts-foundation
+    - name: Intent
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - conversation-orchestrator
+  - rag-service
+  - flow-pnl
+  - flow-ledger-mtf
+  - flow-contract-notes
+  - flow-tax-report
+  - flow-cml
+  - flow-brokerage
+  - ticketing-freshdesk
+doneCondition: >
+  At least 20 ConversationalGoldens exist across the A-M clusters with blocker cases
+  tagged; the ConversationSimulator model_callback returns content + retrieval_context +
+  tools_called; the metric set and single-turn RAG triad are wired with the proposed
+  thresholds in evals/thresholds.yaml; the judge wrapper is selectable (Claude proposed /
+  OpenAI alternative); and deepeval test run gates the build on the mapped blocker
+  goldens. Structural authoring (golden count, tags, callback shape) is checkable now via
+  pytest evals/ -k "goldens or callback" against fakes, before the app is merged.
+testCommand: deepeval test run evals/test_multiturn.py evals/test_rag_singleturn.py

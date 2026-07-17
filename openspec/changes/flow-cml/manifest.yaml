@@ -1,0 +1,44 @@
+change: flow-cml
+filesTouched:
+  - app/flows/cml.py
+  - tests/flows/test_cml.py
+contracts:
+  defines:
+    - name: POST /mis/reports/generate
+      kind: endpoint
+      structureRef: "proposal.md#contracts--api-structure"
+    - name: FLOW
+      kind: module
+      structureRef: "proposal.md#contracts--api-structure"
+  consumes:
+    - name: FlowState
+      from: contracts-foundation
+    - name: Step
+      from: contracts-foundation
+    - name: byte-validation-cache-config
+      from: contracts-foundation
+    - name: Intent.CML
+      from: contracts-foundation
+    - name: FinXClient
+      from: contracts-foundation
+    - name: mis-reports-generate-models
+      from: contracts-foundation
+    - name: error-taxonomy
+      from: contracts-foundation
+    - name: chat-wire-api
+      from: contracts-foundation
+dependsOn:
+  - contracts-foundation
+integratesWith:
+  - finx-http-adapters
+  - flow-engine-runtime
+doneCondition: >
+  app/flows/cml.py is discovered/registered; the intent immediately drives
+  /mis/reports/generate with {reportType: "cml", searchBy: "client-id",
+  searchValue: <session client>} over the JWT adapter (SessionId is never used);
+  body.cmlLink is fetched server-side, byte-validated, and delivered as
+  Client_Master_List.pdf with no password line; the link is never cached/logged/surfaced;
+  "Send it again" re-calls the API rather than reusing the link; and auth/fetch/unknown
+  failures map to the correct E-* bubbles. Against fixture-based FinX mocks (CML success +
+  401 + a %PDF byte fixture), no live API.
+testCommand: pytest tests/flows/test_cml.py
