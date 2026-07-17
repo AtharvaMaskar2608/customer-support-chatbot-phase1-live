@@ -36,8 +36,9 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
   belt-and-suspenders. [CONFIRM — final nudge copy is a flow concern]
 
 ## Tasks
-- [x] tasks.md + loop.md authored and committed (this commit)
-- [ ] T1 scaffolding + fault seam + ports
+- [x] tasks.md + loop.md authored and committed
+- [x] T1 scaffolding + fault seam + ports (faults/ports/events/results/__init__;
+      test_faults.py 3 passed; `import app.engine` OK with adapters absent)
 - [ ] T2 step progression + stepper-edit
 - [ ] T3 calendar + date-window
 - [ ] T4 FY resolution
@@ -49,7 +50,7 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [ ] T10 executor + public API
 - [ ] T11 suite green + doneCondition
 
-Current task: T1.
+Current task: T2.
 
 ## Verifier rounds
 (none yet)
