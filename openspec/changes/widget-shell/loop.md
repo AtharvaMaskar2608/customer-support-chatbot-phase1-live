@@ -37,13 +37,13 @@ it didn't happen.
 | T5 | Mock server + fixtures | done (typed fixtures per block from prototype copy; MSW+Vite share handleChat; 14 ajv validations vs frozen schema; config_slice turn-0-only) |
 | T6 | chatClient + conversation state | done (single network surface POST /api/chat; append-only log; single-flight one-POST-per-action; E-TIMEOUT synth on transport fail; >5s slow; accessToken echoed not logged) |
 | T7 | Render-block component set | done (11 components + RenderBlock switch; shared prototype CSS; each renders from fixture; unknown type = no-op; chip dispatch verbatim) |
-| T8 | Interaction contracts | pending |
+| T8 | Interaction contracts | done (stepper reopen clears downstream [widget+server]; calendar hard-disable min/max/disabled_ranges/maxRangeDays; note-list 10/page + dividers + conditional badge; data-card arbitrary groups) |
 | T9 | Shell + entry surfaces | pending |
 | T10 | WebMCP registration | pending |
 | T11 | App assembly + mock entrypoint | pending |
 | T12 | Agent-driven E2E | pending |
 
-Current task: T8 (about to start) — interaction contracts
+Current task: T9 (about to start) — shell + entry surfaces
 
 ## Verifier rounds
 (none yet)
