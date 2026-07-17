@@ -6,8 +6,11 @@ verifier round, PR target ~35 min.
 
 ## Status
 
-- Current task: **Task 1 — config + models** (about to start after committing scaffold).
-- Tasks completed: scaffold (tasks.md + loop.md).
+- Current task: **Task 6 — tests** (next).
+- Tasks completed: scaffold; T1 config+models; T2 embeddings; T3 retriever;
+  T4 generator+prompts; T5 service. Package imports clean; structured-output
+  json_schema generated from `_GroundedOutput` via the frozen `strict_input_schema`
+  (enum inlined, nullable via anyOf, additionalProperties:false, all required).
 - Verifier rounds run: 0.
 - Escalations: none yet (two proposal-vs-frozen discrepancies recorded below; both
   resolved in favour of the frozen contract without deviating from spec intent —
