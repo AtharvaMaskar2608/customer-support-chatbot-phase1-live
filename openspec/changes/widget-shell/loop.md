@@ -30,8 +30,8 @@ it didn't happen.
 ## Tasks
 | # | Task | Status |
 |---|------|--------|
-| T1 | Scaffold Vite+React+TS under widget/ | pending |
-| T2 | Generate wire types from frozen schema | pending |
+| T1 | Scaffold Vite+React+TS under widget/ | done (npm install ok; typecheck+smoke green) |
+| T2 | Generate wire types from frozen schema | done (gen:types → wireTypes.generated.ts; Block union; coverage test green) |
 | T3 | Design tokens + theming | pending |
 | T4 | Bootstrap from URL params | pending |
 | T5 | Mock server + fixtures | pending |
@@ -43,7 +43,7 @@ it didn't happen.
 | T11 | App assembly + mock entrypoint | pending |
 | T12 | Agent-driven E2E | pending |
 
-Current task: T1 (about to start)
+Current task: T3 (about to start) — design tokens + theming
 
 ## Verifier rounds
 (none yet)
