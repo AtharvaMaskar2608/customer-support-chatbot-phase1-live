@@ -48,8 +48,15 @@ Worktree lead loop state. If it isn't here, it didn't happen.
 
 ## Progress
 
-- Tasks completed: 1.1, 1.2 (scaffold + tasks.md + loop.md).
-- Current task: 2.x mask_pii.
+- Tasks completed: 1 (scaffold), 2 (mask_pii, 12 tests), 3 (span helpers +
+  stitch_thread + log_llm_span, 7 tests), 4 (configure_tracing + A/B probe +
+  maybe_clear_traces + assert_no_local_metrics, 15 tests), 5 (public API
+  __init__ wired).
+- testCommand `pytest tests/tracing/`: **34 passed**. doneCondition clauses each
+  covered by a test (sampling defaults, mask install, A/B path log, mask
+  redaction, stitch_thread, log_llm_span, prod guard, maybe_clear_traces).
+- Full suite pre-check `uv run pytest`: **116 passed** (no collection breakage).
+- Current: request fresh verifier panel (task 6).
 - Verifier rounds run: 0.
 - Findings per round: n/a.
 - Open questions: none blocking. `[CONFIRM]` names-in-free-text are best-effort

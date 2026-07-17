@@ -12,6 +12,15 @@ identically everywhere, rather than each re-deriving decorator usage.
 from __future__ import annotations
 
 from app.tracing.mask import mask_pii
+from app.tracing.setup import (
+    AUTO_PATCH,
+    MANUAL_LLM_SPAN,
+    LocalMetricsInProductionError,
+    active_anthropic_path,
+    assert_no_local_metrics,
+    configure_tracing,
+    maybe_clear_traces,
+)
 from app.tracing.spans import (
     agent_span,
     llm_span,
@@ -25,6 +34,11 @@ from app.tracing.spans import (
 )
 
 __all__ = [
+    # global setup + Anthropic path selection
+    "configure_tracing",
+    "active_anthropic_path",
+    "AUTO_PATCH",
+    "MANUAL_LLM_SPAN",
     # PII mask
     "mask_pii",
     # typed span helpers
@@ -35,6 +49,10 @@ __all__ = [
     # thread stitching + manual llm-span (Path B)
     "stitch_thread",
     "log_llm_span",
+    # housekeeping + production guard
+    "maybe_clear_traces",
+    "assert_no_local_metrics",
+    "LocalMetricsInProductionError",
     # re-exported DeepEval primitives
     "observe",
     "update_current_span",
