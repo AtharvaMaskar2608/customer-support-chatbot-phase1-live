@@ -56,7 +56,7 @@ testCommand: `pytest tests/finx_adapters/`.
       log sink while endpoint diagnostics still logged; profile PII never in payload).
       Full testCommand: 72 passed. Full repo suite: 154 passed.
 
-Current task: converged on round 3 (0 divergences). Next: rebase + full harness.
+Current task: harness green on latest main. Next: push + open PR (Gate 2).
 
 ## Verifier rounds
 
@@ -176,4 +176,18 @@ Findings per round (confirmed code changes / total items):
 Escalations to team lead: 0 blocking. 1 non-blocking spec-suspect note (xlsx magic
 proposal-prose vs frozen config) carried in the PR + this file.
 Test counts: testCommand (pytest tests/finx_adapters/) 78 passed; full repo suite
-pre-rebase 154 -> (see integration check below after rebase).
+160 passed.
+
+## Pre-ship integration check
+
+- origin/main == local base == cfb22a1 (contracts-foundation already merged); no
+  rebase needed — branch already sits on the latest main.
+- Full behavior harness (`uv run pytest`, entire unit + integration suite): 160
+  passed, 0 failed. Change is pure transport (no chat behavior / UI), so DeepEval
+  evals and /qa are not applicable per the two-harness rule.
+- doneCondition (prose): satisfied — 5 adapters implement their frozen methods;
+  every endpoint request-assembled per its traps + parsed via the correct frozen
+  parser; .NET & MIS 401 -> FinXAuthError; timeouts -> FinXTimeoutError;
+  fetch_report_bytes accepts %PDF/PK >= floor and raises FinXFetchError on
+  short/empty/wrong-magic; no test asserts a URL/file_id/Reason reaching a
+  client-visible sink.
