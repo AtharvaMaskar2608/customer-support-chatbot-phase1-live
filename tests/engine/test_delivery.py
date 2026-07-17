@@ -56,6 +56,26 @@ async def test_second_fetch_error_surfaces_e_fetch():
     assert fetcher.calls == 2 and flow.generate_calls == 2  # exactly one retry, no more
 
 
+async def test_retry_count_is_read_from_frozen_byte_validation_config():
+    from app.contracts.flow import ByteValidation
+
+    # silent_retries=2 → two silent retries (three fetch attempts) before E-FETCH.
+    flow = _pnl(generate_results=[ReportUrl("u1"), ReportUrl("u2"), ReportUrl("u3")])
+    fetcher = FakeByteFetcher([FinXFetchError("a"), FinXFetchError("b"), PDF])
+    ctx = make_ctx(fetcher=fetcher, byte_validation=ByteValidation(silent_retries=2))
+    blocks = await deliver(flow, PARAMS, ctx)
+    assert isinstance(blocks[0], FileCard)
+    assert fetcher.calls == 3 and flow.generate_calls == 3
+
+    # silent_retries=0 → no retry: the first FinXFetchError surfaces E-FETCH.
+    flow0 = _pnl(generate_results=[ReportUrl("u1")])
+    fetcher0 = FakeByteFetcher([FinXFetchError("a")])
+    ctx0 = make_ctx(fetcher=fetcher0, byte_validation=ByteValidation(silent_retries=0))
+    blocks0 = await deliver(flow0, PARAMS, ctx0)
+    assert isinstance(blocks0[0], ErrorBubble) and blocks0[0].code is ErrorCode.E_FETCH
+    assert fetcher0.calls == 1 and flow0.generate_calls == 1
+
+
 async def test_timeout_maps_to_e_timeout_without_retry():
     flow = _pnl(generate_results=[ReportUrl("u1")])
     fetcher = FakeByteFetcher([FinXTimeoutError("slow")])

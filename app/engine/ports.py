@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Protocol, Sequence, runtime_checkable
 
-from app.contracts.flow import FlowConfig, Step
+from app.contracts.flow import ByteValidation, FlowConfig, Step
 from app.contracts.router import ExtractedParams, Intent, ReportFormat
 from app.contracts.wire import Chip, SessionContext
 
@@ -107,7 +107,11 @@ class EngineContext:
     cache: CachePort
     now: datetime = field(default_factory=datetime.now)
     follow_up_count: int = 0
-    follow_up_cap: int = 2
+    follow_up_cap: int = 2  # orchestrator sources this from Limits.follow_up_cap
+    # The frozen byte-validation config — the engine reads silent_retries from it
+    # rather than hardcoding the retry cap (the byte/magic checks themselves live
+    # in the adapter's fetch primitive, not here).
+    byte_validation: ByteValidation = field(default_factory=ByteValidation)
 
 
 # ---------------------------------------------------------------------------
@@ -142,6 +146,10 @@ class FlowDefinition(Protocol):
     password_hint: str | None
     supports_email: bool
     default_format: ReportFormat
+    # Optional: the flow's own out-of-range nudge copy (proposal §Per-flow
+    # date-window — "the flow's nudge copy"). When a flow omits it, the engine
+    # falls back to a generated default. Read via getattr so it stays optional.
+    range_nudge: str | None
 
     # --- generation (adapter binding) ---
     async def generate(self, params: ExtractedParams, ctx: EngineContext) -> GenerationResult:

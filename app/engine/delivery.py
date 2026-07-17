@@ -106,24 +106,30 @@ def _email_blocks(
 async def _fetch_with_retry(
     flow: FlowDefinition, params: ExtractedParams, ctx: EngineContext, result: ReportUrl
 ) -> bytes | ErrorBubble:
-    """Fetch the report bytes with EXACTLY one silent retry on FinXFetchError."""
-    try:
-        return await ctx.byte_fetcher(result.url, expected_format=result.report_format)
-    except FinXTimeoutError as exc:
-        return map_error(exc, flow, ctx=ctx, params=params)
-    except FinXFetchError:
-        pass  # fall through to the single silent retry
-
-    retry = await flow.generate(params, ctx)  # fresh generation → fresh URL
-    if isinstance(retry, ReportBytes):
-        return retry.data
-    if not isinstance(retry, ReportUrl):
-        # Retry produced an in-band result rather than a URL — map it directly.
-        return map_error(retry, flow, ctx=ctx, params=params)
-    try:
-        return await ctx.byte_fetcher(retry.url, expected_format=retry.report_format)
-    except (FinXFetchError, FinXTimeoutError) as exc:
-        return map_error(exc, flow, ctx=ctx, params=params)
+    """Fetch the report bytes, retrying on ``FinXFetchError`` up to the frozen
+    ``ByteValidation.silent_retries`` count (default 1 → exactly one silent retry:
+    fresh generation → fresh URL → refetch) before surfacing E-FETCH. A
+    ``FinXTimeoutError`` is never retried (→ E-TIMEOUT). The byte/magic validation
+    that raises these lives in the injected fetch primitive, not here."""
+    max_retries = ctx.byte_validation.silent_retries
+    current = result
+    attempt = 0
+    while True:
+        try:
+            return await ctx.byte_fetcher(current.url, expected_format=current.report_format)
+        except FinXTimeoutError as exc:
+            return map_error(exc, flow, ctx=ctx, params=params)
+        except FinXFetchError as exc:
+            if attempt >= max_retries:
+                return map_error(exc, flow, ctx=ctx, params=params)  # E-FETCH
+            attempt += 1
+            regen = await flow.generate(params, ctx)  # fresh generation → fresh URL
+            if isinstance(regen, ReportBytes):
+                return regen.data
+            if not isinstance(regen, ReportUrl):
+                # Retry produced an in-band result rather than a URL — map it directly.
+                return map_error(regen, flow, ctx=ctx, params=params)
+            current = regen
 
 
 async def deliver(

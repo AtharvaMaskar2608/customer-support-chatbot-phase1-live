@@ -81,13 +81,41 @@ Current task: verifier panel (round 1).
 11. fake adapters + frozen fixtures, zero network/LLM → whole suite uses FakeByteFetcher; no httpx/anthropic/openai calls
 
 ## Verifier rounds
-(none yet)
+### Round 1 (3 fresh panels: spec-compliance / edge-cases / contract-surface)
+Result: NO blocking divergences. All findings minor/uncertain; several traced by
+the verifiers themselves to spec gaps (copy change-0 never froze) or the proposal's
+explicit parallel-build allowance. Triage:
+- FIX (actionable): engine hardcoded the silent-retry count → consume frozen
+  `ByteValidation.silent_retries` (contract#1, edge#4). ADDRESSED (round-2 change).
+- FIX (actionable): out-of-range reject should use "the flow's nudge copy" →
+  declare `range_nudge` on the FlowDefinition contract (spec#2/edge#1). ADDRESSED.
+- KEEP (indicative signatures — proposal says "indicative"; frozen SessionContext
+  is dep-free): `advance/deliver/map_error/enforce_followups` ctx/return shapes.
+- KEEP (proposal-blessed parallel build): engine consumes an injected `ByteFetcher`
+  rather than importing `fetch_report_bytes`; Wave-2 wiring injects the real one.
+- KEEP (engine must NOT reimplement magic-byte checks — proposal explicit): the
+  ReportBytes path does not re-validate; the adapter validates raw bytes.
+- KEEP (frozen-types split): follow-up counter lives in the orchestrator's
+  ConversationContext.follow_up_count (FlowState has no counter); engine enforces.
+- CARRY [SPEC-SUSPECT]: frozen E-NODATA copy is FY-worded ("for FY {FY_short}") but
+  E-NODATA is shared with date-range flows — awkward for ledger/contract-notes.
+  Flag to team lead; do NOT reinterpret. [see carried items]
+- CARRY [SPEC-TENSION]: frozen E-FETCH `text` (first line "during retry") is never
+  surfaced under D1 non-streaming; proposal says the surfaced bubble is the verbatim
+  second line. Following the proposal. [see carried items]
 
 ## Open questions / carried items
 - [SEAM] finx-http-adapters must re-export `FinXFetchError`/`FinXTimeoutError`/
   `FinXAuthError`/`FinXTransportError` at `app.finx.adapters` top level (engine
   imports them there in Wave 2). Flag to team lead for cross-change coordination.
-- [CONFIRM] final calendar out-of-range nudge copy (flow-owned).
+- [CONFIRM] final calendar out-of-range nudge copy (now a declared optional
+  `range_nudge` on the FlowDefinition contract; engine default until flows set it).
+- [SPEC-SUSPECT] frozen E-NODATA copy is FY-worded but applied to all no-data flows
+  (incl. date-range ledger/contract-notes). Not reinterpreted; raised to team lead.
+- [SPEC-TENSION] frozen E-FETCH first-line `text` vs proposal's "silent" retry under
+  D1 non-streaming: engine surfaces the verbatim second line only.
 
 ## Escalations
-(none)
+- Raised to team lead: (1) [SEAM] adapters re-export of FinX fault types; (2)
+  [SPEC-SUSPECT] E-NODATA FY-worded copy shared with date-range flows. Neither
+  blocks shipping this change.

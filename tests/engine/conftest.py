@@ -148,7 +148,10 @@ def make_ctx(
     follow_up_count: int = 0,
     follow_up_cap: int = 2,
     session: SessionContext | None = None,
+    byte_validation=None,
 ) -> EngineContext:
+    from app.contracts.flow import ByteValidation
+
     return EngineContext(
         session=session or make_session(),
         byte_fetcher=fetcher or FakeByteFetcher(),
@@ -156,6 +159,7 @@ def make_ctx(
         now=now or datetime(2026, 7, 17, 12, 0, 0),
         follow_up_count=follow_up_count,
         follow_up_cap=follow_up_cap,
+        byte_validation=byte_validation or ByteValidation(),
     )
 
 
