@@ -102,29 +102,22 @@ def post_delivery_chips() -> list[Chip]:
     ]
 
 
-def _chips_from_labels(labels: Sequence[str]) -> list[Chip]:
-    """Turn the frozen ``error-taxonomy`` recovery-chip labels into chips, mapping
-    each verbatim label to its action. Copy is NOT redefined here — the labels
-    come straight from ``ERROR_COPY``."""
-    chips: list[Chip] = []
-    for label in labels:
-        low = label.lower()
-        if "raise a ticket" in low:
-            action = ChipAction(kind=ChipActionKind.raise_ticket)
-        elif "email" in low:
-            action = ChipAction(kind=ChipActionKind.email)
-        elif "retry" in low or "try again" in low or "send it again" in low:
-            action = ChipAction(kind=ChipActionKind.retry, payload={"resend": "true"})
-        else:
-            action = ChipAction(kind=ChipActionKind.send_text, payload={"text": label})
-        chips.append(Chip(label=label, action=action))
-    return chips
+def recovery_chips() -> list[Chip]:
+    """Failure recovery chips [↺ Send it again · 🎫 Raise a ticket] (proposal
+    render-sequence #4). CML has no email / dual-format path, so the frozen
+    taxonomy's default E-FETCH "Email me both" chip does not apply — this flow
+    supplies its own recovery chips. The error TEXT is still the frozen verbatim
+    copy (see ``_error_block``); only the recovery-chip set is flow-specific."""
+    return [
+        _send_again_chip(),
+        Chip(label="🎫 Raise a ticket", action=ChipAction(kind=ChipActionKind.raise_ticket)),
+    ]
 
 
 def _error_block(code: ErrorCode) -> ErrorBubble:
-    """Build the error bubble from the frozen taxonomy (verbatim text + chips)."""
-    spec = ERROR_COPY[code]
-    return ErrorBubble(code=code, text=spec.text, chips=_chips_from_labels(spec.chips))
+    """Emit the code with the frozen verbatim error TEXT (never redefined) and the
+    CML-specific recovery chips."""
+    return ErrorBubble(code=code, text=ERROR_COPY[code].text, chips=recovery_chips())
 
 
 # ---------------------------------------------------------------------------
@@ -242,7 +235,11 @@ class CmlFlow:
         return post_delivery_chips()
 
     def recovery_chips(self, code: ErrorCode) -> list[Chip]:
-        return _chips_from_labels(ERROR_COPY[code].chips)
+        # CML renders one flow-specific recovery set for every error code
+        # (proposal render-seq #4): the frozen taxonomy's E-FETCH "Email me
+        # both" chip has no CML email/dual-format path, so `code` does not vary
+        # the chips. Error TEXT is still the frozen verbatim copy (see run()).
+        return recovery_chips()
 
     async def run(
         self,
