@@ -9,9 +9,11 @@ tracing change; this module defines the contract.
 
 from __future__ import annotations
 
+import uuid
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Literal, Mapping
+from typing import Any, Callable, Iterator, Literal, Mapping
 
 
 class SpanType(str, Enum):
@@ -81,6 +83,34 @@ def default_mask(data: Any) -> Any:
     return data
 
 
+def new_thread_id() -> str:
+    """A per-session ``thread_id`` (uuid4). Per-turn traces are stitched into one
+    conversation by sharing this id (via DeepEval ``update_current_trace(...)``);
+    conversation state is the app's responsibility — DeepEval only observes."""
+    return str(uuid.uuid4())
+
+
+def inline_judge_allowed(environment: Environment) -> bool:
+    """Production rule: local LLM-judge metrics are NEVER run inline in production
+    (they add blocking latency). Async ``metric_collection`` is used instead, and
+    long-running servers periodically clear traces. Returns False in production."""
+    return environment != "production"
+
+
+@dataclass
+class Span:
+    """A typed tracing span. Retriever spans carry the per-turn
+    ``retrieval_context`` (canonical ``list[str]`` from app/contracts/rag.py);
+    llm spans carry the model id and token usage."""
+
+    span_type: SpanType
+    attributes: dict[str, Any] = field(default_factory=dict)
+
+    def set(self, **attributes: Any) -> "Span":
+        self.attributes.update(attributes)
+        return self
+
+
 @dataclass
 class TraceConfig:
     """The result of ``configure(...)`` — captures the tracing setup. Confident AI
@@ -95,11 +125,18 @@ class TraceConfig:
 
 
 class TraceManager:
-    """Holds the active tracing configuration. ``configure`` accepts the documented
-    parameters and functions without a Confident AI key."""
+    """Holds the active tracing configuration and opens typed spans. ``configure``
+    accepts the documented parameters and functions without a Confident AI key.
+
+    NOTE: the installed DeepEval ``configure()`` signature documents only
+    ``openai_client``; if the version lacks an Anthropic auto-patch hook, Claude
+    calls SHALL be logged manually on the ``llm`` span (see LLMClient)."""
 
     def __init__(self) -> None:
         self.config: TraceConfig | None = None
+        #: The most recently opened span (the real Confident-AI export is wired by
+        #: the tracing change; offline this holds the span shape for inspection).
+        self.last_span: Span | None = None
 
     def configure(
         self,
@@ -110,6 +147,10 @@ class TraceManager:
         sampling_rate: float = 1.0,
         mask: MaskFn | None = None,
     ) -> TraceConfig:
+        """Set up tracing. ``confident_api_key`` is optional — tracing works fully
+        offline without it. The installed DeepEval ``configure()`` documents only
+        ``openai_client``; the remaining params (environment, sampling_rate, mask)
+        are this contract's superset applied by the tracing change."""
         self.config = TraceConfig(
             environment=environment,
             sampling_rate=sampling_rate,
@@ -119,6 +160,17 @@ class TraceManager:
             export_enabled=confident_api_key is not None,
         )
         return self.config
+
+    @contextmanager
+    def span(self, span_type: SpanType, **attributes: Any) -> Iterator[Span]:
+        """Open a typed span. Every observed span sets its ``type``. The canonical
+        shape is a root ``agent`` span wrapping a ``retriever`` and an ``llm`` span,
+        with ``tool`` spans for FinX/Freshdesk calls."""
+        current = Span(span_type=span_type, attributes=dict(attributes))
+        try:
+            yield current
+        finally:
+            self.last_span = current
 
 
 #: The process-wide tracing manager.

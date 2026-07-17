@@ -90,3 +90,41 @@ def test_response_maps_text_usage_stop_reason():
 
 def test_llm_span_is_llm():
     assert LLMClient.span_type is SpanType.llm
+
+
+def test_complete_records_llm_span():
+    # A fake anthropic client so complete() runs with no network.
+    fake_message = SimpleNamespace(
+        content=[SimpleNamespace(type="text", text="ok")],
+        usage=SimpleNamespace(input_tokens=5, output_tokens=2),
+        stop_reason="end_turn",
+    )
+
+    class FakeMessages:
+        def __init__(self):
+            self.captured = None
+
+        def create(self, **kwargs):
+            self.captured = kwargs
+            return fake_message
+
+    class FakeAnthropic:
+        def __init__(self):
+            self.messages = FakeMessages()
+
+    from app.contracts.tracing import trace_manager
+
+    fake = FakeAnthropic()
+    client = LLMClient(client=fake)
+    resp = client.complete(messages=[{"role": "user", "content": "hi"}])
+    # Request went through build_request (no sampling params).
+    assert "temperature" not in fake.messages.captured
+    assert fake.messages.captured["model"] == "claude-sonnet-5"
+    # Response mapped.
+    assert resp.text == "ok" and resp.stop_reason == "end_turn"
+    # The call was recorded on an llm-typed span with model + token usage.
+    span = trace_manager.last_span
+    assert span.span_type is SpanType.llm
+    assert span.attributes["model"] == "claude-sonnet-5"
+    assert span.attributes["prompt_tokens"] == 5
+    assert span.attributes["completion_tokens"] == 2

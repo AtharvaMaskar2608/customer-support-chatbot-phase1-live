@@ -16,6 +16,7 @@ from app.contracts.router import (
     BLOCKED_INTENTS,
     EDUCATION_LINE_INTENTS,
     PRECEDENCE_TOKENS,
+    ROUTE_TOOL_CHOICE,
     TAX_FLOW_INTENTS,
     ConversationContext,
     DateRange,
@@ -26,6 +27,7 @@ from app.contracts.router import (
     ReportFormat,
     RouterResult,
     Segment,
+    transport_failure_result,
 )
 
 # The 16 frozen intents named in "Requirement: Complete Intent enum".
@@ -143,6 +145,19 @@ def test_conversation_context_hides_secrets():
     assert dumped["turn_number"] == 2
     assert dumped["follow_up_count"] == 1
     assert dumped["language_locked"] is True
+
+
+def test_forced_route_tool_choice_and_transport_fallback():
+    # "Requirement: Routing via forced tool use" — the forced single-tool choice.
+    assert ROUTE_TOOL_CHOICE == {
+        "type": "tool",
+        "name": "route",
+        "disable_parallel_tool_use": True,
+    }
+    # Transport failure → smalltalk_fallback + escalate.
+    fallback = transport_failure_result()
+    assert fallback.intent is Intent.smalltalk_fallback
+    assert fallback.escalate is True
 
 
 def test_extra_fields_forbidden():

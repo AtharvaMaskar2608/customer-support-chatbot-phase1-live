@@ -254,6 +254,97 @@ class GlobalPnlNewObject(BaseModel):
     Expenses: list[dict] = Field(default_factory=list)
 
 
+class FileDeliveryResponse(BaseModel):
+    """Polymorphic ``{Status, Response, Reason}`` file-delivery response shared by
+    ``GetGlobalPNLPDF``, ``GetLedgerDetailsPDF`` and ``GetTaxReportPDF``.
+
+    ``Response`` is a report URL string on download (the endpoint's download
+    ``RequestFor`` value) OR a human-readable confirmation string on email
+    (``RequestFor:1``). The email confirmation leaks the full registered email
+    (uppercased) — MASK it before any display. The URL is sensitive: fetch
+    server-side, never surface or log it.
+    """
+
+    model_config = ConfigDict(extra="ignore")
+
+    Status: str
+    Response: str | None = None
+    Reason: str | None = None
+
+    def is_email_confirmation(self) -> bool:
+        return bool(self.Response) and "mail sent" in self.Response.lower()
+
+    def is_download_url(self) -> bool:
+        return bool(self.Response) and self.Response.lower().startswith("http")
+
+
+# Per-endpoint aliases (same polymorphic PascalCase shape).
+PnlPdfResponse = FileDeliveryResponse
+LedgerPdfResponse = FileDeliveryResponse
+TaxReportResponse = FileDeliveryResponse
+
+#: The per-note download returns the raw PDF bytes directly (application/pdf), not
+#: a JSON envelope — its "typed model" is the byte string.
+ContractNoteDownloadResponse = bytes
+
+
+class HoldingsResponseBody(BaseModel):
+    """Holdings ``Response`` object. ``lDictHoldingData`` is keyed by ISIN (iterate
+    ``.values()``), NOT an array. Holdings flow is BLOCKED (no file-delivery
+    endpoint); this models the live-data card shape."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    lDictHoldingData: dict[str, dict] = Field(default_factory=dict)  # keyed by ISIN
+    BodStatus: int | None = None
+
+
+class GetProfileResponse(BaseModel):
+    """get-profile ``Response`` object. HEAVY PII — retain ONLY the first name from
+    ``FirstHolderName``; the full profile must never be logged, stored, traced, or
+    returned to the client."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    FirstHolderName: str | None = None
+
+    def first_name(self) -> str | None:
+        if not self.FirstHolderName:
+            return None
+        return self.FirstHolderName.split()[0].title()
+
+
+class DetailedPnlRow(BaseModel):
+    """One ``GetDetailedPNL`` record (data side of Global Detail — no file endpoint
+    [GAP])."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    TRADE_DATE: str | None = None
+    Scrip_Name: str | None = None
+    SECURITY: str | None = None
+    Stock: str | None = None
+    COMPANY_CODE: str | None = None
+    Net_Qty: float | None = None
+    Net_Amount: float | None = None
+
+
+class LedgerDetailsRow(BaseModel):
+    """One ``GetLedgerDetails`` record. ``Narration`` may contain third-party PII
+    (DP-transfer narrations include another person's name/account) — mask before
+    any display."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    trd_Date: str | None = None  # ISO or the 1900-01-01 OPENING sentinel
+    vDate: str | None = None  # DD-MM-YYYY
+    voucher: str | None = None
+    Trans_Type: str | None = None
+    Narration: str | None = None  # third-party PII
+    Debit: float | None = None
+    Credit: float | None = None
+
+
 # ---------------------------------------------------------------------------
 # Per-endpoint descriptors
 # ---------------------------------------------------------------------------

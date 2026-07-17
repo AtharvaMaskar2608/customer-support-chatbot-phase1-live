@@ -11,6 +11,8 @@ from app.contracts.tracing import (
     SpanType,
     TraceConfig,
     default_mask,
+    inline_judge_allowed,
+    new_thread_id,
     trace_manager,
 )
 
@@ -66,3 +68,39 @@ def test_mask_redacts_pii():
 def test_default_mask_is_the_configured_default():
     cfg = trace_manager.configure()
     assert cfg.mask is default_mask
+
+
+def test_thread_stitching_and_production_judge_rule():
+    # Per-turn traces are stitched by a shared thread_id (uuid4).
+    tid = new_thread_id()
+    assert isinstance(tid, str) and len(tid) == 36
+    assert new_thread_id() != tid  # unique per session
+    # No blocking judge metrics in production; allowed elsewhere.
+    assert inline_judge_allowed("production") is False
+    assert inline_judge_allowed("development") is True
+    assert inline_judge_allowed("staging") is True
+
+
+def test_typed_spans_carry_their_type_and_context():
+    # llm span carries model + usage.
+    with trace_manager.span(SpanType.llm, model="claude-sonnet-5") as span:
+        span.set(prompt_tokens=10, completion_tokens=3)
+    assert span.span_type is SpanType.llm
+    assert span.attributes["model"] == "claude-sonnet-5"
+    assert span.attributes["prompt_tokens"] == 10
+    assert trace_manager.last_span.span_type is SpanType.llm
+
+    # retriever span carries the canonical retrieval_context (list[str]).
+    ctx = ["chunk one", "chunk two"]
+    with trace_manager.span(SpanType.retriever, retrieval_context=ctx) as rspan:
+        pass
+    assert rspan.span_type is SpanType.retriever
+    assert rspan.attributes["retrieval_context"] == ctx
+
+
+def test_configure_records_deepeval_caveat():
+    # The contract notes the DeepEval configure() single-param caveat.
+    from app.contracts import tracing
+
+    assert "openai_client" in tracing.TraceManager.__doc__
+    assert "manually on the" in tracing.TraceManager.__doc__ or "llm" in tracing.TraceManager.configure.__doc__

@@ -18,7 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from app.contracts.tracing import SpanType
+from app.contracts.tracing import SpanType, trace_manager
 
 #: Owner-pinned model IDs (spec §2.1; these replace the flow spec's non-existent
 #: "sonnet-4-6"). The router/RAG generation uses the pinned pair; the DeepEval
@@ -141,7 +141,8 @@ class LLMClient:
         model: str | None = None,
     ) -> LLMResponse:
         """Issue one non-streaming completion and return text + usage + stop_reason.
-        The call is recorded on the ``llm`` tracing span."""
+        The call is recorded on an ``llm``-typed tracing span (model id + token
+        usage), consistent with the tracing conventions."""
         request = self.build_request(
             messages=messages,
             system=system,
@@ -151,5 +152,12 @@ class LLMClient:
             max_tokens=max_tokens,
             model=model,
         )
-        message = self._anthropic().messages.create(**request)
-        return LLMResponse.from_anthropic(message)
+        with trace_manager.span(self.span_type, model=request["model"]) as span:
+            message = self._anthropic().messages.create(**request)
+            response = LLMResponse.from_anthropic(message)
+            span.set(
+                prompt_tokens=response.usage.prompt_tokens,
+                completion_tokens=response.usage.completion_tokens,
+                stop_reason=response.stop_reason,
+            )
+        return response

@@ -67,8 +67,10 @@ def test_defaults_validate():
     for variant in (cfg.greeting.default, cfg.greeting.morning, cfg.greeting.market_hours, cfg.greeting.post_market):
         assert "{client_id}" in variant
 
-    # whats_new ≤ 3.
+    # whats_new ≤ 3, with a 24-hour cache and per-client-code red-dot badge.
     assert len(cfg.whats_new) <= 3
+    assert cfg.whats_new_cache_hours == 24
+    assert cfg.whats_new_red_dot is True
 
     # RAG tunables defaults (25 / 60 / 5 / "none"), server-only.
     assert cfg.rag.rag_candidate_k == 25

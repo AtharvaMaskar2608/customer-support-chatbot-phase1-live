@@ -4,6 +4,13 @@
 -- (not only the final text) to serve the 10-message cap and future fine-tuning.
 -- Forward-only; no destructive statements. Applied by app/store/migrations/runner.py.
 
+-- Migration bookkeeping (the runner also ensures this exists before applying any
+-- file; created here too so 0001 is self-contained). One row per applied file.
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    filename   TEXT PRIMARY KEY,
+    applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS threads (
     thread_id      UUID PRIMARY KEY,
     user_id        TEXT        NOT NULL,          -- Client ID, e.g. X008593

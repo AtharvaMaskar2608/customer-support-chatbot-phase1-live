@@ -13,12 +13,20 @@ from app.finx.models import (
     BrokerageGroup,
     CmlBody,
     ContractNoteListBody,
+    DetailedPnlRow,
+    FileDeliveryResponse,
     GetDetailedPNLRequest,
     GetGlobalPNLNewRequest,
     GetLedgerDetailsRequest,
+    GetProfileResponse,
     GlobalPnlNewObject,
+    HoldingsResponseBody,
+    LedgerDetailsRow,
+    LedgerPdfResponse,
     LedgerPdfRequest,
     PnlPdfRequest,
+    PnlPdfResponse,
+    TaxReportResponse,
 )
 
 from tests.finx.conftest import load
@@ -97,6 +105,43 @@ def test_global_pnl_new_object_shape():
     # Falsy With_Exp fixture is a bare array (not an object).
     falsy = parse_dotnet_envelope(load("global_pnl_new_falsy_array.json"))
     assert isinstance(falsy.payload, list)
+
+
+def test_polymorphic_file_delivery_response():
+    # PNL PDF / Ledger PDF / Tax PDF share the polymorphic {Status,Response,Reason}
+    # shape: Response is a download URL OR an email-confirmation string.
+    download = FileDeliveryResponse.model_validate(load("pnl_download_success.json"))
+    assert download.is_download_url() is True
+    assert download.is_email_confirmation() is False
+
+    email = FileDeliveryResponse.model_validate(load("pnl_email_success.json"))
+    assert email.is_email_confirmation() is True
+    assert email.is_download_url() is False
+
+    # Per-endpoint aliases are the same polymorphic shape.
+    assert PnlPdfResponse is FileDeliveryResponse
+    assert LedgerPdfResponse is FileDeliveryResponse
+    assert TaxReportResponse is FileDeliveryResponse
+    # Ledger PDF success fixture parses.
+    assert LedgerPdfResponse.model_validate(load("ledger_pdf_success.json")).is_download_url()
+
+
+def test_data_endpoint_and_profile_response_models():
+    detailed = parse_dotnet_envelope(load("detailed_pnl_success.json"))
+    rows = [DetailedPnlRow.model_validate(r) for r in detailed.payload]
+    assert rows[0].Scrip_Name == "RELIANCE"
+
+    ledger = parse_dotnet_envelope(load("ledger_details_success.json"))
+    lrows = [LedgerDetailsRow.model_validate(r) for r in ledger.payload]
+    assert lrows[0].voucher == "OPENING"
+
+    # get-profile: only the first name is retained from FirstHolderName.
+    profile = GetProfileResponse(FirstHolderName="PRITAM NITIN WAVHAL")
+    assert profile.first_name() == "Pritam"
+
+    # Holdings body is keyed by ISIN (object, not array).
+    holdings = HoldingsResponseBody(lDictHoldingData={"INE002A01018": {"Sym": "RELIANCE-EQ"}}, BodStatus=0)
+    assert list(holdings.lDictHoldingData.keys()) == ["INE002A01018"]
 
 
 def test_brokerage_and_cml_response_models():

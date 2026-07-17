@@ -77,6 +77,8 @@ class RemoteConfig(BaseModel):
     reports_placeholder: str  # rotating long-tail placeholder
     greeting: GreetingPool
     whats_new: list[WhatsNewItem]  # at most three
+    whats_new_cache_hours: int = 24  # 24-hour cache for What's New
+    whats_new_red_dot: bool = True  # per-client-code red-dot badge (entries never auto-popup)
     products: list[Product]
     compliance_footer: str
     calendar_bounds: dict[Intent, DateWindow]  # per-flow; SERVER-ONLY

@@ -59,6 +59,7 @@ def test_retrieval_context_is_canonical_shape():
 
 
 def test_0001_creates_tables_indexes_and_fk():
+    assert "CREATE TABLE IF NOT EXISTS schema_migrations" in SQL_0001
     assert "CREATE TABLE IF NOT EXISTS threads" in SQL_0001
     assert "CREATE TABLE IF NOT EXISTS turns" in SQL_0001
     # FK turns.thread_id -> threads.thread_id.

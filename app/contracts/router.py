@@ -199,6 +199,26 @@ EDUCATION_LINE_INTENTS: frozenset[Intent] = frozenset(
     {Intent.report_capital_gain, Intent.report_tax_pnl}
 )
 
+#: The router's forced classification tool name.
+ROUTE_TOOL_NAME: str = "route"
+
+#: The forced single-tool choice the router issues for classification: exactly one
+#: Claude call with tools=[route] and this tool_choice (disable parallel tool use).
+#: Shipped as a frozen constant; the router binds it at runtime.
+ROUTE_TOOL_CHOICE: dict[str, object] = {
+    "type": "tool",
+    "name": ROUTE_TOOL_NAME,
+    "disable_parallel_tool_use": True,
+}
+
+
+def transport_failure_result() -> RouterResult:
+    """On API/transport failure ONLY, the router returns this fallback (no
+    malformed-JSON repair step exists — strict tool use makes the input
+    API-validated)."""
+    return RouterResult(intent=Intent.smalltalk_fallback, escalate=True)
+
+
 #: Deterministic intent precedence for ambiguous utterances, highest-precedence
 #: first. ``tax`` anywhere beats ``p&l``/``pnl``; ``capital gain``/``cg`` means the
 #: Tax Report; ``holding statement`` resolves to holding (not ledger); bare
