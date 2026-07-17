@@ -1,0 +1,22 @@
+{
+  "id": 7529084,
+  "status": 2,
+  "priority": 2,
+  "source": 7,
+  "type": "REPORTS",
+  "subject": "[Choice Jini] P&L — Client X008593",
+  "group_id": 22000168676,
+  "requester_id": 80012345678,
+  "unique_external_id": "X008593",
+  "created_at": "2026-07-17T10:00:00Z",
+  "updated_at": "2026-07-17T10:00:00Z",
+  "description_text": "P&L transcript ...",
+  "custom_fields": {
+    "cf_client_id": "X008593",
+    "cf_product": "finx",
+    "cf_query_type149508": "finx-bot",
+    "cf_query_sub_type": "finx-bot-test",
+    "cf_source": "chat box"
+  },
+  "tags": ["choice-jini", "chatbot-testing", "lang:en"]
+}
