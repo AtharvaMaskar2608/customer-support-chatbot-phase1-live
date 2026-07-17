@@ -41,10 +41,17 @@ Proposal `[CONFIRM]` items resolved against the actually-frozen code:
   memory session-scoped guard only.
 
 ## Tasks completed
-- (none yet)
+- Task 0: tasks.md + loop.md (commit 9a6bf45).
+- Task 1: config.py + freshdesk.yaml + __init__ (commit b7f763c).
+- Task 2: mapping.py — Intent→Type, subject sub-type, status copy (commit 21c6d1c).
+- Task 3: payload.py — TranscriptTurn + build_ticket_payload, HTML escaping (commit d888018).
+- Task 4: client.py — async Freshdesk client, Basic auth, 5 endpoints, FreshdeskAPIError (committed).
+- Task 5: tool.py — raise_ticket/get_ticket_status, dedupe, idempotency, error→ErrorBubble,
+  status DataCards, TICKETING_TOOLS registry (this commit). Smoke-tested: registry keys match
+  frozen TOOL_NAMES; payload matches 04 §5; escaping verified; client auth/Retry-After/400 parsing verified.
 
 ## Current task
-- Task 0: author tasks.md + loop.md (this commit).
+- Task 6: fixture-driven test suite (tests/ticketing/**), then run testCommand.
 
 ## Verifier rounds
 - (none yet)
