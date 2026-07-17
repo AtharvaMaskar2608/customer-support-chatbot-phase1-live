@@ -39,7 +39,8 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [x] tasks.md + loop.md authored and committed
 - [x] T1 scaffolding + fault seam + ports (faults/ports/events/results/__init__;
       test_faults.py 3 passed; `import app.engine` OK with adapters absent)
-- [ ] T2 step progression + stepper-edit
+- [x] T2 step progression + stepper-edit (steps.py: next_step/reopen_step/
+      materialize_steps/build_stepper_card + conftest fakes; test_steps.py 6 passed)
 - [ ] T3 calendar + date-window
 - [ ] T4 FY resolution
 - [ ] T5 follow-up cap
@@ -50,7 +51,7 @@ Baseline: `uv run pytest` = 82 passed (before any engine code).
 - [ ] T10 executor + public API
 - [ ] T11 suite green + doneCondition
 
-Current task: T2.
+Current task: T3.
 
 ## Verifier rounds
 (none yet)
