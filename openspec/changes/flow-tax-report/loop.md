@@ -2,8 +2,11 @@
 
 Worktree lead loop state. If it isn't here, it didn't happen.
 
+**Status: SHIPPED — PR #8** (https://github.com/AtharvaMaskar2608/customer-support-chatbot-phase1-live/pull/8), Gate 2 pending.
+
 - Branch/worktree: `flow-tax-report` @ `/home/choice/projects/customer-support/flow-tax-report`
-- Base: main @ `cfb22a1` (contracts-foundation merged; all consumed contracts frozen and present).
+- Base: rebased onto origin/main @ `9b6d31e` (PR #2 finx-http-adapters + PR #3 flow-brokerage merged). Originally branched from `cfb22a1`; all consumed contracts frozen and present.
+- Lean ship directive (human operator, cutting agent/token overhead): fresh 3-lens verifier panel AND self-check spec read-through both SKIPPED for this change; implementation trusted. Spec harness = testCommand + doneCondition only.
 - testCommand: `pytest tests/flows/test_tax.py`
 - doneCondition: full walk drives GetTaxReportPDF (dynamic FinYear, RequestFor
   2/1, FileFormat 1/2, two calls on email); CG/Tax-P&L prepend education + route
@@ -53,15 +56,24 @@ Worktree lead loop state. If it isn't here, it didn't happen.
 - [x] T3 — tests/flows/test_tax.py (22 tests, all from the doneCondition) + empty
   tests/flows/__init__.py. testCommand green (22 passed); full suite green
   (104 passed, 1 pre-existing unrelated warning).
-- [ ] T4 — fresh verifier + rebase + full harness + PR (in progress)
+- [x] T4 — SHIPPED. Per lean directive: verifier panel skipped. testCommand green
+  (22 passed) pre- and post-rebase. Rebased onto origin/main `9b6d31e` — clean, no
+  conflicts (empty tests/flows/__init__.py auto-merged with flow-brokerage's). Full
+  repo suite on rebased head green (197 passed, 1 pre-existing Starlette deprecation
+  warning, unrelated). Branch pushed; PR #8 opened.
 
 ## Verifier rounds
-- Round 1: pending (one fresh spec-verifier, all 3 lenses, proposal dir + branch diff).
+- Skipped per human-operator lean directive (agent/token-overhead reduction). 0 panels run.
 
 ## Open questions
 - EC-9 (no registered email): flow supports `hide_email` in S2 and the refusal copy
   path; whether it can actually occur is [OPEN] in the spec — implemented defensively.
 
 ## Metrics
-- Verifier rounds used: 0
+- Verifier rounds used: 0 (panel skipped per lean directive)
+- Findings per round: n/a
+- testCommand: 22 passed (pre-rebase and post-rebase)
+- Full behavior harness on rebased head (origin/main 9b6d31e): 197 passed, 1 unrelated warning
+- Rebase: clean, 0 conflicts
 - Escalations: 0
+- Shipped: PR #8
