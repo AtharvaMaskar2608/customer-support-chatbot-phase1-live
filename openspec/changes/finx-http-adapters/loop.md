@@ -21,7 +21,9 @@ testCommand: `pytest tests/finx_adapters/`.
 ## Tasks
 
 - [x] Task 0 — author tasks.md + scaffold loop.md, commit before implementing.
-- [ ] Task 1 — errors + credentials + HTTP transport base
+- [x] Task 1 — errors + credentials + HTTP transport base (14 tests green:
+      retry-once, 5xx→FinXTransportError, timeout/network→FinXTimeoutError,
+      no-retry on 401/business-fail, non-JSON→FinXTransportError, log redaction)
 - [ ] Task 2 — byte-fetch helper + validation primitive
 - [ ] Task 3 — .NET middleware adapter (6 endpoints)
 - [ ] Task 4 — Go adapter (contract list, per-note download, brokerage)
@@ -31,7 +33,7 @@ testCommand: `pytest tests/finx_adapters/`.
 - [ ] Task 8 — facade + package exports
 - [ ] Task 9 — consolidated redaction/no-leak tests + doneCondition sweep
 
-Current task: Task 1.
+Current task: Task 2.
 
 ## Verifier rounds
 
