@@ -15,8 +15,10 @@ read-only, never edited.
 from __future__ import annotations
 
 import re
+from datetime import date
 
 from app.config.schema import Limits
+from app.contracts.flow import current_fy, fy_short_to_long, supported_fys
 from app.contracts.router import (
     PRECEDENCE_TOKENS,
     ROUTE_TOOL_CHOICE,
@@ -113,6 +115,17 @@ _FY_SINGLE_RE = re.compile(
 #: An Assessment-Year qualifier standing on its own (not inside another word).
 _AY_RE = re.compile(r"(?<![a-z])(?:a\.?y\.?|assessment year)(?![a-z])")
 
+#: Relative financial-year references, resolved against the frozen supported-FY
+#: window (``supported_fys() == [currentFY, -1, -2]``). Each maps to an index into
+#: that list, so the Apr-1 rollover logic lives in the frozen helper, never here.
+_RELATIVE_FY_RE: tuple[tuple[re.Pattern[str], int], ...] = (
+    (re.compile(r"\b(?:this|current)\s+(?:financial\s+year|fy|year)\b"), 0),
+    (re.compile(r"\bcurrent\s+fy\b"), 0),
+    (re.compile(r"\b(?:last|previous|prev)\s+(?:financial\s+year|fy|year)\b"), 1),
+    (re.compile(r"\byear\s+before\s+last\b"), 2),
+    (re.compile(r"\btwo\s+years?\s+ago\b"), 2),
+)
+
 
 def _is_consecutive(start: int, end_token: str) -> bool:
     """True when ``end_token`` is the year after ``start`` (2- or 4-digit form)."""
@@ -121,15 +134,41 @@ def _is_consecutive(start: int, end_token: str) -> bool:
     return int(end_token) == start + 1
 
 
-def parse_fy_or_ay(utterance: str) -> tuple[str | None, bool]:
+def _start_to_long(start_year: int) -> str:
+    """Canonical long ``"YYYY-YYYY"`` form for a financial year START year, via the
+    FROZEN ``fy_short_to_long`` mapping helper (so the mapping exists exactly once)."""
+    return fy_short_to_long(f"FY {start_year}-{(start_year + 1) % 100:02d}")
+
+
+def _relative_fy(text: str, today: date | None) -> str | None:
+    """Resolve a relative FY reference ("this/current year", "last year", …) against
+    the FROZEN FY helpers. "This/current year" is ``current_fy`` directly; older
+    references index the ``supported_fys`` window. Returns the long-form FY or
+    ``None``."""
+    for pattern, index in _RELATIVE_FY_RE:
+        if pattern.search(text):
+            if index == 0:
+                return current_fy(today)
+            return supported_fys(today)[index]  # [currentFY, currentFY-1, currentFY-2]
+    return None
+
+
+def parse_fy_or_ay(utterance: str, today: date | None = None) -> tuple[str | None, bool]:
     """Extract a financial year from free text, returning ``(fy_long, is_ay)``.
 
-    ``fy_long`` is the canonical ``"YYYY-YYYY"`` form (``FY 2025-26`` → ``"2025-2026"``).
-    When the utterance names an **Assessment Year**, it is converted AY→FY (AY start
-    year S → FY start year S-1) and ``is_ay`` is ``True`` so the caller can flag the
+    ``fy_long`` is the canonical ``"YYYY-YYYY"`` form produced by the FROZEN
+    ``flow`` FY helpers (``FY 2025-26`` → ``"2025-2026"``). Relative references
+    ("this/current year", "last year") resolve against the frozen ``supported_fys``
+    window (which itself computes ``currentFY`` with the Apr-1 rollover). When the
+    utterance names an **Assessment Year**, it is converted AY→FY (AY start year S →
+    FY start year S-1) and ``is_ay`` is ``True`` so the caller can flag the
     conversion for confirmation. Returns ``(None, False)`` when no financial year is
     present. Never raises."""
     text = utterance.lower()
+
+    relative = _relative_fy(text, today)
+    if relative is not None:
+        return relative, False
 
     start: int | None = None
     m = _FY_RANGE_RE.search(text)
@@ -146,13 +185,13 @@ def parse_fy_or_ay(utterance: str) -> tuple[str | None, bool]:
     is_ay = _AY_RE.search(text) is not None
     if is_ay:
         start -= 1  # Assessment Year S-(S+1) corresponds to Financial Year (S-1)-S.
-    return f"{start}-{start + 1}", is_ay
+    return _start_to_long(start), is_ay
 
 
-def _normalize_fy(value: str) -> str:
-    """Normalize a model-provided FY string to the long ``"YYYY-YYYY"`` form; leave
-    an unparseable value untouched."""
-    fy_long, _ = parse_fy_or_ay(value)
+def _normalize_fy(value: str, today: date | None = None) -> str:
+    """Normalize a model-provided FY string to the long ``"YYYY-YYYY"`` form via the
+    frozen helpers; leave an unparseable value untouched."""
+    fy_long, _ = parse_fy_or_ay(value, today)
     return fy_long or value
 
 
@@ -198,7 +237,10 @@ def _first_keyword(table, text: str):
 
 
 def _extract_params(
-    utterance: str, intent: Intent, model_params: ExtractedParams
+    utterance: str,
+    intent: Intent,
+    model_params: ExtractedParams,
+    today: date | None = None,
 ) -> tuple[ExtractedParams, bool]:
     """Post-process the model's extracted parameters for a report intent.
 
@@ -206,18 +248,19 @@ def _extract_params(
     the returned ``needs_confirmation``. Segment / format / delivery are augmented
     from the utterance ONLY where the model left them unset; ``date_range`` passes
     through from the model. Non-report intents carry the model's params unchanged.
+    ``today`` is injectable so relative-FY resolution is deterministic under test.
     """
     params = model_params.model_copy(deep=True)
     if intent not in _REPORT_INTENTS:
         return params, False
 
     needs_confirmation = False
-    fy_long, is_ay = parse_fy_or_ay(utterance)
+    fy_long, is_ay = parse_fy_or_ay(utterance, today)
     if fy_long is not None:
         params.fy = fy_long
         needs_confirmation = is_ay
     elif params.fy:
-        params.fy = _normalize_fy(params.fy)
+        params.fy = _normalize_fy(params.fy, today)
 
     text = utterance.lower()
     if params.segment is None:
@@ -344,7 +387,13 @@ class Router:
         """One forced ``route`` tool call. ``RouterResult`` materializes from the
         API-validated ``tool_use.input`` — never parsed from free-text JSON. Raises
         when the response carries no ``route`` block (treated as a transport
-        failure by ``route``)."""
+        failure by ``route``).
+
+        ``ctx`` is part of the spec'd classifier signature, but its
+        ``history`` is a list of ``TurnRef`` (turn ids/numbers only — no message
+        content in the frozen contract), so there is no prior-turn text to send to
+        the model here; every ctx-derived behaviour (sticky-language, follow-up cap)
+        is applied deterministically in ``route`` after classification."""
         route_tool = TOOLS_BY_NAME[ROUTE_TOOL_NAME].model_dump()
         response = self.client.complete(
             messages=[{"role": "user", "content": utterance}],

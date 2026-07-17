@@ -74,8 +74,32 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
 
 ## Verifier rounds
 
-- Round 1: panel pending (spec-compliance / edge-cases / contract-surface),
-  each given only the proposal dir + `git diff main...llm-router`.
+- Round 1 (3 fresh verifiers, lenses: spec-compliance / edge-cases / contract-surface):
+  - **[blocking] FY helpers not consumed** (flagged by spec-compliance + contract-surface):
+    FY normalization re-implemented locally instead of using the frozen
+    `app.contracts.flow` helpers the manifest declares consumed (`currentFY`,
+    `supportedFYs`) and Task 3 mandates. → FIXED: `parse_fy_or_ay` now normalizes
+    via `fy_short_to_long`, and relative FY references ("this/current year",
+    "last year", "year before last") resolve via `current_fy` / `supported_fys`
+    (Apr-1 rollover stays in the frozen helper). `today` injected for determinism.
+  - **[minor] `-m live` opt-in** (spec-compliance): proposal specifies `pytest -m
+    live` as the live opt-in but the conftest only honored `JINI_RUN_LIVE`. → FIXED:
+    conftest now also runs live when `-m live` is selected; bare testCommand still
+    skips (verified: `-m live` selects it, bare run skips).
+  - **[minor] typo few-shot missing** (spec-compliance): `few_shots.json` lacked a
+    typos example. → FIXED: added two typo few-shots + test assertion.
+  - **[uncertain] `_classify` ctx unused** (spec-compliance): `ctx.history` is
+    refs-only in the frozen contract (no message text), so nothing to feed the
+    model; all ctx-derived behaviour is deterministic post-processing. → clarifying
+    comment added; signature matches the spec'd `_classify(utterance, ctx)`. No
+    behaviour change.
+  - **[dismissed] per-turn LLMClient construction** (edge-cases lens raised then
+    dismissed): lazy client, spec'd stateless pure function, `Router` provides the
+    reuse hook. No action.
+  - edge-cases lens found no functional defects.
+  - Post-fix: `pytest tests/llm_router/` 67 passed / 1 skipped; `uv run pytest`
+    149 passed / 1 skipped, 0 regressions.
+- Round 2: fresh panel pending (new verifiers, none has seen the code).
 
 ## Open questions / escalations
 

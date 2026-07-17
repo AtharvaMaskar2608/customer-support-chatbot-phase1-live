@@ -25,9 +25,16 @@ def pytest_configure(config):
 
 
 def pytest_collection_modifyitems(config, items):
-    if os.environ.get("JINI_RUN_LIVE"):
+    # The live re-record runs only when explicitly opted in: `pytest -m live`
+    # (the mechanism the proposal specifies) or JINI_RUN_LIVE=1. The bare
+    # testCommand `pytest tests/llm_router/` carries neither, so live tests are
+    # skipped and the suite stays fully offline.
+    markexpr = config.getoption("markexpr", default="") or ""
+    if os.environ.get("JINI_RUN_LIVE") or "live" in markexpr:
         return
-    skip_live = pytest.mark.skip(reason="live LLM test; set JINI_RUN_LIVE=1 to run")
+    skip_live = pytest.mark.skip(
+        reason="live LLM test; run with `pytest -m live` or JINI_RUN_LIVE=1"
+    )
     for item in items:
         if "live" in item.keywords:
             item.add_marker(skip_live)

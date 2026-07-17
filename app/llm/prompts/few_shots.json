@@ -72,6 +72,30 @@
     }
   },
   {
+    "utterance": "get my p&l statmnt",
+    "route_input": {
+      "intent": "report_pnl",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "english",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
+    "utterance": "ledgr chahiye bhai",
+    "route_input": {
+      "intent": "report_ledger",
+      "extracted_params": {"fy": null, "date_range": null, "segment": null, "report_format": null, "delivery": null},
+      "needs_confirmation": false,
+      "follow_up_question": null,
+      "detected_language": "hinglish",
+      "escalate": false,
+      "education_line": null
+    }
+  },
+  {
     "utterance": "report",
     "route_input": {
       "intent": "smalltalk_fallback",

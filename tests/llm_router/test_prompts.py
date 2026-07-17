@@ -41,6 +41,14 @@ def test_few_shots_span_languages():
     assert {"english", "hindi", "hinglish"} <= langs
 
 
+def test_few_shots_include_a_typo_example():
+    # Task 1 lists "typos" as a required few-shot dimension.
+    utterances = [ex["utterance"] for ex in few_shots()]
+    assert any(u in ("get my p&l statmnt", "ledgr chahiye bhai") for u in utterances), (
+        "few_shots.json must include a deliberately misspelled utterance"
+    )
+
+
 def test_education_line_only_for_cg_and_tax_pnl():
     for intent in Intent:
         line = education_line(intent)
