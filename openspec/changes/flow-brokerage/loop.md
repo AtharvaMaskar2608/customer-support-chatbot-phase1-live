@@ -65,7 +65,31 @@ authorized by the team-lead task message).
 - Current task: T5 (fresh spec-verifier).
 
 ## Verifier rounds
-- (none yet — Round 1 verifier pending)
+
+### Panel 1 (FAST VERIFY — one fresh spec-verifier, all three lenses)
+Inputs given: proposal dir + `git diff main...HEAD` only. Result: **0 blocking,
+4 minor**. Disposition:
+- F1 session-scoped cache (EC-8/10) absent — NO ACTION. Caching is engine-owned
+  (15-min session cache lives in flow-engine-runtime; `CacheConfig` frozen in
+  `flow.py`). Not in doneCondition. Single-shot "always fetch" is the correct
+  degenerate of "fresh session = fresh fetch"; the handler has no session handle
+  to key a cache on. Building one here would touch engine territory. [[flow-engine-runtime]]
+- F2 "…" ack bubble not emitted — NO ACTION. Wire is non-streaming (D1, one
+  response/turn); a literal "…" bubble would render stuck above every card. It is
+  the widget's typing indicator, not a backend render block. Not in doneCondition.
+- F3 EC-4 off-plan chip-row omitted "Show my ledger" — FIXED. Proposal is
+  internally inconsistent: the explicit render-block sequence (step 3) enumerates
+  `[Show my ledger · 🎫 Raise a ticket]` for off-plan AND calc asks, while the
+  prose "What Changes" summary says ticket-only. Tiebreaker: the render-block
+  sequence is the authoritative chip spec → aligned `off_plan_response` to it +
+  updated the test.
+- F4 `handle()`/edge builders beyond frozen FlowSpec — NO ACTION. Unavoidable and
+  proposal-specified ("single-shot ... intent handler"); the minimal FlowSpec
+  (intent/config/steps) cannot carry the fulfilment path the doneCondition
+  requires. Executor wiring is deferred to flow-engine-runtime by design.
+
+No blocking findings → per FAST VERIFY, no second panel required. Tests green
+after F3 fix (15 flow tests, 97 full).
 
 ## Open questions / escalations
 - (none)

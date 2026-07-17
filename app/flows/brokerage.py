@@ -146,11 +146,13 @@ def no_document_response(groups: Sequence[BrokerageGroup]) -> list[RenderBlock]:
 
 def off_plan_response(groups: Sequence[BrokerageGroup]) -> list[RenderBlock]:
     """EC-4 — a segment the user asked about isn't in their returned plan. Show the
-    plan they do have and offer a ticket for the rest."""
+    plan they do have and offer the recovery chips. Per the render-block sequence
+    (proposal "Flow step / render-block sequence" step 3), off-plan and calculation
+    asks share the ``[Show my ledger · 🎫 Raise a ticket]`` chip-row."""
     return [
         Bubble(text=OFF_PLAN_TEXT),
         render_slab_card(groups),
-        ChipRow(chips=[_raise_ticket_chip()]),
+        ChipRow(chips=[_show_ledger_chip(), _raise_ticket_chip()]),
     ]
 
 

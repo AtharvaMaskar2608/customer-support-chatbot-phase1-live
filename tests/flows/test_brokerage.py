@@ -290,7 +290,11 @@ def test_ec4_off_plan_shows_plan_plus_ticket_chip():
     assert _block_types(blocks) == ["bubble", "data_card", "chip_row"]
     chip_row = blocks[2]
     assert isinstance(chip_row, ChipRow)
-    assert [c.action.kind for c in chip_row.chips] == [ChipActionKind.raise_ticket]
+    # Render-block sequence step 3: off-plan shares the calc chip-row.
+    assert [c.action.kind for c in chip_row.chips] == [
+        ChipActionKind.send_text,
+        ChipActionKind.raise_ticket,
+    ]
 
 
 def test_ec56_calculation_ask_points_to_contract_note_never_computes():
