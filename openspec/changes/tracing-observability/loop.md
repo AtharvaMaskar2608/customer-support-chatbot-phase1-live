@@ -51,22 +51,31 @@ Worktree lead loop state. If it isn't here, it didn't happen.
 - Tasks completed: 1 (scaffold), 2 (mask_pii, 12 tests), 3 (span helpers +
   stitch_thread + log_llm_span, 7 tests), 4 (configure_tracing + A/B probe +
   maybe_clear_traces + assert_no_local_metrics, 15 tests), 5 (public API
-  __init__ wired).
+  __init__ wired), 6 (verify+ship, lean path).
 - testCommand `pytest tests/tracing/`: **34 passed**. doneCondition clauses each
   covered by a test (sampling defaults, mask install, A/B path log, mask
   redaction, stitch_thread, log_llm_span, prod guard, maybe_clear_traces).
-- Full suite pre-check `uv run pytest`: **116 passed** (no collection breakage).
-- Current: request fresh verifier panel (task 6).
-- Verifier rounds run: 0.
-- Findings per round: n/a.
+- Rebased onto latest origin/main (9b6d31e — finx-http-adapters + flow-brokerage
+  merged). Rebase clean (new `app/tracing/` package, no overlap).
+- Post-rebase behavior harness `uv run pytest`: **209 passed** (1 deprecation
+  warning, pre-existing starlette/httpx). testCommand still 34 passed.
 - Open questions: none blocking. `[CONFIRM]` names-in-free-text are best-effort
   (proposal § contracts, owner may tighten); Client-ID value regex is anchored
   (`^...$`) per the proposal, so embedded client ids inside sentences are not
   value-redacted (they are still key-redacted under any pii key).
 
+## STATUS: SHIPPED
+
+- Per human operator lean directive (relayed by team lead): FAST + LEAN —
+  fresh-verifier panel AND self-check spec read-through **skipped by design**;
+  implementation trusted. Only completion check + testCommand + rebase + full
+  behavior harness were run before shipping.
+- PR: (link filled after `gh pr create`).
+
 ## Metrics (filled at completion)
 
-- Verifier rounds used: TBD
-- Findings per round: TBD
-- Escalations: TBD
-- Harness runs: TBD
+- Verifier rounds used: 0 (skipped per lean directive)
+- Findings per round: n/a
+- Escalations: 0
+- Harness runs: testCommand 2x (pre- and post-rebase, 34 passed each);
+  full behavior harness 1x on rebased head (209 passed).
