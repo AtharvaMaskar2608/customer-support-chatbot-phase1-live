@@ -131,7 +131,47 @@ confirmation + one-shot follow-ups + sticky-language, no live LLM in CI.
       router respects it"). Verifier could not renegotiate the spec; no divergence.
   - Post-fix: `pytest tests/llm_router/` 70 passed / 1 skipped; `uv run pytest`
     152 passed / 1 skipped, 0 regressions.
-- Round 3: fresh panel pending (new verifiers, none has seen the code).
+- Round 3 (3 fresh verifiers, none had seen the code):
+  - **contract-surface: NO divergences** (re-confirmed clean).
+  - **edge-cases**:
+    - **[BLOCKING] AY qualifier lacked a leading word boundary** — words ending in
+      "-ay" adjacent to a year ("may 2024-25", "display 2024-25", "friday 2024")
+      were misread as Assessment Years (FY shifted −1yr + spurious confirmation).
+      This was introduced by the round-2 proximity fix. → FIXED: `_AY_QUALIFIER`
+      now has `(?<![a-z])`. Verified: "may 2024-25" → FY 2024-2025 (not AY); genuine
+      "AY 2025-26" still → 2024-2025 + confirmation.
+    - **[minor] singular precedence tokens missed plurals** ("capital gains",
+      "contract notes") → FIXED: `_token_matches` tolerates an optional trailing
+      "s". Verified.
+    - **[minor] `_normalize_fy` dropped the AY flag** for a model-carried AY →
+      FIXED: `_extract_params` re-parses the model fy and keeps `is_ay`.
+    - **[minor/uncertain] FY injected into non-tax (date-range) flows** vs the
+      few-shot exemplar → FIXED: FY parsing gated to `TAX_FLOW_INTENTS` (fy is a
+      Tax-flow-only tool parameter). Removed now-unused `_normalize_fy`.
+    - [minor/test] vacuous "cg" boundary assertion → FIXED (uses "mcgraw").
+  - **spec-compliance** (all non-blocking, no change):
+    - [spec-suspect] proposal bullet-2 prose says the precedence table lives in
+      `app/llm/prompts/`, but Gate-1 reconciliation froze `PRECEDENCE_TOKENS` into
+      contracts-foundation and Task 2 mandates using it. Code follows the frozen
+      contract; the prose is stale. No divergence from the reconciled contract.
+    - [minor] live "skipped" vs "deselected" wording — offline guarantee met.
+    - [minor/uncertain] segment "cash"/delivery "here" not in the deterministic
+      fallback tables — the model (prompted on them) is the primary extractor; the
+      tables only augment. Left as-is (augmentation completeness, not a spec breach).
+  - Post-fix: `pytest tests/llm_router/` 79 passed / 1 skipped; `uv run pytest`
+    161 passed / 1 skipped, 0 regressions. Blocking + all real minors resolved.
+
+## Convergence status / ESCALATION
+
+3 verifier panels used (the protocol cap). Trend converged: findings were real,
+distinct, and decreasing (R1: 1 blocking; R2: 0 blocking, 3 minor; R3: 1 blocking
+[self-introduced in R2] + minors), each fixed and verified with new tests; no
+finding recurred across panels; contract-surface was clean in R2 and R3. But the
+3rd panel still surfaced a blocking item, so I have NOT obtained a clean fresh
+panel within the 3-panel budget → escalating to the team lead per protocol
+("not converged after 3 → stop and escalate") for a decision: authorize one
+confirmation panel on the R3-fixed head, or accept. Not shipping without a clean
+panel or team-lead direction.
 
 ## Open questions / escalations
 

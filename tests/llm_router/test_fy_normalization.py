@@ -33,10 +33,41 @@ from app.llm.router import _extract_params, parse_fy_or_ay
         ("ay yes give me tax report 2024-25", "2024-2025", False),
         # A valid FY after a non-consecutive ISO fragment is still found.
         ("from 2024-04 to report 2024-2025", "2024-2025", False),
+        # Words that merely END in "ay" next to a year are NOT Assessment Years.
+        ("tax report for may 2024-25", "2024-2025", False),
+        ("statement from friday 2024-25", "2024-2025", False),
+        ("display 2024-25 tax report", "2024-2025", False),
     ],
 )
 def test_parse_fy_or_ay(utterance, expected_fy, expected_is_ay):
     assert parse_fy_or_ay(utterance) == (expected_fy, expected_is_ay)
+
+
+def test_fy_extraction_gated_to_tax_flow_intents():
+    # FY is a Tax-flow parameter only. A relative FY phrase in a date-range flow
+    # (P&L) must NOT inject an fy — matching the shipped few-shot exemplar.
+    params, needs = _extract_params(
+        "equity p&l for last financial year", Intent.report_pnl, ExtractedParams(),
+        today=date(2025, 8, 1),
+    )
+    assert params.fy is None
+    assert needs is False
+
+    # The same relative phrase on a Tax intent DOES resolve the FY.
+    params, needs = _extract_params(
+        "tax report for last financial year", Intent.report_tax, ExtractedParams(),
+        today=date(2025, 8, 1),
+    )
+    assert params.fy == supported_fys(date(2025, 8, 1))[1]
+
+
+def test_model_carried_ay_keeps_confirmation():
+    # AY reaches the router only via the model's fy field (no year in utterance).
+    params, needs = _extract_params(
+        "my tax report", Intent.report_tax, ExtractedParams(fy="AY 2025-26")
+    )
+    assert params.fy == "2024-2025"
+    assert needs is True
 
 
 def test_relative_fy_resolves_against_frozen_helpers():

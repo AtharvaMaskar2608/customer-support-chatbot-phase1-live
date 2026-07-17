@@ -38,6 +38,11 @@ from app.llm.router import _resolve_precedence
         # no precedence token → model intent unchanged.
         ("show me contract notes", Intent.report_contract_notes, Intent.report_contract_notes),
         ("brokerage charges", Intent.report_brokerage, Intent.report_brokerage),
+        # plural phrasing still resolves the frozen singular tokens.
+        ("capital gains report please", Intent.report_pnl, Intent.report_capital_gain),
+        ("show me my contract notes", Intent.report_pnl, Intent.report_contract_notes),
+        ("holding statements", Intent.report_ledger, Intent.report_holding),
+        ("my ledgers", Intent.report_pnl, Intent.report_ledger),
     ],
 )
 def test_resolve_precedence(utterance, model_intent, expected):
@@ -45,7 +50,7 @@ def test_resolve_precedence(utterance, model_intent, expected):
 
 
 def test_short_token_not_matched_inside_word():
-    # "cg" must not match inside "recognize"; model intent is left untouched.
-    assert _resolve_precedence("help me recognize my report", Intent.report_ledger) is Intent.report_ledger
+    # "cg" must not match inside a word that actually contains the "cg" substring.
+    assert _resolve_precedence("email from mcgraw about my report", Intent.report_ledger) is Intent.report_ledger
     # "pnl" must not match inside a larger alphanumeric run.
     assert _resolve_precedence("openpnldata", Intent.report_ledger) is Intent.report_ledger

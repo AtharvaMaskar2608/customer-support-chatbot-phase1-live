@@ -23,6 +23,7 @@ from app.contracts.router import (
     PRECEDENCE_TOKENS,
     ROUTE_TOOL_CHOICE,
     ROUTE_TOOL_NAME,
+    TAX_FLOW_INTENTS,
     ConversationContext,
     Delivery,
     ExtractedParams,
@@ -63,12 +64,15 @@ _GENERALIZES: dict[Intent, frozenset[Intent]] = {
 
 
 def _token_matches(token: str, text: str) -> bool:
-    """Whole-token match of a precedence token in ``text`` (both lowercased).
+    """Whole-token match of a keyword in ``text`` (both lowercased), tolerant of a
+    trailing plural ``s``.
 
     Guards against short tokens (``cg``, ``pnl``) matching inside longer words by
     requiring no alphanumeric neighbour on either side. ``&`` in ``p&l`` is a
-    non-word char, so the boundary check still admits ``p&l statement``."""
-    pattern = rf"(?<![a-z0-9]){re.escape(token)}(?![a-z0-9])"
+    non-word char, so the boundary check still admits ``p&l statement``. The
+    optional trailing ``s`` lets the frozen singular precedence tokens match the
+    dominant plural phrasings ("capital gains", "contract notes", "ledgers")."""
+    pattern = rf"(?<![a-z0-9]){re.escape(token)}s?(?![a-z0-9])"
     return re.search(pattern, text) is not None
 
 
@@ -111,9 +115,11 @@ _FY_RANGE_RE = re.compile(r"(\d{4})\s*[-/–—]\s*(\d{2,4})")
 _FY_SINGLE_RE = re.compile(r"(?:fy|f\.y\.|financial year)\s*(\d{4})(?![0-9])")
 
 #: An Assessment Year whose qualifier DIRECTLY precedes the year — proximity-scoped
-#: so a stray interjection ("ay yes …") never flips a plain FY into an AY. Matches
-#: both ``AY 2025-26`` (range) and ``AY 2025`` (single); the start year is group 1.
-_AY_QUALIFIER = r"(?:a\.?y\.?|assessment year)\s*"
+#: so a stray interjection ("ay yes …") never flips a plain FY into an AY. The
+#: leading ``(?<![a-z])`` also stops words that merely END in "ay" ("may", "friday",
+#: "display") being read as an AY qualifier. Matches both ``AY 2025-26`` (range) and
+#: ``AY 2025`` (single); the start year is group 1.
+_AY_QUALIFIER = r"(?<![a-z])(?:a\.?y\.?|assessment year)\s*"
 _AY_RANGE_RE = re.compile(_AY_QUALIFIER + r"(\d{4})\s*[-/–—]\s*\d{2,4}")
 _AY_SINGLE_RE = re.compile(_AY_QUALIFIER + r"(\d{4})(?![0-9])")
 
@@ -192,13 +198,6 @@ def parse_fy_or_ay(utterance: str, today: date | None = None) -> tuple[str | Non
     return None, False
 
 
-def _normalize_fy(value: str, today: date | None = None) -> str:
-    """Normalize a model-provided FY string to the long ``"YYYY-YYYY"`` form via the
-    frozen helpers; leave an unparseable value untouched."""
-    fy_long, _ = parse_fy_or_ay(value, today)
-    return fy_long or value
-
-
 #: Free-text keyword → enum tables for the augmentation pass. Ordered; the first
 #: matching keyword wins. Each keyword is whole-token matched.
 _SEGMENT_KEYWORDS: tuple[tuple[str, Segment], ...] = (
@@ -248,23 +247,30 @@ def _extract_params(
 ) -> tuple[ExtractedParams, bool]:
     """Post-process the model's extracted parameters for a report intent.
 
-    Deterministic FY/AY parsing is authoritative over the model's ``fy``; AY→FY sets
-    the returned ``needs_confirmation``. Segment / format / delivery are augmented
-    from the utterance ONLY where the model left them unset; ``date_range`` passes
-    through from the model. Non-report intents carry the model's params unchanged.
-    ``today`` is injectable so relative-FY resolution is deterministic under test.
+    FY is a parameter of the Tax-flow reports only (the frozen ``TaxReportInput`` is
+    the sole tool carrying ``fy``; P&L / Ledger / Contract-Notes are date-range
+    flows), so deterministic FY/AY parsing runs only for ``TAX_FLOW_INTENTS``. There
+    it is authoritative over the model's ``fy`` and AY→FY sets ``needs_confirmation``
+    (including when the AY reaches the router only via the model's ``fy`` field).
+    Segment / format / delivery are augmented from the utterance ONLY where the
+    model left them unset; ``date_range`` passes through from the model. Non-report
+    intents carry the model's params unchanged. ``today`` is injectable so
+    relative-FY resolution is deterministic under test.
     """
     params = model_params.model_copy(deep=True)
     if intent not in _REPORT_INTENTS:
         return params, False
 
     needs_confirmation = False
-    fy_long, is_ay = parse_fy_or_ay(utterance, today)
-    if fy_long is not None:
-        params.fy = fy_long
-        needs_confirmation = is_ay
-    elif params.fy:
-        params.fy = _normalize_fy(params.fy, today)
+    if intent in TAX_FLOW_INTENTS:
+        fy_long, is_ay = parse_fy_or_ay(utterance, today)
+        if fy_long is None and params.fy:
+            # No FY in the utterance, but the model carried one — normalize it and
+            # keep its AY flag so an AY→FY conversion never loses its confirmation.
+            fy_long, is_ay = parse_fy_or_ay(params.fy, today)
+        if fy_long is not None:
+            params.fy = fy_long
+            needs_confirmation = is_ay
 
     text = utterance.lower()
     if params.segment is None:
